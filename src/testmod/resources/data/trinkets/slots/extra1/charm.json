@@ -1,5 +1,5 @@
 {
-	"icon": "trinkets:gui/slots/charm",
+	"icon": "trinkets:container/slots/charm",
 	"drop_rule": "keep",
 	"validator_predicates": [
 	],

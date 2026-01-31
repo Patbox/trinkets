@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.13-SNAPSHOT'
+	id 'net.fabricmc.fabric-loom' version '1.14-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -40,16 +40,15 @@ loom {
 dependencies {
 	// Base Fabric dependencies
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Mod dependencies
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modApi include("org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cca_version}")
-	modApi include("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	api include("org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cca_version}")
+	api include("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
 
 	// Optional mod dependencies
-	modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}") {
+	/*modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}") {
 		exclude group: 'net.fabricmc.fabric-api'
 	}
 	modCompileOnly("me.shedaniel:RoughlyEnoughItems-default-plugin-fabric:${project.rei_version}") {
@@ -60,7 +59,7 @@ dependencies {
 	}
 	modCompileOnly("dev.emi:emi-fabric:${emi_version}:api") {
 		exclude group: 'net.fabricmc.fabric-api'
-	}
+	}*/
 
 	// Dev Runtime
 	testmodImplementation sourceSets.main.output

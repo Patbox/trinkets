@@ -1,0 +1,20 @@
+These are changes for 4.0.0 release, compared to 3.11.0.
+Already done:
+- Updated to 26.1-snapshot-5
+- Remapped to Mojmap
+- Changed namespace from eu.pb4.trinkets to eu.pb4.trinkets
+- Moved non-api classes to .impl package
+- Reworked slot icons to work more like vanilla:
+  - Icons no longer have a background.
+  - Moved icon files from 'namespace:textures/gui/slots' to 'namespace:textures/gui/sprites/container/slots'
+  - Ids however should change from 'namespace:gui/slots' to 'namespace:container/slots'
+
+Planned:
+- Refactor rendering to be more modern / flexible / data driven.
+- Refactor definition on trinkets:
+  - Components over tags? Fabric has api for adding components to any item, so it should work.
+  - Vanilla also defines equipment with components.
+  - Modpacks / etc can always use some component modifier mod.
+  - Through tags have nice flexibility.
+  - Maybe mixed approach?
+- General cleanup

@@ -1,5 +1,5 @@
 {
-  "icon": "trinkets:gui/slots/glove_mirrored",
+  "icon": "trinkets:container/slots/glove_mirrored",
   "order": -512,
   "validator_predicates": ["trinkets:tag"]
 }

@@ -1,5 +1,5 @@
 {
-  "icon": "trinkets:gui/slots/aglet",
+  "icon": "trinkets:container/slots/aglet",
   "order": -1024,
   "validator_predicates": ["trinkets:tag"]
 }

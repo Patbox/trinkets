@@ -1,30 +1,30 @@
 {
   "required": true,
-  "package": "dev.emi.trinkets.mixin",
+  "package": "eu.pb4.trinkets.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "accessor.ScreenHandlerAccessor",
-    "datafixer.Schema1460Mixin",
+    "client.accessor.ScreenHandlerAccessor",
+    "datafixer.V1460Mixin",
     "EnchantmentDefinitionMixin",
     "EnchantmentHelperMixin",
     "LivingEntityMixin",
-    "PlayerManagerMixin",
-    "PlayerScreenHandlerMixin",
-    "ServerPlayNetworkHandlerMixin"
+    "PlayerListMixin",
+    "InventoryMenuMixin",
+    "ServerGamePacketListenerImplMixin"
   ],
   "client": [
-    "accessor.CreativeSlotAccessor",
-    "accessor.LivingEntityAccessor",
-    "accessor.RecipeBookScreenAccessor",
-    "ClickableWidgetMixin",
-    "ClientPlayNetworkHandlerMixin",
-    "CreativeInventoryScreenMixin",
-    "HandledScreenMixin",
-    "InventoryScreenMixin",
+    "client.accessor.CreativeSlotAccessor",
+    "client.accessor.LivingEntityAccessor",
+    "client.accessor.RecipeBookScreenAccessor",
+    "client.AbstractWidgetMixin",
+    "client.ClientPacketListenerMixin",
+    "client.CreativeModeInventoryScreenMixin",
+    "client.AbstractContainerScreenMixin",
+    "client.InventoryScreenMixin",
     "ItemStackMixin",
     "LivingEntityRendererMixin",
     "LivingEntityStateRenderMixin",
-    "RecipeBookScreenMixin"
+    "client.RecipeBookScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

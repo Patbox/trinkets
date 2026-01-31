@@ -17,11 +17,17 @@
 			"contact": {
 				"github": "https://github.com/TheIllusiveC4"
 			}
+		},
+		{
+			"name": "Patbox",
+			"contact": {
+				"github": "https://github.com/Patbox"
+			}
 		}
 	],
 	"contact": {
-		"homepage": "https://www.curseforge.com/minecraft/mc-mods/trinkets-fabric",
-		"sources": "https://github.com/emilyploszaj/trinkets"
+		"homepage": "https://pb4.eu/",
+		"sources": "https://github.com/Patbox/trinkets"
 	},
 
 	"license": "MIT",
@@ -30,19 +36,19 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"dev.emi.trinkets.TrinketsMain"
+			"eu.pb4.trinkets.impl.TrinketsMain"
 		],
 		"client": [
-			"dev.emi.trinkets.TrinketsClient"
+			"eu.pb4.trinkets.impl.client.TrinketsClient"
 		],
 		"cardinal-components-entity": [
-			"dev.emi.trinkets.TrinketsMain"
+			"eu.pb4.trinkets.impl.TrinketsMain"
 		],
 		"rei_client": [
-			"dev.emi.trinkets.compat.TrinketsREIPlugin"
+			"eu.pb4.trinkets.impl.client.compat.TrinketsREIPlugin"
 		],
 		"emi": [
-			"dev.emi.trinkets.compat.TrinketsEmiPlugin"
+			"eu.pb4.trinkets.impl.client.compat.TrinketsEmiPlugin"
 		]
 	},
   "accessWidener": "trinkets.accesswidener",
@@ -56,10 +62,10 @@
 	],
 
 	"depends": {
-		"minecraft": ">=1.21.6",
+		"minecraft": ">=26.1-alpha",
 		"fabricloader": ">=0.16.0",
-		"cardinal-components-base": ">=3.0.0-0",
-		"cardinal-components-entity": ">=3.0.0-0",
-		"fabric-api": ">=0.51.2"
+		"cardinal-components-base": "*",
+		"cardinal-components-entity": "*",
+		"fabric-api": "*"
 	}
 }

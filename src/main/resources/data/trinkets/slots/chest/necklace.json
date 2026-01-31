@@ -1,5 +1,5 @@
 {
-  "icon": "trinkets:gui/slots/necklace",
+  "icon": "trinkets:container/slots/necklace",
   "order": -1024,
   "validator_predicates": ["trinkets:tag"]
 }
