@@ -20,6 +20,7 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -36,6 +37,16 @@ public abstract class PlayerManagerMixin {
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;onSpawn()V"), method = "onPlayerConnect")
 	private void onPlayerConnect(ClientConnection connection, ServerPlayerEntity player, ConnectedClientData clientData, CallbackInfo ci) {
 		EntitySlotLoader.SERVER.sync(player);
+		this.syncSlots(player);
+	}
+
+	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;onSpawn()V"), method = "respawnPlayer")
+	private void onPlayerRespawn(ServerPlayerEntity player, boolean alive, Entity.RemovalReason removalReason, CallbackInfoReturnable<ServerPlayerEntity> cir, @Local(ordinal = 1) ServerPlayerEntity newServerPlayer) {
+		this.syncSlots(player);
+	}
+
+	@Unique
+	private void syncSlots(ServerPlayerEntity player) {
 		((TrinketPlayerScreenHandler) player.playerScreenHandler).trinkets$updateTrinketSlots(false);
 		TrinketsApi.getTrinketComponent(player).ifPresent(trinkets -> {
 			Map<String, TrinketSaveData.Metadata> tag = new HashMap<>();
@@ -47,10 +58,5 @@ public abstract class PlayerManagerMixin {
 			ServerPlayNetworking.send(player, new SyncInventoryPayload(player.getId(), Map.of(), tag));
 			inventoriesToSend.clear();
 		});
-	}
-
-	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;onSpawn()V"), method = "respawnPlayer")
-	private void onPlayerRespawn(ServerPlayerEntity player, boolean alive, Entity.RemovalReason removalReason, CallbackInfoReturnable<ServerPlayerEntity> cir, @Local(ordinal = 1) ServerPlayerEntity newServerPlayer) {
-		((TrinketPlayerScreenHandler) newServerPlayer.playerScreenHandler).trinkets$updateTrinketSlots(true);
 	}
 }
