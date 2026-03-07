@@ -6,7 +6,6 @@ import java.util.Map;
 import net.minecraft.nbt.CompoundTag;
 
 public final class SlotGroup {
-
 	private final String name;
 	private final int slotId;
 	private final int order;

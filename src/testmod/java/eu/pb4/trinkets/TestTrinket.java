@@ -3,8 +3,8 @@ package eu.pb4.trinkets;
 import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import eu.pb4.trinkets.api.SlotAttributes;
-import eu.pb4.trinkets.api.SlotReference;
-import eu.pb4.trinkets.api.TrinketItem;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.client.TrinketRenderer;
 import eu.pb4.trinkets.client.TrinketModel;
 import net.fabricmc.api.EnvType;
@@ -21,9 +21,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-public class TestTrinket extends TrinketItem implements TrinketRenderer {
+public class TestTrinket extends Item implements TrinketRenderer, TrinketCallback {
 
 	private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(TrinketsTest.MOD_ID, "textures/entity/trinket/hat.png");
 	private HumanoidModel<HumanoidRenderState> model;
@@ -33,15 +34,15 @@ public class TestTrinket extends TrinketItem implements TrinketRenderer {
 	}
 
 	@Override
-	public void tick(ItemStack stack, SlotReference slot, LivingEntity entity) {
+	public void tick(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
 		/*stack.damage(1, entity, e -> {
 			TrinketsApi.onTrinketBroken(stack, slot, entity);
 		});*/
 	}
 
 	@Override
-	public Multimap<Holder<Attribute>, AttributeModifier> getModifiers(ItemStack stack, SlotReference slot, LivingEntity entity, Identifier id) {
-		Multimap<Holder<Attribute>, AttributeModifier> modifiers = super.getModifiers(stack, slot, entity, id);
+	public Multimap<Holder<Attribute>, AttributeModifier> getModifiers(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity, Identifier id) {
+		Multimap<Holder<Attribute>, AttributeModifier> modifiers = TrinketCallback.super.getModifiers(stack, slot, entity, id);
 		AttributeModifier speedModifier = new AttributeModifier(id.withSuffix("trinkets-testmod/movement_speed"),
 				0.4, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 		modifiers.put(Attributes.MOVEMENT_SPEED, speedModifier);
@@ -52,7 +53,7 @@ public class TestTrinket extends TrinketItem implements TrinketRenderer {
 
 	@Override
 	@Environment(EnvType.CLIENT)
-	public void render(ItemStack stack, SlotReference slotReference, EntityModel<? extends LivingEntityRenderState> contextModel, PoseStack matrices, SubmitNodeCollector queue, int light, LivingEntityRenderState state, float limbAngle, float limbDistance) {
+	public void render(ItemStack stack, TrinketSlotAccess slotReference, EntityModel<? extends LivingEntityRenderState> contextModel, PoseStack matrices, SubmitNodeCollector queue, int light, LivingEntityRenderState state, float limbAngle, float limbDistance) {
 		if (state instanceof HumanoidRenderState bipedEntityRenderState) {
 			HumanoidModel<HumanoidRenderState> model = this.getModel();
 			model.setupAnim(bipedEntityRenderState);

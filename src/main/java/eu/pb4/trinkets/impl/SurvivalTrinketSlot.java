@@ -1,16 +1,15 @@
 package eu.pb4.trinkets.impl;
 
 import eu.pb4.trinkets.api.SlotGroup;
-import eu.pb4.trinkets.api.SlotReference;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.SlotType;
-import eu.pb4.trinkets.api.TrinketInventory;
-import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.impl.client.TrinketsClient;
 import eu.pb4.trinkets.mixin.client.accessor.RecipeBookScreenAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -25,28 +24,36 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 	private final SlotType type;
 	private final boolean alwaysVisible;
 	private final int slotOffset;
-	private final TrinketInventory trinketInventory;
+	private final TrinketInventoryImpl trinketInventory;
+	private final TrinketSlotAccess ref;
+	private final LivingEntity owner;
 
-	public SurvivalTrinketSlot(TrinketInventory inventory, int index, int x, int y, SlotGroup group, SlotType type, int slotOffset,
-			boolean alwaysVisible) {
+	public SurvivalTrinketSlot(TrinketInventoryImpl inventory, int index, int x, int y, SlotGroup group, SlotType type, int slotOffset,
+							   boolean alwaysVisible, LivingEntity owner) {
 		super(inventory, index, x, y);
 		this.group = group;
 		this.type = type;
 		this.slotOffset = slotOffset;
 		this.alwaysVisible = alwaysVisible;
 		this.trinketInventory = inventory;
+		this.ref = new TrinketSlotAccess(trinketInventory, slotOffset);
+		this.owner = owner;
+	}
+
+	@Override
+	public void setByPlayer(ItemStack itemStack, ItemStack previous) {
+		super.setByPlayer(itemStack, previous);
+		TrinketUtilities.playEquipmentSound(itemStack, ref, owner);
 	}
 
 	@Override
 	public boolean mayPlace(ItemStack stack) {
-		return TrinketSlot.canInsert(stack, new SlotReference(trinketInventory, slotOffset), trinketInventory.getComponent().getEntity());
+		return TrinketSlot.canInsert(stack, this.ref, trinketInventory.getComponent().getEntity());
 	}
 
 	@Override
 	public boolean mayPickup(Player player) {
-		ItemStack stack = this.getItem();
-		return TrinketsApi.getTrinket(stack.getItem())
-			.canUnequip(stack, new SlotReference(trinketInventory, slotOffset), player);
+		return TrinketSlot.mayPickup(this.getItem(), this.ref, player);
 	}
 
 	@Override
@@ -86,7 +93,7 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 
 	@Override
 	public @Nullable Identifier getNoItemIcon() {
-		return type.getIcon();
+		return type.icon();
 	}
 
 	@Override

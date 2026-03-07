@@ -1,13 +1,6 @@
-package eu.pb4.trinkets.api;
+package eu.pb4.trinkets.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -15,8 +8,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
 import com.mojang.serialization.DynamicOps;
-import eu.pb4.trinkets.impl.TrinketModifiers;
-import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
+import eu.pb4.trinkets.api.*;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -24,6 +16,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
@@ -36,13 +29,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.ladysnake.cca.api.v3.component.ComponentKey;
+import org.ladysnake.cca.api.v3.component.ComponentRegistryV3;
+import org.ladysnake.cca.api.v3.component.ComponentV3;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 import org.ladysnake.cca.api.v3.entity.RespawnableComponent;
 
-public class LivingEntityTrinketComponent implements TrinketComponent, AutoSyncedComponent, RespawnableComponent {
+public class LivingEntityTrinketComponent implements TrinketAttachment, AutoSyncedComponent, RespawnableComponent, ComponentV3 {
+	public static final ComponentKey<LivingEntityTrinketComponent> TRINKET_COMPONENT = ComponentRegistryV3.INSTANCE
+			.getOrCreate(Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "trinkets"), LivingEntityTrinketComponent.class);
 
-	public Map<String, Map<String, TrinketInventory>> inventory = new HashMap<>();
-	public Set<TrinketInventory> trackingUpdates = new HashSet<>();
+	public Map<String, Map<String, TrinketInventoryImpl>> inventory = new HashMap<>();
+	public Set<TrinketInventoryImpl> trackingUpdates = new HashSet<>();
 	public Map<String, SlotGroup> groups = new HashMap<>();
 	public int size;
 	public LivingEntity entity;
@@ -65,24 +63,28 @@ public class LivingEntityTrinketComponent implements TrinketComponent, AutoSynce
 
 	@Override
 	public Map<String, Map<String, TrinketInventory>> getInventory() {
+        //noinspection unchecked
+        return (Map<String, Map<String, TrinketInventory>>) (Object) Collections.unmodifiableMap(inventory);
+	}
+
+	public Map<String, Map<String, TrinketInventoryImpl>> getInventoryImpl() {
 		return inventory;
 	}
 
-	@Override
 	public void update() {
 		Map<String, SlotGroup> entitySlots = TrinketsApi.getEntitySlots(this.entity);
 		int count = 0;
 		groups.clear();
-		Map<String, Map<String, TrinketInventory>> inventory = new HashMap<>();
+		Map<String, Map<String, TrinketInventoryImpl>> inventory = new HashMap<>();
 		for (Map.Entry<String, SlotGroup> group : entitySlots.entrySet()) {
 			String groupKey = group.getKey();
 			SlotGroup groupValue = group.getValue();
-			Map<String, TrinketInventory> oldGroup = this.inventory.get(groupKey);
+			Map<String, TrinketInventoryImpl> oldGroup = this.inventory.get(groupKey);
 			groups.put(groupKey, groupValue);
 			for (Map.Entry<String, SlotType> slot : groupValue.getSlots().entrySet()) {
-				TrinketInventory inv = new TrinketInventory(slot.getValue(), this, e -> this.trackingUpdates.add(e));
+				TrinketInventoryImpl inv = new TrinketInventoryImpl(slot.getValue(), this, e -> this.trackingUpdates.add(e));
 				if (oldGroup != null) {
-					TrinketInventory oldInv = oldGroup.get(slot.getKey());
+					TrinketInventoryImpl oldInv = oldGroup.get(slot.getKey());
 					if (oldInv != null) {
 						inv.copyFrom(oldInv);
 						for (int i = 0; i < oldInv.getContainerSize(); i++) {
@@ -107,10 +109,9 @@ public class LivingEntityTrinketComponent implements TrinketComponent, AutoSynce
 		this.inventory = inventory;
 	}
 
-	@Override
 	public void clearCachedModifiers() {
-		for (Map.Entry<String, Map<String, TrinketInventory>> group : this.getInventory().entrySet()) {
-			for (Map.Entry<String, TrinketInventory> slotType : group.getValue().entrySet()) {
+		for (Map.Entry<String, Map<String, TrinketInventoryImpl>> group : this.getInventoryImpl().entrySet()) {
+			for (Map.Entry<String, TrinketInventoryImpl> slotType : group.getValue().entrySet()) {
 				slotType.getValue().clearCachedModifiers();
 			}
 		}
@@ -118,19 +119,18 @@ public class LivingEntityTrinketComponent implements TrinketComponent, AutoSynce
 
 	@Override
 	public Set<TrinketInventory> getTrackingUpdates() {
-		return this.trackingUpdates;
+		return (Set<TrinketInventory>) (Object) this.trackingUpdates;
 	}
 
-	@Override
 	public void addTemporaryModifiers(Multimap<String, AttributeModifier> modifiers) {
 		for (Map.Entry<String, Collection<AttributeModifier>> entry : modifiers.asMap().entrySet()) {
 			String[] keys = entry.getKey().split("/");
 			String group = keys[0];
 			String slot = keys[1];
 			for (AttributeModifier modifier : entry.getValue()) {
-				Map<String, TrinketInventory> groupInv = this.inventory.get(group);
+				Map<String, TrinketInventoryImpl> groupInv = this.inventory.get(group);
 				if (groupInv != null) {
-					TrinketInventory inv = groupInv.get(slot);
+					TrinketInventoryImpl inv = groupInv.get(slot);
 					if (inv != null) {
 						inv.addModifier(modifier);
 					}
@@ -139,16 +139,15 @@ public class LivingEntityTrinketComponent implements TrinketComponent, AutoSynce
 		}
 	}
 
-	@Override
 	public void addPersistentModifiers(Multimap<String, AttributeModifier> modifiers) {
 		for (Map.Entry<String, Collection<AttributeModifier>> entry : modifiers.asMap().entrySet()) {
 			String[] keys = entry.getKey().split("/");
 			String group = keys[0];
 			String slot = keys[1];
 			for (AttributeModifier modifier : entry.getValue()) {
-				Map<String, TrinketInventory> groupInv = this.inventory.get(group);
+				Map<String, TrinketInventoryImpl> groupInv = this.inventory.get(group);
 				if (groupInv != null) {
-					TrinketInventory inv = groupInv.get(slot);
+					TrinketInventoryImpl inv = groupInv.get(slot);
 					if (inv != null) {
 						inv.addPersistentModifier(modifier);
 					}
@@ -157,16 +156,15 @@ public class LivingEntityTrinketComponent implements TrinketComponent, AutoSynce
 		}
 	}
 
-	@Override
 	public void removeModifiers(Multimap<String, AttributeModifier> modifiers) {
 		for (Map.Entry<String, Collection<AttributeModifier>> entry : modifiers.asMap().entrySet()) {
 			String[] keys = entry.getKey().split("/");
 			String group = keys[0];
 			String slot = keys[1];
 			for (AttributeModifier modifier : entry.getValue()) {
-				Map<String, TrinketInventory> groupInv = this.inventory.get(group);
+				Map<String, TrinketInventoryImpl> groupInv = this.inventory.get(group);
 				if (groupInv != null) {
-					TrinketInventory inv = groupInv.get(slot);
+					TrinketInventoryImpl inv = groupInv.get(slot);
 					if (inv != null) {
 						inv.removeModifier(modifier.id());
 					}
@@ -175,11 +173,10 @@ public class LivingEntityTrinketComponent implements TrinketComponent, AutoSynce
 		}
 	}
 
-	@Override
 	public Multimap<String, AttributeModifier> getModifiers() {
 		Multimap<String, AttributeModifier> result = HashMultimap.create();
-		for (Map.Entry<String, Map<String, TrinketInventory>> group : this.getInventory().entrySet()) {
-			for (Map.Entry<String, TrinketInventory> slotType : group.getValue().entrySet()) {
+		for (Map.Entry<String, Map<String, TrinketInventoryImpl>> group : this.getInventoryImpl().entrySet()) {
+			for (Map.Entry<String, TrinketInventoryImpl> slotType : group.getValue().entrySet()) {
 				result.putAll(group.getKey() + "/" + slotType.getKey(), slotType.getValue().getModifiers().values());
 			}
 		}
@@ -187,10 +184,9 @@ public class LivingEntityTrinketComponent implements TrinketComponent, AutoSynce
 		return result;
 	}
 
-	@Override
 	public void clearModifiers() {
-		for (Map.Entry<String, Map<String, TrinketInventory>> group : this.getInventory().entrySet()) {
-			for (Map.Entry<String, TrinketInventory> slotType : group.getValue().entrySet()) {
+		for (Map.Entry<String, Map<String, TrinketInventoryImpl>> group : this.getInventoryImpl().entrySet()) {
+			for (Map.Entry<String, TrinketInventoryImpl> slotType : group.getValue().entrySet()) {
 				slotType.getValue().clearModifiers();
 			}
 		}
@@ -205,11 +201,11 @@ public class LivingEntityTrinketComponent implements TrinketComponent, AutoSynce
 			for (String groupKey : data.data().keySet()) {
 				Map<String, TrinketSaveData.InventoryData> groupTag = data.data().get(groupKey);
 				if (groupTag != null) {
-					Map<String, TrinketInventory> groupSlots = this.inventory.get(groupKey);
+					Map<String, TrinketInventoryImpl> groupSlots = this.inventory.get(groupKey);
 					if (groupSlots != null) {
 						for (String slotKey : groupTag.keySet()) {
 							TrinketSaveData.InventoryData slotTag = groupTag.get(slotKey);
-							TrinketInventory inv = groupSlots.get(slotKey);
+							TrinketInventoryImpl inv = groupSlots.get(slotKey);
 
 							if (inv != null) {
 								inv.fromMetadata(slotTag.metadata());
@@ -248,13 +244,13 @@ public class LivingEntityTrinketComponent implements TrinketComponent, AutoSynce
 				}
 			}
 		});
-		for (Map.Entry<String, Map<String, TrinketInventory>> groupEntry : this.getInventory().entrySet()) {
-			for (Map.Entry<String, TrinketInventory> slotEntry : groupEntry.getValue().entrySet()) {
+		for (Map.Entry<String, Map<String, TrinketInventoryImpl>> groupEntry : this.getInventoryImpl().entrySet()) {
+			for (Map.Entry<String, TrinketInventoryImpl> slotEntry : groupEntry.getValue().entrySet()) {
 				String group = groupEntry.getKey();
 				String slot = slotEntry.getKey();
 				String key = group + "/" + slot;
 				Collection<AttributeModifier> modifiers = slotMap.get(key);
-				TrinketInventory inventory = slotEntry.getValue();
+				TrinketInventoryImpl inventory = slotEntry.getValue();
 				for (AttributeModifier modifier : modifiers) {
 					inventory.removeCachedModifier(modifier);
 				}
@@ -272,12 +268,12 @@ public class LivingEntityTrinketComponent implements TrinketComponent, AutoSynce
 			for (String groupKey : tag.keySet()) {
 				CompoundTag groupTag = tag.getCompoundOrEmpty(groupKey);
 				if (groupTag != null) {
-					Map<String, TrinketInventory> groupSlots = this.inventory.get(groupKey);
+					Map<String, TrinketInventoryImpl> groupSlots = this.inventory.get(groupKey);
 					if (groupSlots != null) {
 						for (String slotKey : groupTag.keySet()) {
 							CompoundTag slotTag = groupTag.getCompoundOrEmpty(slotKey);
 							ListTag list = slotTag.getListOrEmpty("Items");
-							TrinketInventory inv = groupSlots.get(slotKey);
+							TrinketInventoryImpl inv = groupSlots.get(slotKey);
 
 							if (inv != null) {
 								inv.applySyncMetadata(slotTag.read("Metadata", TrinketSaveData.Metadata.CODEC, ops).orElse(TrinketSaveData.Metadata.EMPTY));
@@ -304,10 +300,10 @@ public class LivingEntityTrinketComponent implements TrinketComponent, AutoSynce
 	@Override
 	public void writeData(ValueOutput view) {
 		TrinketSaveData data = new TrinketSaveData(new HashMap<>());
-		for (Map.Entry<String, Map<String, TrinketInventory>> group : this.getInventory().entrySet()) {
+		for (Map.Entry<String, Map<String, TrinketInventoryImpl>> group : this.getInventoryImpl().entrySet()) {
 			Map<String, TrinketSaveData.InventoryData> groupTag = new HashMap<>();
-			for (Map.Entry<String, TrinketInventory> slot : group.getValue().entrySet()) {
-				TrinketInventory inv = slot.getValue();
+			for (Map.Entry<String, TrinketInventoryImpl> slot : group.getValue().entrySet()) {
+				TrinketInventoryImpl inv = slot.getValue();
 
 				List<ItemStack> items = new ArrayList<>();
 				for (int i = 0; i < inv.getContainerSize(); i++) {
@@ -337,9 +333,9 @@ public class LivingEntityTrinketComponent implements TrinketComponent, AutoSynce
 
 	@Override
 	public boolean isEquipped(Predicate<ItemStack> predicate) {
-		for (Map.Entry<String, Map<String, TrinketInventory>> group : this.getInventory().entrySet()) {
-			for (Map.Entry<String, TrinketInventory> slotType : group.getValue().entrySet()) {
-				TrinketInventory inv = slotType.getValue();
+		for (Map.Entry<String, Map<String, TrinketInventoryImpl>> group : this.getInventoryImpl().entrySet()) {
+			for (Map.Entry<String, TrinketInventoryImpl> slotType : group.getValue().entrySet()) {
+				TrinketInventoryImpl inv = slotType.getValue();
 				for (int i = 0; i < inv.getContainerSize(); i++) {
 					if (predicate.test(inv.getItem(i))) {
 						return true;
@@ -351,8 +347,8 @@ public class LivingEntityTrinketComponent implements TrinketComponent, AutoSynce
 	}
 
 	@Override
-	public List<Tuple<SlotReference, ItemStack>> getEquipped(Predicate<ItemStack> predicate) {
-		List<Tuple<SlotReference, ItemStack>> list = new ArrayList<>();
+	public List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Predicate<ItemStack> predicate) {
+		List<Tuple<TrinketSlotAccess, ItemStack>> list = new ArrayList<>();
 		forEach((slotReference, itemStack) -> {
 			if (predicate.test(itemStack)) {
 				list.add(new Tuple<>(slotReference, itemStack));
@@ -362,12 +358,12 @@ public class LivingEntityTrinketComponent implements TrinketComponent, AutoSynce
 	}
 
 	@Override
-	public void forEach(BiConsumer<SlotReference, ItemStack> consumer) {
-		for (Map.Entry<String, Map<String, TrinketInventory>> group : this.getInventory().entrySet()) {
-			for (Map.Entry<String, TrinketInventory> slotType : group.getValue().entrySet()) {
-				TrinketInventory inv = slotType.getValue();
+	public void forEach(BiConsumer<TrinketSlotAccess, ItemStack> consumer) {
+		for (Map.Entry<String, Map<String, TrinketInventoryImpl>> group : this.getInventoryImpl().entrySet()) {
+			for (Map.Entry<String, TrinketInventoryImpl> slotType : group.getValue().entrySet()) {
+				TrinketInventoryImpl inv = slotType.getValue();
 				for (int i = 0; i < inv.getContainerSize(); i++) {
-					consumer.accept(new SlotReference(inv, i), inv.getItem(i));
+					consumer.accept(new TrinketSlotAccess(inv, i), inv.getItem(i));
 				}
 			}
 		}

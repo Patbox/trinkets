@@ -1,20 +1,18 @@
 package eu.pb4.trinkets.api;
 
-import com.google.common.collect.Multimap;
-
-import org.ladysnake.cca.api.v3.component.ComponentV3;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+
+import eu.pb4.trinkets.impl.TrinketInventoryImpl;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-public interface TrinketComponent extends ComponentV3 {
+public interface TrinketAttachment {
 
 	LivingEntity getEntity();
 
@@ -29,18 +27,6 @@ public interface TrinketComponent extends ComponentV3 {
 	 * the entity.
 	 */
 	Map<String, Map<String, TrinketInventory>> getInventory();
-
-	void update();
-
-	void addTemporaryModifiers(Multimap<String, AttributeModifier> modifiers);
-
-	void addPersistentModifiers(Multimap<String, AttributeModifier> modifiers);
-
-	void removeModifiers(Multimap<String, AttributeModifier> modifiers);
-
-	void clearModifiers();
-
-	Multimap<String, AttributeModifier> getModifiers();
 
 	/**
 	 * @return Whether the predicate matches any slots available to the entity
@@ -57,28 +43,26 @@ public interface TrinketComponent extends ComponentV3 {
 	/**
 	 * @return All slots that match the provided predicate
 	 */
-	List<Tuple<SlotReference, ItemStack>> getEquipped(Predicate<ItemStack> predicate);
+	List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Predicate<ItemStack> predicate);
 
 	/**
 	 * @return All slots that contain the provided item
 	 */
-	default List<Tuple<SlotReference, ItemStack>> getEquipped(Item item) {
-		return getEquipped(stack -> stack.getItem() == item);
+	default List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Item item) {
+		return getEquipped(stack -> stack.is(item));
 	}
 
 	/**
 	 * @return All non-empty slots
 	 */
-	default List<Tuple<SlotReference, ItemStack>> getAllEquipped() {
+	default List<Tuple<TrinketSlotAccess, ItemStack>> getAllEquipped() {
 		return getEquipped(stack -> !stack.isEmpty());
 	}
 
 	/**
 	 * Iterates over every slot available to the entity
 	 */
-	void forEach(BiConsumer<SlotReference, ItemStack> consumer);
+	void forEach(BiConsumer<TrinketSlotAccess, ItemStack> consumer);
 
 	Set<TrinketInventory> getTrackingUpdates();
-
-	void clearCachedModifiers();
 }

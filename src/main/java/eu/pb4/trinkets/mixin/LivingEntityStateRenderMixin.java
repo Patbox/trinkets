@@ -1,7 +1,7 @@
 package eu.pb4.trinkets.mixin;
 
 import eu.pb4.trinkets.impl.TrinketEntityRenderState;
-import eu.pb4.trinkets.api.SlotReference;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -17,15 +17,15 @@ import java.util.List;
 public class LivingEntityStateRenderMixin implements TrinketEntityRenderState {
 
     @Unique
-    private List<Tuple<ItemStack, SlotReference>> trinketsState = List.of();
+    private List<Tuple<ItemStack, TrinketSlotAccess>> trinketsState = List.of();
 
     @Override
-    public void trinkets$setState(List<Tuple<ItemStack, SlotReference>> items) {
+    public void trinkets$setState(List<Tuple<ItemStack, TrinketSlotAccess>> items) {
         this.trinketsState = items;
     }
 
     @Override
-    public List<Tuple<ItemStack, SlotReference>> trinkets$getState() {
+    public List<Tuple<ItemStack, TrinketSlotAccess>> trinkets$getState() {
         return this.trinketsState;
     }
 }

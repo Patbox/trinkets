@@ -17,7 +17,7 @@ public class TrinketModel extends HumanoidModel<HumanoidRenderState> {
 
 	public TrinketModel(ModelPart root) {
 		super(root);
-		this.setAllVisible(false);
+		//this.setAllVisible(false);
 		this.head.visible = true;
 	}
 

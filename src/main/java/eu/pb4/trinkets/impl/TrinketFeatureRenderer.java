@@ -1,8 +1,8 @@
 package eu.pb4.trinkets.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import eu.pb4.trinkets.api.SlotReference;
-import eu.pb4.trinkets.api.TrinketComponent;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.api.TrinketAttachment;
 import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.api.client.TrinketRendererRegistry;
 import java.util.ArrayList;
@@ -24,11 +24,11 @@ public class TrinketFeatureRenderer<T extends LivingEntityRenderState, M extends
 	}
 
 	public static void update(LivingEntity livingEntity, LivingEntityRenderState entityState, float tickDelta, TrinketEntityRenderState state) {
-		Optional<TrinketComponent> component = TrinketsApi.getTrinketComponent(livingEntity);
+		Optional<TrinketAttachment> component = TrinketsApi.getTrinketAttachment(livingEntity);
 		if (component.isEmpty()) {
 			state.trinkets$setState(List.of());
 		} else {
-			List<Tuple<ItemStack, SlotReference>> items = new ArrayList<>();
+			List<Tuple<ItemStack, TrinketSlotAccess>> items = new ArrayList<>();
 			component.get().forEach((slotReference, stack) -> items.add(new Tuple<>(stack, slotReference)));
 			state.trinkets$setState(items);
 		}

@@ -1,7 +1,6 @@
 package eu.pb4.trinkets.api.event;
 
-import eu.pb4.trinkets.api.SlotReference;
-import eu.pb4.trinkets.api.Trinket;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,5 +21,5 @@ public interface TrinketEquipCallback {
 	 * @param slot The slot the stack is equipped to
 	 * @param entity The entity that equipped the stack
 	 */
-	void onEquip(ItemStack stack, SlotReference slot, LivingEntity entity);
+	void onEquip(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity);
 }

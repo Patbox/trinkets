@@ -1,16 +1,14 @@
-package eu.pb4.trinkets.api;
-
-import java.util.ArrayList;
+package eu.pb4.trinkets.api.callback;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-
+import eu.pb4.trinkets.api.*;
+import eu.pb4.trinkets.api.component.TrinketDataComponents;
+import eu.pb4.trinkets.impl.TrinketInventoryImpl;
 import eu.pb4.trinkets.mixin.client.accessor.LivingEntityAccessor;
-import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,7 +23,25 @@ import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.equipment.Equippable;
 
-public interface Trinket {
+import java.util.ArrayList;
+import java.util.function.Consumer;
+
+public interface TrinketCallback {
+	TrinketCallback DEFAULT = new TrinketCallback() {};
+
+	static TrinketCallback getCallback(ItemStack item) {
+		var value = item.get(TrinketDataComponents.EQUIPMENT);
+		if (value != null) {
+			// Todo
+			//return value.callback();
+		}
+
+		if (item.getItem() instanceof TrinketCallback callback) {
+			return callback;
+		}
+
+		return DEFAULT;
+	}
 
 	/**
 	 * Called every tick on the client and server side
@@ -34,7 +50,7 @@ public interface Trinket {
 	 * @param slot The slot the stack is ticking in
 	 * @param entity The entity wearing the stack
 	 */
-	default void tick(ItemStack stack, SlotReference slot, LivingEntity entity) {
+	default void tick(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
 	}
 
 	/**
@@ -44,7 +60,7 @@ public interface Trinket {
 	 * @param slot The slot the stack is equipped to
 	 * @param entity The entity that equipped the stack
 	 */
-	default void onEquip(ItemStack stack, SlotReference slot, LivingEntity entity) {
+	default void onEquip(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
 	}
 
 	/**
@@ -54,7 +70,7 @@ public interface Trinket {
 	 * @param slot The slot the stack was unequipped from
 	 * @param entity The entity that unequipped the stack
 	 */
-	default void onUnequip(ItemStack stack, SlotReference slot, LivingEntity entity) {
+	default void onUnequip(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
 	}
 
 	/**
@@ -65,7 +81,7 @@ public interface Trinket {
 	 * @param entity The entity that is equipping the stack
 	 * @return Whether the stack can be equipped
 	 */
-	default boolean canEquip(ItemStack stack, SlotReference slot, LivingEntity entity) {
+	default boolean canEquip(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
 		return true;
 	}
 
@@ -77,7 +93,7 @@ public interface Trinket {
 	 * @param entity The entity that is unequipping the stack
 	 * @return Whether the stack can be unequipped
 	 */
-	default boolean canUnequip(ItemStack stack, SlotReference slot, LivingEntity entity) {
+	default boolean canUnequip(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
 		return !EnchantmentHelper.has(stack, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) || (entity instanceof Player player && player.isCreative());
 	}
 
@@ -90,7 +106,8 @@ public interface Trinket {
 	 * @return Whether the stack can be equipped from use
 	 */
 	default boolean canEquipFromUse(ItemStack stack, LivingEntity entity) {
-		return false;
+		var comp = stack.get(TrinketDataComponents.EQUIPMENT);
+		return comp != null && comp.equipOnInteract();
 	}
 
 	/**
@@ -101,12 +118,17 @@ public interface Trinket {
 	 * @param entity The entity that is equipping the stack
 	 * @return The {@link SoundEvent} to play for equipping
 	 */
-	default Holder<SoundEvent> getEquipSound(ItemStack stack, SlotReference slot, LivingEntity entity) {
+	default Holder<SoundEvent> getEquipSound(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
+		var trinket = stack.get(TrinketDataComponents.EQUIPMENT);
+		if (trinket != null) {
+			return trinket.equipSound();
+		}
+
 		Equippable component = stack.get(DataComponents.EQUIPPABLE);
 		if (component != null) {
 			return component.equipSound();
 		}
-		return BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY);
+		return SoundEvents.ARMOR_EQUIP_GENERIC;
 	}
 
 	/**
@@ -117,13 +139,13 @@ public interface Trinket {
 	 * should be considered
 	 *
 	 * @param stack ItemStack being polled for modifiers
-	 * @param slot the {@link SlotReference} for the {@link TrinketInventory} the Trinket is relevant to
+	 * @param slot the {@link TrinketSlotAccess} for the {@link TrinketInventoryImpl} the Trinket is relevant to
 	 * @param entity the LivingEntity holding the Trinket
 	 * @param slotIdentifier The Identifier to use for creating attributes
 	 * @return the Multimap with any needed entries added
 	 * @see SlotAttributes#addSlotModifier
 	 */
-	default Multimap<Holder<Attribute>, AttributeModifier> getModifiers(ItemStack stack, SlotReference slot, LivingEntity entity, Identifier slotIdentifier) {
+	default Multimap<Holder<Attribute>, AttributeModifier> getModifiers(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity, Identifier slotIdentifier) {
 		return Multimaps.newMultimap(Maps.newLinkedHashMap(), ArrayList::new);
 	}
 
@@ -138,11 +160,20 @@ public interface Trinket {
 	 * @param slot The slot the stack is being broken in
 	 * @param entity The entity that is breaking the stack
 	 */
-	default void onBreak(ItemStack stack, SlotReference slot, LivingEntity entity) {
+	default void onBreak(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
 		((LivingEntityAccessor) entity).invokePlayEquipmentBreakEffects(stack);
 	}
 
-	default TrinketEnums.DropRule getDropRule(ItemStack stack, SlotReference slot, LivingEntity entity) {
-		return TrinketEnums.DropRule.DEFAULT;
+	default TrinketDropRule getDropRule(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
+		var trinket = stack.get(TrinketDataComponents.EQUIPMENT);
+		if (trinket != null) {
+			return trinket.dropRule();
+		}
+
+		return TrinketDropRule.DEFAULT;
+	}
+
+	default void onEquippedStackChanged(ItemStack previous, ItemStack newStack, TrinketSlotAccess slot, LivingEntity entity) {
+
 	}
 }

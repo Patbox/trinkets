@@ -3,14 +3,15 @@ package eu.pb4.trinkets.mixin;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import eu.pb4.trinkets.api.component.TrinketDataComponents;
 import eu.pb4.trinkets.impl.TrinketModifiers;
 import eu.pb4.trinkets.impl.TrinketSlot;
 import eu.pb4.trinkets.api.SlotAttributes;
-import eu.pb4.trinkets.api.SlotReference;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.SlotType;
-import eu.pb4.trinkets.api.TrinketInventory;
+import eu.pb4.trinkets.impl.TrinketInventoryImpl;
 import eu.pb4.trinkets.api.TrinketsApi;
-import eu.pb4.trinkets.api.TrinketsAttributeModifiersComponent;
+import eu.pb4.trinkets.api.component.TrinketsAttributeModifiersComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -43,14 +44,12 @@ import net.minecraft.world.item.component.TooltipDisplay;
  */
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
-
-
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;addAttributeTooltips(Ljava/util/function/Consumer;Lnet/minecraft/world/item/component/TooltipDisplay;Lnet/minecraft/world/entity/player/Player;)V", shift = Shift.BEFORE), method = "addDetailsToTooltip")
 	private void getTooltip(Item.TooltipContext context, TooltipDisplay displayComponent, Player player, TooltipFlag type, Consumer<Component> textConsumer, CallbackInfo ci) {
-		TrinketsApi.getTrinketComponent(player).ifPresent(comp -> {
+		TrinketsApi.getTrinketAttachment(player).ifPresent(comp -> {
 			ItemStack self = (ItemStack) (Object) this;
 
-            boolean showAttributeTooltip = displayComponent.shows(TrinketsAttributeModifiersComponent.TYPE);
+            boolean showAttributeTooltip = displayComponent.shows(TrinketDataComponents.ATTRIBUTE_MODIFIERS);
 			if (!showAttributeTooltip) {
 				// nothing to do
 				return;
@@ -63,16 +62,16 @@ public abstract class ItemStackMixin {
 			boolean allModifiersSame = true;
 			int slotCount = 0;
 
-			for (Map.Entry<String, Map<String, TrinketInventory>> group : comp.getInventory().entrySet()) {
+			for (var group : comp.getInventory().entrySet()) {
 				outer:
-				for (Map.Entry<String, TrinketInventory> inventory : group.getValue().entrySet()) {
-					TrinketInventory trinketInventory = inventory.getValue();
+				for (var inventory : group.getValue().entrySet()) {
+					var trinketInventory = inventory.getValue();
 					SlotType slotType = trinketInventory.getSlotType();
 					slotCount++;
 					boolean anywhereButHidden = false;
 					for (int i = 0; i < trinketInventory.getContainerSize(); i++) {
-						SlotReference ref = new SlotReference(trinketInventory, i);
-						boolean res = TrinketsApi.evaluatePredicateSet(slotType.getTooltipPredicates(), self, ref, player);
+						TrinketSlotAccess ref = new TrinketSlotAccess(trinketInventory, i);
+						boolean res = TrinketsApi.evaluatePredicateSet(slotType.tooltipPredicates(), self, ref, player);
 						boolean canInsert = TrinketSlot.canInsert(self, ref, player);
 						if (res && canInsert) {
 							boolean sameTranslationExists = false;

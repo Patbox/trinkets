@@ -72,7 +72,7 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 		for (int i = handler.trinkets$getTrinketSlotStart(); i < handler.trinkets$getTrinketSlotEnd(); i++) {
 			Slot slot = this.minecraft.player.inventoryMenu.slots.get(i);
 			if (slot instanceof SurvivalTrinketSlot ts) {
-				SlotGroup group = TrinketsApi.getPlayerSlots(this.minecraft.player).get(ts.getType().getGroup());
+				SlotGroup group = TrinketsApi.getPlayerSlots(this.minecraft.player).get(ts.getType().group());
 				Rect2i rect = trinkets$getGroupRect(group);
 				Point pos = trinkets$getHandler().trinkets$getGroupPos(group);
 				if (pos == null) {

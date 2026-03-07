@@ -2,13 +2,10 @@ package eu.pb4.trinkets.impl.client;
 
 import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.api.SlotType;
-import eu.pb4.trinkets.api.SlotReference;
-import eu.pb4.trinkets.api.TrinketInventory;
-import eu.pb4.trinkets.api.TrinketSaveData;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.api.callback.TrinketCallback;
+import eu.pb4.trinkets.impl.*;
 import eu.pb4.trinkets.api.TrinketsApi;
-import eu.pb4.trinkets.api.Trinket;
-import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
-import eu.pb4.trinkets.impl.TrinketsNetwork;
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -36,16 +33,16 @@ public class TrinketsClient implements ClientModInitializer {
 			Minecraft client = context.client();
 			Entity entity = client.level.getEntity(payload.entityId());
 			if (entity instanceof LivingEntity) {
-				TrinketsApi.getTrinketComponent((LivingEntity) entity).ifPresent(trinkets -> {
-					for (Map.Entry<String, TrinketSaveData.Metadata> entry : payload.inventoryUpdates().entrySet()) {
-						String[] split = entry.getKey().split("/");
+				TrinketsApi.getTrinketAttachment((LivingEntity) entity).map(x -> (LivingEntityTrinketComponent) x).ifPresent(trinkets -> {
+					for (var entry : payload.inventorySize().entrySet()) {
+						String[] split = entry.getKey().split("/", 2);
 						String group = split[0];
 						String slot = split[1];
-						Map<String, TrinketInventory> slots = trinkets.getInventory().get(group);
+						Map<String, TrinketInventoryImpl> slots = trinkets.getInventoryImpl().get(group);
 						if (slots != null) {
-							TrinketInventory inv = slots.get(slot);
+							TrinketInventoryImpl inv = slots.get(slot);
 							if (inv != null) {
-								inv.applySyncMetadata(entry.getValue());
+								inv.setSlotCount(entry.getValue());
 							}
 						}
 					}
@@ -60,9 +57,9 @@ public class TrinketsClient implements ClientModInitializer {
 						String group = split[0];
 						String slot = split[1];
 						int index = Integer.parseInt(split[2]);
-						Map<String, TrinketInventory> slots = trinkets.getInventory().get(group);
+						Map<String, TrinketInventoryImpl> slots = trinkets.getInventoryImpl().get(group);
 						if (slots != null) {
-							TrinketInventory inv = slots.get(slot);
+							TrinketInventoryImpl inv = slots.get(slot);
 							if (inv != null && index < inv.getContainerSize()) {
 								inv.setItem(index, entry.getValue());
 							}
@@ -95,14 +92,14 @@ public class TrinketsClient implements ClientModInitializer {
 			Minecraft client = context.client();
 			Entity e = client.level.getEntity(payload.entityId());
 			if (e instanceof LivingEntity entity) {
-				TrinketsApi.getTrinketComponent(entity).ifPresent(comp -> {
-					Map<String, TrinketInventory> groupMap = comp.getInventory().get(payload.group());
+				TrinketsApi.getTrinketAttachment(entity).ifPresent(comp -> {
+					var groupMap = comp.getInventory().get(payload.group());
 					if (groupMap != null) {
-						TrinketInventory inv = groupMap.get(payload.slot());
+						var inv = groupMap.get(payload.slot());
 						if (payload.index() < inv.getContainerSize()) {
 							ItemStack stack = inv.getItem(payload.index());
-							SlotReference ref = new SlotReference(inv, payload.index());
-							Trinket trinket = TrinketsApi.getTrinket(stack.getItem());
+							TrinketSlotAccess ref = new TrinketSlotAccess(inv, payload.index());
+							var trinket = TrinketCallback.getCallback(stack);
 							trinket.onBreak(stack, ref, entity);
 						}
 					}

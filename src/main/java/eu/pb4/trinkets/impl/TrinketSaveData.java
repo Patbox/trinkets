@@ -1,4 +1,4 @@
-package eu.pb4.trinkets.api;
+package eu.pb4.trinkets.impl;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -12,9 +12,11 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 
+
 public record TrinketSaveData(Map<String, Map<String, InventoryData>> data) {
     public static final Codec<TrinketSaveData> CODEC = Codec.unboundedMap(Codec.STRING, Codec.unboundedMap(Codec.STRING, InventoryData.CODEC)).xmap(TrinketSaveData::new, TrinketSaveData::data);
     public static final MapCodec<TrinketSaveData> MAP_CODEC = MapCodec.assumeMapUnsafe(CODEC);
+
     public record Metadata(List<AttributeModifier> persistentModifiers, List<AttributeModifier> cachedModifiers) {
         public static final Metadata EMPTY = new Metadata(List.of(), List.of());
         public static final Codec<Metadata> CODEC = RecordCodecBuilder.create(instance -> instance.group(

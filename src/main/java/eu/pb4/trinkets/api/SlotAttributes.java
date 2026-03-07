@@ -8,6 +8,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
+@Deprecated
 public class SlotAttributes {
 	private static final Map<String, Identifier> CACHED_IDS = Maps.newHashMap();
 	private static final Map<String, Holder<Attribute>> CACHED_ATTRIBUTES = Maps.newHashMap();
@@ -21,8 +22,8 @@ public class SlotAttributes {
 		map.put(CACHED_ATTRIBUTES.get(slot), new AttributeModifier(identifier, amount, operation));
 	}
 
-	public static Identifier getIdentifier(SlotReference ref) {
-		String key = ref.getId();
+	public static Identifier getIdentifier(TrinketSlotAccess ref) {
+		String key = ref.getSerializedName();
 		return CACHED_IDS.computeIfAbsent(key, Identifier::parse);
 	}
 

@@ -1,7 +1,7 @@
 package eu.pb4.trinkets.api.event;
 
-import eu.pb4.trinkets.api.SlotReference;
-import eu.pb4.trinkets.api.TrinketEnums.DropRule;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.api.TrinketDropRule;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,5 +16,5 @@ public interface TrinketDropCallback {
 		return rule;
 	});
 
-	DropRule drop(DropRule rule, ItemStack stack, SlotReference ref, LivingEntity entity);
+	TrinketDropRule drop(TrinketDropRule rule, ItemStack stack, TrinketSlotAccess ref, LivingEntity entity);
 }

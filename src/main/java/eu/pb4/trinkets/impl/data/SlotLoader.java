@@ -20,7 +20,7 @@ import com.google.gson.JsonSyntaxException;
 
 import eu.pb4.trinkets.impl.TrinketsMain;
 import eu.pb4.trinkets.api.SlotType;
-import eu.pb4.trinkets.api.TrinketEnums.DropRule;
+import eu.pb4.trinkets.api.TrinketDropRule;
 import eu.pb4.trinkets.impl.data.SlotLoader.GroupData;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.resources.Identifier;
@@ -133,7 +133,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 		private final Set<String> quickMovePredicates = new HashSet<>();
 		private final Set<String> validatorPredicates = new HashSet<>();
 		private final Set<String> tooltipPredicates = new HashSet<>();
-		private String dropRule = DropRule.DEFAULT.toString();
+		private String dropRule = TrinketDropRule.DEFAULT.toString();
 
 		SlotType create(String group, String name) {
 			Identifier finalIcon = icon == null || icon.isEmpty() ? null : Identifier.parse(icon);
@@ -153,7 +153,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 				amount = 1;
 			}
 			return new SlotType(group, name, order, amount, finalIcon, finalQuickMovePredicates, finalValidatorPredicates,
-				finalTooltipPredicates, DropRule.valueOf(dropRule));
+				finalTooltipPredicates, TrinketDropRule.valueOf(dropRule));
 		}
 
 		void read(JsonObject jsonObject) {
@@ -181,7 +181,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 
 			String jsonDropRule = GsonHelper.getAsString(jsonObject, "drop_rule", dropRule).toUpperCase();
 
-			if (DropRule.has(jsonDropRule)) {
+			if (TrinketDropRule.has(jsonDropRule)) {
 				dropRule = jsonDropRule;
 			}
 			JsonArray jsonValidatorPredicates = GsonHelper.getAsJsonArray(jsonObject, "validator_predicates", new JsonArray());

@@ -1,6 +1,5 @@
 package eu.pb4.trinkets.api;
 
-import eu.pb4.trinkets.api.TrinketEnums.DropRule;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -13,68 +12,9 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
-public class SlotType {
-
-	private final String group;
-	private final String name;
-	private final int order;
-	private final int amount;
-	@Nullable
-	private final Identifier icon;
-	private final Set<Identifier> quickMovePredicates;
-	private final Set<Identifier> validatorPredicates;
-	private final Set<Identifier> tooltipPredicates;
-	private final DropRule dropRule;
-
-	public SlotType(String group, String name, int order, int amount, @Nullable Identifier icon, Set<Identifier> quickMovePredicates,
-					Set<Identifier> validatorPredicates, Set<Identifier> tooltipPredicates, DropRule dropRule) {
-		this.group = group;
-		this.name = name;
-		this.order = order;
-		this.amount = amount;
-		this.icon = icon;
-		this.quickMovePredicates = quickMovePredicates;
-		this.validatorPredicates = validatorPredicates;
-		this.tooltipPredicates = tooltipPredicates;
-		this.dropRule = dropRule;
-	}
-
-	public String getGroup() {
-		return group;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public int getOrder() {
-		return order;
-	}
-
-	public int getAmount() {
-		return amount;
-	}
-
-	@Nullable
-	public Identifier getIcon() {
-		return icon;
-	}
-
-	public Set<Identifier> getQuickMovePredicates() {
-		return quickMovePredicates;
-	}
-
-	public Set<Identifier> getValidatorPredicates() {
-		return validatorPredicates;
-	}
-
-	public Set<Identifier> getTooltipPredicates() {
-		return tooltipPredicates;
-	}
-
-	public DropRule getDropRule() {
-		return dropRule;
-	}
+public record SlotType(String group, String name, int order, int amount, @Nullable Identifier icon,
+					   Set<Identifier> quickMovePredicates, Set<Identifier> validatorPredicates,
+					   Set<Identifier> tooltipPredicates, TrinketDropRule dropRule) {
 
 	public MutableComponent getTranslation() {
 		return Component.translatable("trinkets.slot." + this.group + "." + this.name);
@@ -145,10 +85,10 @@ public class SlotType {
 			}
 		}
 		String dropRuleName = slotData.getStringOr("DropRule", "");
-		DropRule dropRule = DropRule.DEFAULT;
+		TrinketDropRule dropRule = TrinketDropRule.DEFAULT;
 
-		if (TrinketEnums.DropRule.has(dropRuleName)) {
-			dropRule = TrinketEnums.DropRule.valueOf(dropRuleName);
+		if (TrinketDropRule.has(dropRuleName)) {
+			dropRule = TrinketDropRule.valueOf(dropRuleName);
 		}
 		return new SlotType(group, name, order, amount, icon, quickMovePredicates, validatorPredicates, tooltipPredicates, dropRule);
 	}

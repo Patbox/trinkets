@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+
+import eu.pb4.trinkets.impl.TrinketUtilities;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -16,7 +18,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import com.llamalad7.mixinextras.sugar.Local;
 import eu.pb4.trinkets.impl.TrinketSlotTarget;
-import eu.pb4.trinkets.api.TrinketComponent;
+import eu.pb4.trinkets.api.TrinketAttachment;
 import eu.pb4.trinkets.api.TrinketsApi;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import org.spongepowered.asm.mixin.Mixin;
@@ -35,9 +37,9 @@ public abstract class EnchantmentHelperMixin {
 
 	@Inject(at = @At("TAIL"), method = "runIterationOnEquipment(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentInSlotVisitor;)V")
 	private static void forEachTrinket(LivingEntity entity, EnchantmentHelper.EnchantmentInSlotVisitor contextAwareConsumer, CallbackInfo info) {
-		Optional<TrinketComponent> optional = TrinketsApi.getTrinketComponent(entity);
+		Optional<TrinketAttachment> optional = TrinketsApi.getTrinketAttachment(entity);
 		if (optional.isPresent()) {
-			TrinketComponent comp = optional.get();
+			TrinketAttachment comp = optional.get();
 			comp.forEach((ref, stack) -> {
 				if (!stack.isEmpty()) {
 					ItemEnchantments enchantments = stack.get(DataComponents.ENCHANTMENTS);
@@ -48,10 +50,7 @@ public abstract class EnchantmentHelperMixin {
 
 						for (Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
 							Holder<Enchantment> registryEntry = entry.getKey();
-							List<EquipmentSlotGroup> slots = registryEntry.value().definition().slots();
-							Set<String> trinketSlots = ((TrinketSlotTarget) (Object) registryEntry.value().definition()).trinkets$slots();
-
-							if (slots.contains(EquipmentSlotGroup.ANY) || slots.contains(EquipmentSlotGroup.ARMOR) || trinketSlots.contains(ref.inventory().getSlotType().getId())) {
+							if (TrinketUtilities.isEnchantmentTrinketCompatible(registryEntry, ref)) {
 								contextAwareConsumer.accept(registryEntry, entry.getIntValue(), context);
 							}
 						}
@@ -63,9 +62,9 @@ public abstract class EnchantmentHelperMixin {
 
 	@Inject(at = @At(value = "INVOKE", target = "Ljava/util/List;iterator()Ljava/util/Iterator;", ordinal = 0), method = "getRandomItemWith")
 	private static void addTrinketsAsChoices(DataComponentType<?> componentType, LivingEntity entity, Predicate<ItemStack> stackPredicate, CallbackInfoReturnable<Optional<EnchantedItemInUse>> info, @Local List<EnchantedItemInUse> list) {
-		Optional<TrinketComponent> optional = TrinketsApi.getTrinketComponent(entity);
+		Optional<TrinketAttachment> optional = TrinketsApi.getTrinketAttachment(entity);
 		if (optional.isPresent()) {
-			TrinketComponent comp = optional.get();
+			TrinketAttachment comp = optional.get();
 			comp.forEach((ref, stack) -> {
 				if (stackPredicate.test(stack)) {
 					ItemEnchantments enchantments = stack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);

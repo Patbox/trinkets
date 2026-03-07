@@ -1,7 +1,6 @@
 package eu.pb4.trinkets.api.event;
 
-import eu.pb4.trinkets.api.SlotReference;
-import eu.pb4.trinkets.api.Trinket;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,5 +21,5 @@ public interface TrinketUnequipCallback {
 	 * @param slot The slot the stack was unequipped from
 	 * @param entity The entity that unequipped the stack
 	 */
-	void onUnequip(ItemStack stack, SlotReference slot, LivingEntity entity);
+	void onUnequip(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity);
 }

@@ -5,12 +5,25 @@ import static com.mojang.brigadier.arguments.StringArgumentType.string;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
+import com.google.common.collect.Multimap;
 import eu.pb4.trinkets.api.*;
+import eu.pb4.trinkets.api.callback.TrinketCallback;
+import eu.pb4.trinkets.api.component.TrinketDataComponents;
 import eu.pb4.trinkets.impl.payload.BreakPayload;
 import eu.pb4.trinkets.impl.payload.SyncInventoryPayload;
 import eu.pb4.trinkets.impl.payload.SyncSlotsPayload;
-import net.fabricmc.fabric.api.event.player.UseItemCallback;
+import net.fabricmc.fabric.api.event.player.ItemEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.util.TriState;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -54,17 +67,22 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 		resourceManagerHelper.registerReloadListener(EntitySlotLoader.SERVER);
 		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, serverResourceManager, success)
 				-> EntitySlotLoader.SERVER.sync(server.getPlayerList().getPlayers()));
-		UseItemCallback.EVENT.register((player, world, hand) -> {
+
+		ItemEvents.USE.register((Level level, Player player, InteractionHand hand) -> {
 			ItemStack stack = player.getItemInHand(hand);
-			Trinket trinket = TrinketsApi.getTrinket(stack.getItem());
+			var trinket = TrinketCallback.getCallback(stack);
 			if (trinket.canEquipFromUse(stack, player)) {
-				if (TrinketItem.equipItem(player, stack)) {
-					return InteractionResult.SUCCESS;
+				var res = TrinketUtilities.swapWithEquipmentSlot(stack, player);
+				if (res != InteractionResult.PASS) {
+					return res;
 				}
 			}
-			return InteractionResult.PASS;
+			return null;
 		});
-		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, "attribute_modifiers"), TrinketsAttributeModifiersComponent.TYPE);
+
+		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, "attribute_modifiers"), TrinketDataComponents.ATTRIBUTE_MODIFIERS);
+		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, "equipment"), TrinketDataComponents.EQUIPMENT);
+
 		PayloadTypeRegistry.clientboundPlay().register(TrinketsNetwork.BREAK, BreakPayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(TrinketsNetwork.SYNC_INVENTORY, SyncInventoryPayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(TrinketsNetwork.SYNC_SLOTS, SyncSlotsPayload.CODEC);
@@ -114,14 +132,58 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 					})
 				)
 			));
+
+
+		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "all"), (stack, ref, entity) -> TriState.TRUE);
+		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "none"), (stack, ref, entity) -> TriState.FALSE);
+		TagKey<Item> trinketsAll = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("trinkets", "all"));
+
+		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "default"), (stack, ref, entity) -> {
+			SlotType slot = ref.inventory().getSlotType();
+			TagKey<Item> tag = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("trinkets", slot.getId()));
+			var component = stack.get(TrinketDataComponents.EQUIPMENT);
+
+			if (stack.is(tag) || stack.is(trinketsAll) || component != null && component.slot().contains(slot.getId())) {
+				return TriState.TRUE;
+			}
+			return TriState.DEFAULT;
+		});
+
+		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "tag"), (stack, ref, entity) -> {
+			SlotType slot = ref.inventory().getSlotType();
+			TagKey<Item> tag = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("trinkets", slot.getId()));
+
+			if (stack.is(tag) || stack.is(trinketsAll)) {
+				return TriState.TRUE;
+			}
+			return TriState.DEFAULT;
+		});
+
+		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "component"), (stack, ref, entity) -> {
+			SlotType slot = ref.inventory().getSlotType();
+			var component = stack.get(TrinketDataComponents.EQUIPMENT);
+
+			if (component != null && component.slot().contains(slot.getId())) {
+				return TriState.TRUE;
+			}
+			return TriState.DEFAULT;
+		});
+
+		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "relevant"), (stack, ref, entity) -> {
+			Multimap<Holder<Attribute>, AttributeModifier> map = TrinketModifiers.get(stack, ref, entity);
+			if (!map.isEmpty()) {
+				return TriState.TRUE;
+			}
+			return TriState.DEFAULT;
+		});
 	}
 
 	private static int clearCommand(CommandContext<CommandSourceStack> context){
 		ServerPlayer player = context.getSource().getPlayer();
 		if (player != null) {
-			TrinketComponent comp = TrinketsApi.getTrinketComponent(player).get();
-			for (Map.Entry<String, Map<String, TrinketInventory>> entry : comp.getInventory().entrySet()){
-				for (TrinketInventory inv : entry.getValue().values()){
+			TrinketAttachment comp = TrinketsApi.getTrinketAttachment(player).get();
+			for (var entry : comp.getInventory().entrySet()){
+				for (var inv : entry.getValue().values()){
 					inv.clearContent();
 				}
 			}
@@ -137,12 +199,12 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 			ItemInput stack = context.getArgument("stack", ItemInput.class);
 			ServerPlayer player = context.getSource().getPlayer();
 			if (player != null) {
-				TrinketComponent comp = TrinketsApi.getTrinketComponent(player).get();
+				TrinketAttachment comp = TrinketsApi.getTrinketAttachment(player).get();
 				SlotGroup slotGroup = comp.getGroups().getOrDefault(group, null);
 				if (slotGroup != null) {
 					SlotType slotType = slotGroup.getSlots().getOrDefault(slot, null);
 					if (slotType != null) {
-						if (offset >= 0 && offset < slotType.getAmount()) {
+						if (offset >= 0 && offset < slotType.amount()) {
 							comp.getInventory().get(group).get(slot).setItem(offset, stack.createItemStack(amount));
 							return Command.SINGLE_SUCCESS;
 						} else {
@@ -163,7 +225,7 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 
 	@Override
 	public void registerEntityComponentFactories(EntityComponentFactoryRegistry registry) {
-		registry.registerFor(LivingEntity.class, TrinketsApi.TRINKET_COMPONENT, LivingEntityTrinketComponent::new);
-		registry.registerForPlayers(TrinketsApi.TRINKET_COMPONENT, LivingEntityTrinketComponent::new, RespawnCopyStrategy.ALWAYS_COPY);
+		registry.registerFor(LivingEntity.class, LivingEntityTrinketComponent.TRINKET_COMPONENT, LivingEntityTrinketComponent::new);
+		registry.registerForPlayers(LivingEntityTrinketComponent.TRINKET_COMPONENT, LivingEntityTrinketComponent::new, RespawnCopyStrategy.ALWAYS_COPY);
 	}
 }

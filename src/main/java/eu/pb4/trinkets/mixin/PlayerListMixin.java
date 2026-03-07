@@ -3,8 +3,8 @@ package eu.pb4.trinkets.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
-import eu.pb4.trinkets.api.TrinketInventory;
-import eu.pb4.trinkets.api.TrinketSaveData;
+import eu.pb4.trinkets.impl.TrinketInventoryImpl;
+import eu.pb4.trinkets.impl.TrinketSaveData;
 import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
 
@@ -48,12 +48,12 @@ public abstract class PlayerListMixin {
 	@Unique
 	private void syncSlots(ServerPlayer player) {
 		((TrinketPlayerScreenHandler) player.inventoryMenu).trinkets$updateTrinketSlots(false);
-		TrinketsApi.getTrinketComponent(player).ifPresent(trinkets -> {
-			Map<String, TrinketSaveData.Metadata> tag = new HashMap<>();
-			Set<TrinketInventory> inventoriesToSend = trinkets.getTrackingUpdates();
+		TrinketsApi.getTrinketAttachment(player).ifPresent(trinkets -> {
+			Map<String, Integer> tag = new HashMap<>();
+			var inventoriesToSend = trinkets.getTrackingUpdates();
 
-			for (TrinketInventory trinketInventory : inventoriesToSend) {
-				tag.put(trinketInventory.getSlotType().getId(), trinketInventory.getSyncMetadata());
+			for (var trinketInventory : inventoriesToSend) {
+				tag.put(trinketInventory.getSlotType().getId(), trinketInventory.getContainerSize());
 			}
 			ServerPlayNetworking.send(player, new SyncInventoryPayload(player.getId(), Map.of(), tag));
 			inventoriesToSend.clear();
