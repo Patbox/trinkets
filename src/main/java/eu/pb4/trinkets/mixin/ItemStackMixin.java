@@ -9,9 +9,7 @@ import eu.pb4.trinkets.impl.TrinketSlot;
 import eu.pb4.trinkets.api.SlotAttributes;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.SlotType;
-import eu.pb4.trinkets.impl.TrinketInventoryImpl;
 import eu.pb4.trinkets.api.TrinketsApi;
-import eu.pb4.trinkets.api.component.TrinketsAttributeModifiersComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -66,7 +64,7 @@ public abstract class ItemStackMixin {
 				outer:
 				for (var inventory : group.getValue().entrySet()) {
 					var trinketInventory = inventory.getValue();
-					SlotType slotType = trinketInventory.getSlotType();
+					SlotType slotType = trinketInventory.slotType();
 					slotCount++;
 					boolean anywhereButHidden = false;
 					for (int i = 0; i < trinketInventory.getContainerSize(); i++) {

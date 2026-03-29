@@ -1,17 +1,16 @@
 package eu.pb4.trinkets.api;
 
-import eu.pb4.trinkets.impl.TrinketInventoryImpl;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.item.ItemStack;
 
 public record TrinketSlotAccess(TrinketInventory inventory, int index) implements SlotAccess, StringRepresentable {
     public String getSerializedName() {
-        return this.inventory.getSlotType().getId() + "/" + index;
+        return this.inventory.slotType().getId() + "/" + index;
     }
 
     public SlotType slotType() {
-        return this.inventory.getSlotType();
+        return this.inventory.slotType();
     }
 
     @Override

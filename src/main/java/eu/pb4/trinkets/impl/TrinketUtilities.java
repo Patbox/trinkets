@@ -60,7 +60,7 @@ public class TrinketUtilities {
         List<EquipmentSlotGroup> slots = registryEntry.value().definition().slots();
         Set<String> trinketSlots = ((TrinketSlotTarget) (Object) registryEntry.value().definition()).trinkets$slots();
 
-        return slots.contains(EquipmentSlotGroup.ANY) || slots.contains(EquipmentSlotGroup.ARMOR) || trinketSlots.contains(ref.inventory().getSlotType().getId());
+        return slots.contains(EquipmentSlotGroup.ANY) || slots.contains(EquipmentSlotGroup.ARMOR) || trinketSlots.contains(ref.inventory().slotType().getId());
     }
 
     public static void runIterationOnItem(ItemStack piece, TrinketSlotAccess slot, LivingEntity owner, EnchantmentHelper.EnchantmentInSlotVisitor consumer) {
@@ -155,7 +155,7 @@ public class TrinketUtilities {
                 continue;
             }
 
-            if (ent.containsKey(split[0]) && ent.get(split[0]).getSlots().containsKey(split[1])) {
+            if (ent.containsKey(split[0]) && ent.get(split[0]).slots().containsKey(split[1])) {
                 return true;
             }
         }

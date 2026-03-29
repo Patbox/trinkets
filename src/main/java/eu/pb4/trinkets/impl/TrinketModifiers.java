@@ -31,7 +31,7 @@ public class TrinketModifiers {
 		Multimap<Holder<Attribute>, AttributeModifier> map = trinket.getModifiers(stack, slot, entity, slotIdentifier);
 		if (stack.has(TrinketDataComponents.ATTRIBUTE_MODIFIERS)) {
 			for (TrinketsAttributeModifiersComponent. Entry entry : stack.getOrDefault(TrinketDataComponents.ATTRIBUTE_MODIFIERS, TrinketsAttributeModifiersComponent.DEFAULT).modifiers()) {
-				if (entry.slot().isEmpty() || entry.slot().get().equals(slot.inventory().getSlotType().getId())) {
+				if (entry.slot().isEmpty() || entry.slot().get().equals(slot.inventory().slotType().getId())) {
 					map.put(entry.attribute(), entry.modifier());
 				}
 			}

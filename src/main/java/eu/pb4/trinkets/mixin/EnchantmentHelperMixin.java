@@ -75,7 +75,7 @@ public abstract class EnchantmentHelperMixin {
 
 						if (registryEntry.value().effects().has(componentType)
 								&& (slots.contains(EquipmentSlotGroup.ANY) || slots.contains(EquipmentSlotGroup.ARMOR)
-								|| trinketSlots.contains(ref.inventory().getSlotType().getId()))
+								|| trinketSlots.contains(ref.inventory().slotType().getId()))
 						) {
 							list.add(new EnchantedItemInUse(stack, null, entity, (item) -> {
 								TrinketsApi.onTrinketBroken(stack, ref, entity);

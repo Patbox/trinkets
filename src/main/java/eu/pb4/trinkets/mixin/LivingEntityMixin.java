@@ -4,7 +4,10 @@ import eu.pb4.trinkets.api.*;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.event.TrinketDropCallback;
 import eu.pb4.trinkets.api.event.TrinketEquipmentChangedCallback;
-import eu.pb4.trinkets.impl.*;
+import eu.pb4.trinkets.impl.LivingEntityTrinketComponent;
+import eu.pb4.trinkets.impl.TrinketInventoryImpl;
+import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
+import eu.pb4.trinkets.impl.TrinketUtilities;
 import eu.pb4.trinkets.impl.payload.SyncInventoryPayload;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -83,7 +86,7 @@ public abstract class LivingEntityMixin extends Entity {
             var inventory = ref.inventory();
 
             if (dropRule == TrinketDropRule.DEFAULT) {
-                dropRule = inventory.getSlotType().dropRule();
+                dropRule = inventory.slotType().dropRule();
             }
 
             if (dropRule == TrinketDropRule.DEFAULT) {
@@ -122,10 +125,15 @@ public abstract class LivingEntityMixin extends Entity {
     }
 
     @Unique
-    private void stopTrinketLocationBasedEffects(final ItemStack previous, final TrinketSlotAccess inSlot, final AttributeMap attributes) {
+    private void stopTrinketLocationBasedEffects(LivingEntityTrinketComponent trinkets, final ItemStack previous, final TrinketSlotAccess inSlot, final AttributeMap attributes) {
         LivingEntity entity = (LivingEntity) (Object) this;
 
         TrinketUtilities.forEachModifier(entity, previous, inSlot, (attribute, modifier) -> {
+            if (attribute.value() instanceof SlotAttributes.SlotEntityAttribute x) {
+                trinkets.removeModifiers(x.slot, List.of(modifier));
+                return;
+            }
+
             AttributeInstance instance = attributes.getInstance(attribute);
             if (instance != null) {
                 instance.removeModifier(modifier);
@@ -144,7 +152,7 @@ public abstract class LivingEntityMixin extends Entity {
         var trinkets = (LivingEntityTrinketComponent) optional.get();
 
         List<TrinketSlotAccess> changedItems = new ArrayList<>();
-        Set<TrinketInventoryImpl> inventoriesToSend = trinkets.getTrackingUpdates();
+        //noinspection unchecked
 
         trinkets.forEach((ref, stack) -> {
             ItemStack previous = getOldStack(ref);
@@ -152,7 +160,7 @@ public abstract class LivingEntityMixin extends Entity {
 
             if (this.equipmentHasChanged(previous, newStack)) {
                 if (!previous.isEmpty()) {
-                    this.stopTrinketLocationBasedEffects(previous, ref, attributes);
+                    this.stopTrinketLocationBasedEffects(trinkets, previous, ref, attributes);
                 }
                 changedItems.add(ref);
 
@@ -165,10 +173,16 @@ public abstract class LivingEntityMixin extends Entity {
             this.lastEquippedTrinkets.put(slot.getSerializedName(), current.copy());
             if (!current.isEmpty() && !current.isBroken()) {
                 TrinketUtilities.forEachModifier(entity, current, slot, (attribute, modifier) -> {
+                    if (attribute.value() instanceof SlotAttributes.SlotEntityAttribute x) {
+                        trinkets.addModifiers(x.slot, List.of(modifier));
+                        return;
+                    }
+
                     AttributeInstance instance = attributes.getInstance(attribute);
                     if (instance != null) {
                         instance.removeModifier(modifier.id());
                         instance.addTransientModifier(modifier);
+
                     }
 
                 });
@@ -178,6 +192,7 @@ public abstract class LivingEntityMixin extends Entity {
                 }
             }
         }
+        Set<TrinketInventoryImpl> inventoriesToSend = trinkets.getContainerSizeChanged();
 
         if (!changedItems.isEmpty() || !inventoriesToSend.isEmpty()) {
             Map<String, Integer> map = new HashMap<>();
@@ -188,7 +203,7 @@ public abstract class LivingEntityMixin extends Entity {
             }
 
             for (TrinketInventoryImpl trinketInventory : inventoriesToSend) {
-                map.put(trinketInventory.getSlotType().getId(), trinketInventory.getContainerSize());
+                map.put(trinketInventory.slotType().getId(), trinketInventory.getContainerSize());
             }
             SyncInventoryPayload packet = new SyncInventoryPayload(this.getId(), items, map);
 
@@ -196,12 +211,9 @@ public abstract class LivingEntityMixin extends Entity {
                 ServerPlayNetworking.send(player, packet);
             }
 
-            if (entity instanceof ServerPlayer serverPlayer) {
-                ServerPlayNetworking.send(serverPlayer, packet);
-
-                if (!inventoriesToSend.isEmpty()) {
-                    ((TrinketPlayerScreenHandler) serverPlayer.inventoryMenu).trinkets$updateTrinketSlots(false);
-                }
+            if (entity instanceof ServerPlayer serverPlayer && !map.isEmpty()) {
+                ServerPlayNetworking.send(serverPlayer, new SyncInventoryPayload(this.getId(), Map.of(), map));
+                ((TrinketPlayerScreenHandler) serverPlayer.inventoryMenu).trinkets$updateTrinketSlots(false);
             }
 
             inventoriesToSend.clear();

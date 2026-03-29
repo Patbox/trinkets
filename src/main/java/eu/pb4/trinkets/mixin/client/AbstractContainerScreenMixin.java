@@ -4,11 +4,7 @@ package eu.pb4.trinkets.mixin.client;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import eu.pb4.trinkets.impl.client.CreativeTrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
-import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -22,8 +18,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.SlotWrapper;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.Slot;
 
 /**
@@ -66,10 +60,10 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 				}
 			} else {
 				if (slot instanceof SlotWrapper cs) {
-					if (((CreativeSlotAccessor) cs).getSlot().index != TrinketsClient.activeGroup.getSlotId()) {
+					if (((CreativeSlotAccessor) cs).getSlot().index != TrinketsClient.activeGroup.slotId()) {
 						info.setReturnValue(false);
 					}
-				} else if (slot.index != TrinketsClient.activeGroup.getSlotId()) {
+				} else if (slot.index != TrinketsClient.activeGroup.slotId()) {
 					info.setReturnValue(false);
 				}
 			}

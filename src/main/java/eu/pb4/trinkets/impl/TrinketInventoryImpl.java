@@ -13,7 +13,6 @@ import eu.pb4.trinkets.api.TrinketsApi;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -28,23 +27,25 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 	private final Set<AttributeModifier> persistentModifiers = new HashSet<>();
 	private final Set<AttributeModifier> cachedModifiers = new HashSet<>();
 	private final Multimap<AttributeModifier.Operation, AttributeModifier> modifiersByOperation = HashMultimap.create();
-	private final Consumer<TrinketInventoryImpl> updateCallback;
+	private final Consumer<TrinketInventoryImpl> updateSizeCallback;
+	private final Consumer<TrinketInventoryImpl> markDirty;
 
 	private NonNullList<ItemStack> stacks;
 	private int size;
 	private boolean update = false;
 	private int forcedSlotCount = -1;
 
-	public TrinketInventoryImpl(SlotType slotType, TrinketAttachment comp, Consumer<TrinketInventoryImpl> updateCallback) {
+	public TrinketInventoryImpl(SlotType slotType, TrinketAttachment comp, Consumer<TrinketInventoryImpl> markDirty,  Consumer<TrinketInventoryImpl> updateSizeCallback) {
 		this.component = comp;
 		this.slotType = slotType;
 		this.baseSize = slotType.amount();
 		this.stacks = NonNullList.withSize(this.baseSize, ItemStack.EMPTY);
 		this.size = this.baseSize;
-		this.updateCallback = updateCallback;
+		this.updateSizeCallback = updateSizeCallback;
+		this.markDirty = markDirty;
 	}
 
-	public SlotType getSlotType() {
+	public SlotType slotType() {
 		return this.slotType;
 	}
 
@@ -99,12 +100,12 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 
 	@Override
 	public void setChanged() {
-		// NO-OP
+		this.markDirty.accept(this);
 	}
 
 	public void markUpdate() {
 		this.update = true;
-		this.updateCallback.accept(this);
+		this.markDirty.accept(this);
 	}
 
 	@Override
@@ -126,7 +127,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 		this.markUpdate();
 	}
 
-	public void addPersistentModifier(AttributeModifier modifier) {
+	public void addModifiers(AttributeModifier modifier) {
 		this.addModifier(modifier);
 		this.persistentModifiers.add(modifier);
 	}
@@ -190,7 +191,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 
 			LivingEntity entity = this.component.getEntity();
 
-			if (this.size != this.getContainerSize()) {
+			if (this.size != this.stacks.size()) {
 				NonNullList<ItemStack> newStacks = NonNullList.withSize(this.size, ItemStack.EMPTY);
 				for (int i = 0; i < this.stacks.size(); i++) {
 					ItemStack stack = this.stacks.get(i);
@@ -204,6 +205,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 				}
 
 				this.stacks = newStacks;
+				this.updateSizeCallback.accept(this);
 			}
 		}
 	}
@@ -219,8 +221,9 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 		this.persistentModifiers.clear();
 		other.modifiers.forEach((uuid, modifier) -> this.addModifier(modifier));
 		for (AttributeModifier persistentModifier : other.persistentModifiers) {
-			this.addPersistentModifier(persistentModifier);
+			this.addModifiers(persistentModifier);
 		}
+		this.update = true;
 		this.update();
 	}
 
@@ -258,7 +261,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 	}
 
 	public void fromMetadata(TrinketSaveData.Metadata tag) {
-		tag.persistentModifiers().forEach(this::addPersistentModifier);
+		tag.persistentModifiers().forEach(this::addModifiers);
 
 		if (!tag.cachedModifiers().isEmpty()) {
 			for (AttributeModifier modifier : tag.cachedModifiers()) {

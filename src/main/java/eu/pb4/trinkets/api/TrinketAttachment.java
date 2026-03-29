@@ -6,12 +6,13 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
-import eu.pb4.trinkets.impl.TrinketInventoryImpl;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.NonExtendable
 public interface TrinketAttachment {
 
 	LivingEntity getEntity();
@@ -63,6 +64,4 @@ public interface TrinketAttachment {
 	 * Iterates over every slot available to the entity
 	 */
 	void forEach(BiConsumer<TrinketSlotAccess, ItemStack> consumer);
-
-	Set<TrinketInventory> getTrackingUpdates();
 }

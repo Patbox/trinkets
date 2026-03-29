@@ -8,7 +8,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
-@Deprecated
+@Deprecated(forRemoval = true)
 public class SlotAttributes {
 	private static final Map<String, Identifier> CACHED_IDS = Maps.newHashMap();
 	private static final Map<String, Holder<Attribute>> CACHED_ATTRIBUTES = Maps.newHashMap();

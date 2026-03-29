@@ -1,14 +1,10 @@
 package eu.pb4.trinkets.mixin;
 
 import com.google.common.collect.ImmutableList;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import eu.pb4.trinkets.impl.LivingEntityTrinketComponent;
+import eu.pb4.trinkets.api.*;
+import eu.pb4.trinkets.impl.*;
+import eu.pb4.trinkets.impl.client.TrinketsClient;
+import eu.pb4.trinkets.mixin.client.accessor.ScreenHandlerAccessor;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -27,17 +23,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import eu.pb4.trinkets.impl.Point;
-import eu.pb4.trinkets.impl.SurvivalTrinketSlot;
-import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
-import eu.pb4.trinkets.impl.client.TrinketsClient;
-import eu.pb4.trinkets.api.SlotGroup;
-import eu.pb4.trinkets.api.TrinketSlotAccess;
-import eu.pb4.trinkets.api.SlotType;
-import eu.pb4.trinkets.api.TrinketAttachment;
-import eu.pb4.trinkets.impl.TrinketInventoryImpl;
-import eu.pb4.trinkets.api.TrinketsApi;
-import eu.pb4.trinkets.mixin.client.accessor.ScreenHandlerAccessor;
+import java.util.*;
 
 /**
  * Adds trinket slots to the player's screen handler
@@ -79,7 +65,7 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
     }
 
     @Override
-    public void trinkets$updateTrinketSlots(boolean slotsChanged) {
+    public void  trinkets$updateTrinketSlots(boolean slotsChanged) {
         var opt = TrinketsApi.getTrinketAttachment(owner);
         if (opt.isEmpty()) return;
         var trinkets = (LivingEntityTrinketComponent) opt.get();
@@ -98,11 +84,11 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
 
         int groupNum = 1; // Start at 1 because offhand exists
 
-        for (SlotGroup group : groups.values().stream().sorted(Comparator.comparing(SlotGroup::getOrder)).toList()) {
+        for (SlotGroup group : groups.values().stream().sorted(Comparator.comparing(SlotGroup::order).thenComparing(SlotGroup::name)).toList()) {
             if (!hasSlots(trinkets, group)) {
                 continue;
             }
-            int id = group.getSlotId();
+            int id = group.slotId();
             if (id != -1) {
                 if (this.slots.size() > id) {
                     Slot slot = this.slots.get(id);
@@ -135,7 +121,7 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
             SlotGroup group = groups.get(groupId);
             int groupOffset = 1;
 
-            if (group.getSlotId() != -1) {
+            if (group.slotId() != -1) {
                 groupOffset++;
             }
             int width = 0;
@@ -143,8 +129,10 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
             if (pos == null) {
                 continue;
             }
-            for (var slot : entry.getValue().entrySet().stream().sorted((a, b) ->
-                    Integer.compare(a.getValue().getSlotType().order(), b.getValue().getSlotType().order())).toList()) {
+            for (var slot : entry.getValue().entrySet().stream().sorted(
+                    Map.Entry.comparingByValue(Comparator.<TrinketInventoryImpl>comparingInt(x -> x.slotType().order())
+                            .thenComparing(x -> x.slotType().getId()))
+            ).toList()) {
                 var stacks = slot.getValue();
                 if (stacks.getContainerSize() == 0) {
                     continue;
@@ -152,10 +140,10 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
                 int slotOffset = 1;
                 int x = (int) ((groupOffset / 2) * 18 * Math.pow(-1, groupOffset));
                 slotHeights.computeIfAbsent(group, (k) -> new ArrayList<>()).add(new Point(x, stacks.getContainerSize()));
-                slotTypes.computeIfAbsent(group, (k) -> new ArrayList<>()).add(stacks.getSlotType());
+                slotTypes.computeIfAbsent(group, (k) -> new ArrayList<>()).add(stacks.slotType());
                 for (int i = 0; i < stacks.getContainerSize(); i++) {
                     int y = (int) (pos.y() + (slotOffset / 2) * 18 * Math.pow(-1, slotOffset));
-                    this.addSlot(new SurvivalTrinketSlot(stacks, i, x + pos.x(), y, group, stacks.getSlotType(), i, groupOffset == 1 && i == 0, this.owner));
+                    this.addSlot(new SurvivalTrinketSlot(stacks, i, x + pos.x(), y, group, stacks.slotType(), i, groupOffset == 1 && i == 0, this.owner));
                     slotOffset++;
                 }
                 groupOffset++;
@@ -169,7 +157,7 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
 
     @Unique
     private boolean hasSlots(TrinketAttachment comp, SlotGroup group) {
-        for (var inv : comp.getInventory().get(group.getName()).values()) {
+        for (var inv : comp.getInventory().get(group.name()).values()) {
             if (inv.getContainerSize() > 0) {
                 return true;
             }

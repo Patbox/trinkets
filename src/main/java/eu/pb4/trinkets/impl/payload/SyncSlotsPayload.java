@@ -1,5 +1,6 @@
 package eu.pb4.trinkets.impl.payload;
 
+import eu.pb4.trinkets.impl.SlotGroupImpl;
 import eu.pb4.trinkets.impl.TrinketsNetwork;
 import eu.pb4.trinkets.api.SlotGroup;
 import java.util.HashMap;
@@ -16,9 +17,9 @@ public record SyncSlotsPayload(Map<EntityType<?>, Map<String, SlotGroup>> map) i
 	public static final StreamCodec<RegistryFriendlyByteBuf, SyncSlotsPayload> CODEC = ByteBufCodecs.map(
 			(x) -> (Map<EntityType<?>, Map<String, SlotGroup>>) new HashMap<EntityType<?>, Map<String, SlotGroup>>(x),
 			ByteBufCodecs.registry(Registries.ENTITY_TYPE),
-			ByteBufCodecs.map(HashMap::new, ByteBufCodecs.STRING_UTF8, ByteBufCodecs.COMPOUND_TAG.map(SlotGroup::read, (x) -> {
+			ByteBufCodecs.map(HashMap::new, ByteBufCodecs.STRING_UTF8, ByteBufCodecs.COMPOUND_TAG.map(SlotGroupImpl::read, (x) -> {
 				CompoundTag nbt = new CompoundTag();
-				x.write(nbt);
+				((SlotGroupImpl) x).write(nbt);
 				return nbt;
 			}))
 			).map(SyncSlotsPayload::new, SyncSlotsPayload::map);

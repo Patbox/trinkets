@@ -6,5 +6,5 @@ import org.jetbrains.annotations.ApiStatus;
 @ApiStatus.NonExtendable
 public interface TrinketInventory extends Container {
     void copyFrom(TrinketInventory value);
-    SlotType getSlotType();
+    SlotType slotType();
 }

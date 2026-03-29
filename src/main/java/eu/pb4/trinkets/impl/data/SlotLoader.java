@@ -18,6 +18,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
+import eu.pb4.trinkets.impl.SlotTypeImpl;
 import eu.pb4.trinkets.impl.TrinketsMain;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketDropRule;
@@ -152,7 +153,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 			if (amount == -1) {
 				amount = 1;
 			}
-			return new SlotType(group, name, order, amount, finalIcon, finalQuickMovePredicates, finalValidatorPredicates,
+			return new SlotTypeImpl(group, name, order, amount, finalIcon, finalQuickMovePredicates, finalValidatorPredicates,
 				finalTooltipPredicates, TrinketDropRule.valueOf(dropRule));
 		}
 

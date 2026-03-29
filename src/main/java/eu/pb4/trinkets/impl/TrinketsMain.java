@@ -53,8 +53,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Map;
-
 public class TrinketsMain implements ModInitializer, EntityComponentInitializer {
 
 	public static final String MOD_ID = "trinkets";
@@ -139,7 +137,7 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 		TagKey<Item> trinketsAll = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("trinkets", "all"));
 
 		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "default"), (stack, ref, entity) -> {
-			SlotType slot = ref.inventory().getSlotType();
+			SlotType slot = ref.inventory().slotType();
 			TagKey<Item> tag = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("trinkets", slot.getId()));
 			var component = stack.get(TrinketDataComponents.EQUIPMENT);
 
@@ -150,7 +148,7 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 		});
 
 		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "tag"), (stack, ref, entity) -> {
-			SlotType slot = ref.inventory().getSlotType();
+			SlotType slot = ref.inventory().slotType();
 			TagKey<Item> tag = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("trinkets", slot.getId()));
 
 			if (stack.is(tag) || stack.is(trinketsAll)) {
@@ -160,7 +158,7 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 		});
 
 		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "component"), (stack, ref, entity) -> {
-			SlotType slot = ref.inventory().getSlotType();
+			SlotType slot = ref.inventory().slotType();
 			var component = stack.get(TrinketDataComponents.EQUIPMENT);
 
 			if (component != null && component.slot().contains(slot.getId())) {
@@ -202,7 +200,7 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 				TrinketAttachment comp = TrinketsApi.getTrinketAttachment(player).get();
 				SlotGroup slotGroup = comp.getGroups().getOrDefault(group, null);
 				if (slotGroup != null) {
-					SlotType slotType = slotGroup.getSlots().getOrDefault(slot, null);
+					SlotType slotType = slotGroup.slots().getOrDefault(slot, null);
 					if (slotType != null) {
 						if (offset >= 0 && offset < slotType.amount()) {
 							comp.getInventory().get(group).get(slot).setItem(offset, stack.createItemStack(amount));
