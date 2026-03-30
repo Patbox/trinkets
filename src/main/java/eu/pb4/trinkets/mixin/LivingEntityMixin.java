@@ -158,25 +158,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
         }
     }
 
-    @Unique
-    private void stopTrinketLocationBasedEffects(LivingEntityTrinketAttachment trinkets, final ItemStack previous, final TrinketSlotAccess inSlot, final AttributeMap attributes) {
-        LivingEntity entity = (LivingEntity) (Object) this;
-
-        TrinketUtilities.forEachModifier(entity, previous, inSlot, (attribute, modifier) -> {
-            if (attribute.value() instanceof SlotAttributes.SlotModifyingAttribute x) {
-                trinkets.removeModifiers(x.slot, List.of(modifier));
-                return;
-            }
-
-            AttributeInstance instance = attributes.getInstance(attribute);
-            if (instance != null) {
-                instance.removeModifier(modifier);
-            }
-        });
-
-        TrinketUtilities.runIterationOnItem(previous, inSlot, entity, (enchantment, level, item) -> enchantment.value().stopLocationBasedEffects(level, item, entity));
-    }
-
     @Inject(method = "detectEquipmentUpdates", at = @At("TAIL"))
     private void handleEquipmentUpdates(CallbackInfo ci) {
         LivingEntity entity = (LivingEntity) (Object) this;
@@ -192,7 +173,10 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
 
             if (this.equipmentHasChanged(previous, newStack)) {
                 if (!previous.isEmpty()) {
-                    this.stopTrinketLocationBasedEffects(trinkets, previous, ref, attributes);
+                    trinkets.stopTrinketLocationBasedEffects(previous, ref, attributes);
+                }
+                if (!newStack.isEmpty()) {
+                    trinkets.addSlotModifiers(newStack, ref, attributes);
                 }
                 changedItems.add(ref);
 
@@ -200,28 +184,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
             }
         });
 
+        // Check that the inventory hasn't shrunk past the new stacks
         for (var slot : changedItems) {
-            var current = slot.get();
-            this.lastEquippedTrinkets.put(slot.getSerializedName(), current.copy());
-            if (!current.isEmpty() && !current.isBroken()) {
-                TrinketUtilities.forEachModifier(entity, current, slot, (attribute, modifier) -> {
-                    if (attribute.value() instanceof SlotAttributes.SlotModifyingAttribute x) {
-                        trinkets.addModifiers(x.slot, List.of(modifier));
-                        return;
-                    }
-
-                    AttributeInstance instance = attributes.getInstance(attribute);
-                    if (instance != null) {
-                        instance.removeModifier(modifier.id());
-                        instance.addTransientModifier(modifier);
-
-                    }
-
-                });
-
-                if (this.level() instanceof ServerLevel serverLevel) {
-                    TrinketUtilities.runIterationOnItem(current, slot, entity, (enchantment, level, item) -> enchantment.value().runLocationChangedEffects(serverLevel, level, item, entity));
-                }
+            if (slot.index() < slot.inventory().getContainerSize()) {
+                var current = slot.get();
+                this.lastEquippedTrinkets.put(slot.getSerializedName(), current.copy());
             }
         }
 
@@ -238,7 +205,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
             Map<String, ItemStack> items = new HashMap<>();
 
             for (var slot : changedItems) {
-                items.put(slot.getSerializedName(), slot.get().copy());
+                if (slot.index() < slot.inventory().getContainerSize()) {
+                    items.put(slot.getSerializedName(), slot.get().copy());
+                }
             }
 
             for (TrinketInventoryImpl trinketInventory : inventoriesToSend) {

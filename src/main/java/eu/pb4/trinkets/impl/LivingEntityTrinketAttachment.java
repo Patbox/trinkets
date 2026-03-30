@@ -10,6 +10,8 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -18,6 +20,7 @@ import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.NonNull;
+import org.spongepowered.asm.mixin.Unique;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -102,6 +105,9 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                             if (i < inv.getContainerSize()) {
                                 inv.setItem(i, stack);
                             } else {
+                                if (this.entity.level() instanceof ServerLevel serverWorld) {
+                                    this.stopTrinketLocationBasedEffects(stack, new TrinketSlotAccess(oldInv, i), entity.getAttributes());
+                                }
                                 if (this.entity instanceof Player player) {
                                     player.getInventory().placeItemBackInInventory(stack);
                                 } else if (this.entity.level() instanceof ServerLevel serverWorld) {
@@ -170,6 +176,43 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         for (Map.Entry<String, Map<String, TrinketInventoryImpl>> group : this.getInventoryImpl().entrySet()) {
             for (Map.Entry<String, TrinketInventoryImpl> slotType : group.getValue().entrySet()) {
                 slotType.getValue().clearModifiers();
+            }
+        }
+    }
+
+    public void stopTrinketLocationBasedEffects(final ItemStack oldStack, final TrinketSlotAccess inSlot, final AttributeMap attributes) {
+        TrinketUtilities.forEachModifier(entity, oldStack, inSlot, (attribute, modifier) -> {
+            if (attribute.value() instanceof SlotAttributes.SlotModifyingAttribute x) {
+                this.removeModifiers(x.slot, List.of(modifier));
+                return;
+            }
+
+            AttributeInstance instance = attributes.getInstance(attribute);
+            if (instance != null) {
+                instance.removeModifier(modifier);
+            }
+        });
+
+        TrinketUtilities.runIterationOnItem(oldStack, inSlot, entity, (enchantment, level, item) -> enchantment.value().stopLocationBasedEffects(level, item, entity));
+    }
+
+    public void addSlotModifiers(final ItemStack newStack, final TrinketSlotAccess inSlot, final AttributeMap attributes) {
+        TrinketUtilities.forEachModifier(entity, newStack, inSlot, (attribute, modifier) -> {
+            if (attribute.value() instanceof SlotAttributes.SlotModifyingAttribute x) {
+                this.addModifiers(x.slot, List.of(modifier));
+                return;
+            }
+
+            AttributeInstance instance = attributes.getInstance(attribute);
+            if (instance != null) {
+                instance.removeModifier(modifier.id());
+                instance.addTransientModifier(modifier);
+            }
+
+        });
+        if (!newStack.isEmpty() && !newStack.isBroken()) {
+            if (entity.level() instanceof ServerLevel serverLevel) {
+                TrinketUtilities.runIterationOnItem(newStack, inSlot, entity, (enchantment, level, item) -> enchantment.value().runLocationChangedEffects(serverLevel, level, item, entity));
             }
         }
     }

@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketAttachment;
 import eu.pb4.trinkets.api.TrinketInventory;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -149,6 +150,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
         this.markUpdate();
     }
 
+    // Persistent
     public void addModifiers(AttributeModifier modifier) {
         this.addModifier(modifier);
         this.persistentModifiers.add(modifier);
@@ -222,6 +224,9 @@ public final class TrinketInventoryImpl implements TrinketInventory {
                         newStacks.set(i, stack);
                     } else {
                         if (entity.level() instanceof ServerLevel serverWorld) {
+                            if (this.getComponent() instanceof LivingEntityTrinketAttachment livingEntityTrinketAttachment) {
+                                livingEntityTrinketAttachment.stopTrinketLocationBasedEffects(stack, new TrinketSlotAccess(this, i), entity.getAttributes());
+                            }
                             entity.spawnAtLocation(serverWorld, stack);
                         }
                     }
