@@ -27,20 +27,21 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 	private final Set<AttributeModifier> persistentModifiers = new HashSet<>();
 	private final Set<AttributeModifier> cachedModifiers = new HashSet<>();
 	private final Multimap<AttributeModifier.Operation, AttributeModifier> modifiersByOperation = HashMultimap.create();
-	private final Consumer<TrinketInventoryImpl> updateSizeCallback;
+	private final InventorySizeChangedCallback updateSizeCallback;
 	private final Consumer<TrinketInventoryImpl> markDirty;
 
 	private NonNullList<ItemStack> stacks;
 	private int size;
 	private boolean update = false;
-	private int forcedSlotCount = -1;
+	private int forcedSlotCount;
 
-	public TrinketInventoryImpl(SlotType slotType, TrinketAttachment comp, Consumer<TrinketInventoryImpl> markDirty,  Consumer<TrinketInventoryImpl> updateSizeCallback) {
+	public TrinketInventoryImpl(SlotType slotType, TrinketAttachment comp, Consumer<TrinketInventoryImpl> markDirty, InventorySizeChangedCallback updateSizeCallback, boolean clientSide) {
 		this.component = comp;
 		this.slotType = slotType;
 		this.baseSize = slotType.amount();
 		this.stacks = NonNullList.withSize(this.baseSize, ItemStack.EMPTY);
 		this.size = this.baseSize;
+		this.forcedSlotCount = clientSide ? this.baseSize : -1;
 		this.updateSizeCallback = updateSizeCallback;
 		this.markDirty = markDirty;
 	}
@@ -64,6 +65,10 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 	public int getContainerSize() {
 		this.update();
 		return this.stacks.size();
+	}
+
+	public int getSize() {
+		return this.size;
 	}
 
 	@Override
@@ -192,6 +197,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 			LivingEntity entity = this.component.getEntity();
 
 			if (this.size != this.stacks.size()) {
+				var oldSize = this.stacks.size();
 				NonNullList<ItemStack> newStacks = NonNullList.withSize(this.size, ItemStack.EMPTY);
 				for (int i = 0; i < this.stacks.size(); i++) {
 					ItemStack stack = this.stacks.get(i);
@@ -205,7 +211,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 				}
 
 				this.stacks = newStacks;
-				this.updateSizeCallback.accept(this);
+				this.updateSizeCallback.callSizeChanged(this, oldSize, this.size);
 			}
 		}
 	}
@@ -298,5 +304,9 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 	@Override
 	public int hashCode() {
 		return Objects.hash(slotType);
+	}
+
+	public interface InventorySizeChangedCallback {
+		void callSizeChanged(TrinketInventoryImpl inventory, int oldCount, int newCount);
 	}
 }

@@ -34,7 +34,10 @@ public class TrinketsClient implements ClientModInitializer {
 			Entity entity = client.level.getEntity(payload.entityId());
 			if (entity instanceof LivingEntity) {
 				TrinketsApi.getTrinketAttachment((LivingEntity) entity).map(x -> (LivingEntityTrinketComponent) x).ifPresent(trinkets -> {
+					System.out.println("Update");
+
 					for (var entry : payload.inventorySize().entrySet()) {
+						System.out.println(entry.getKey() + " = " + entry.getValue());
 						String[] split = entry.getKey().split("/", 2);
 						String group = split[0];
 						String slot = split[1];

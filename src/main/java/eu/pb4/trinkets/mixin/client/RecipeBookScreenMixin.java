@@ -2,7 +2,7 @@ package eu.pb4.trinkets.mixin.client;
 
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
 import eu.pb4.trinkets.impl.TrinketSlot;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractRecipeBookScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -40,9 +40,9 @@ public abstract class RecipeBookScreenMixin extends AbstractContainerScreen<Reci
         }
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractRecipeBookScreen;renderCarriedItem(Lnet/minecraft/client/gui/GuiGraphics;II)V", shift = At.Shift.BEFORE),
-            method = "render")
-    private void drawForeground(GuiGraphics context, int mouseX, int mouseY, float deltaTicks, CallbackInfo ci) {
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractRecipeBookScreen;extractCarriedItem(Lnet/minecraft/client/gui/GuiGraphicsExtractor;II)V", shift = At.Shift.BEFORE),
+            method = "extractRenderState")
+    private void drawForeground(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks, CallbackInfo ci) {
         if (((Object) this) instanceof InventoryScreen) {
             context.pose().pushMatrix();
             context.pose().translate(this.leftPos, this.topPos);
@@ -55,7 +55,7 @@ public abstract class RecipeBookScreenMixin extends AbstractContainerScreen<Reci
                     if (slot == this.hoveredSlot && slot.isHighlightable()) {
                         context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_BACK_TEXTURE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
                     }
-                    this.renderSlot(context, slot, mouseX, mouseY);
+                    this.extractSlot(context, slot, mouseX, mouseY);
                     if (slot == this.hoveredSlot && slot.isHighlightable()) {
                         context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_FRONT_TEXTURE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
                     }

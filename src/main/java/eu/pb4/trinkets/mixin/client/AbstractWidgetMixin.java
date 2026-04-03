@@ -1,7 +1,7 @@
 package eu.pb4.trinkets.mixin.client;
 
 import eu.pb4.trinkets.impl.client.TrinketsClient;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.input.MouseButtonEvent;
 import org.objectweb.asm.Opcodes;
@@ -25,8 +25,8 @@ public abstract class AbstractWidgetMixin {
 	protected boolean isHovered;
 	
 	@Inject(at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/AbstractWidget;isHovered:Z",
-			opcode = Opcodes.PUTFIELD, ordinal = 0, shift = Shift.AFTER), method = "render")
-	private void render(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo info) {
+			opcode = Opcodes.PUTFIELD, ordinal = 0, shift = Shift.AFTER), method = "extractRenderState")
+	private void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta, CallbackInfo info) {
 		if (TrinketsClient.activeGroup != null) {
 			isHovered = false;
 		}

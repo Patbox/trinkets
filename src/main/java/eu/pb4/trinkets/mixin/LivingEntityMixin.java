@@ -164,7 +164,7 @@ public abstract class LivingEntityMixin extends Entity {
                 }
                 changedItems.add(ref);
 
-                TrinketEquipmentChangedCallback.EVENT.invoker().onEquipmentChanged(previous, newStack, ref, entity);
+                TrinketUtilities.callTrinketEquipmentChange(previous, newStack, ref, entity);
             }
         });
 
@@ -192,6 +192,13 @@ public abstract class LivingEntityMixin extends Entity {
                 }
             }
         }
+
+        for (var a : trinkets.getInventoryImpl().values()) {
+            for (var b : a.values()) {
+                b.update();
+            }
+        }
+
         Set<TrinketInventoryImpl> inventoriesToSend = trinkets.getContainerSizeChanged();
 
         if (!changedItems.isEmpty() || !inventoriesToSend.isEmpty()) {
@@ -203,7 +210,7 @@ public abstract class LivingEntityMixin extends Entity {
             }
 
             for (TrinketInventoryImpl trinketInventory : inventoriesToSend) {
-                map.put(trinketInventory.slotType().getId(), trinketInventory.getContainerSize());
+                map.put(trinketInventory.slotType().getId(), trinketInventory.getSize());
             }
             SyncInventoryPayload packet = new SyncInventoryPayload(this.getId(), items, map);
 

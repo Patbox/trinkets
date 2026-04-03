@@ -39,7 +39,7 @@ public class LivingEntityTrinketComponent implements TrinketAttachment, Respawna
             .getOrCreate(Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "trinkets"), LivingEntityTrinketComponent.class);
 
     public Map<String, Map<String, TrinketInventoryImpl>> inventory = new HashMap<>();
-    public Set<TrinketInventoryImpl> containerSizeChanged = new HashSet<>();
+    private final Set<TrinketInventoryImpl> containerSizeChanged = new HashSet<>();
     public Map<String, SlotGroup> groups = new HashMap<>();
     public int size;
     public LivingEntity entity;
@@ -82,7 +82,7 @@ public class LivingEntityTrinketComponent implements TrinketAttachment, Respawna
             groups.put(groupKey, groupValue);
             for (Map.Entry<String, SlotType> slot : groupValue.slots().entrySet()) {
                 TrinketInventoryImpl inv = new TrinketInventoryImpl(slot.getValue(), this, _ -> {
-                }, e -> this.containerSizeChanged.add(e));
+                }, this::onSingleInventorySizeChanged, entity.level().isClientSide());
                 if (oldGroup != null) {
                     TrinketInventoryImpl oldInv = oldGroup.get(slot.getKey());
                     if (oldInv != null) {
@@ -107,6 +107,11 @@ public class LivingEntityTrinketComponent implements TrinketAttachment, Respawna
         }
         size = count;
         this.inventory = inventory;
+    }
+
+    private void onSingleInventorySizeChanged(TrinketInventoryImpl inventory, int oldSize, int newSize) {
+        this.containerSizeChanged.add(inventory);
+        this.size += newSize - oldSize;
     }
 
     public void clearCachedModifiers() {
@@ -159,6 +164,7 @@ public class LivingEntityTrinketComponent implements TrinketAttachment, Respawna
         }
     }
 
+    @SuppressWarnings("removal")
     @Override
     public void readData(ValueInput view) {
         Optional<TrinketSaveData> optional = view.read(TrinketSaveData.MAP_CODEC);

@@ -100,20 +100,6 @@ public class TrinketsApi {
         return Optional.ofNullable(PREDICATES.get(id));
     }
 
-    public static boolean evaluatePredicateSet(Set<Identifier> set, ItemStack stack, TrinketSlotAccess ref, LivingEntity entity) {
-        TriState state = TriState.DEFAULT;
-        for (Identifier id : set) {
-            Optional<Function3<ItemStack, TrinketSlotAccess, LivingEntity, TriState>> function = getTrinketPredicate(id);
-            if (function.isPresent()) {
-                state = function.get().apply(stack, ref, entity);
-            }
-            if (state != TriState.DEFAULT) {
-                break;
-            }
-        }
-        return state.get();
-    }
-
     public static Enchantment.EnchantmentDefinition withTrinketSlots(Enchantment.EnchantmentDefinition definition, Set<String> slots) {
         Enchantment.EnchantmentDefinition def = new Enchantment.EnchantmentDefinition(definition.supportedItems(), definition.primaryItems(), definition.weight(), definition.maxLevel(),
                 definition.minCost(), definition.maxCost(), definition.anvilCost(), definition.slots());

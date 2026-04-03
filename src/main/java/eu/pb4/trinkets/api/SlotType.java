@@ -2,6 +2,8 @@ package eu.pb4.trinkets.api;
 
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Set;
@@ -15,8 +17,8 @@ public interface SlotType {
     int order();
     int amount();
     Identifier icon();
-    Set<Identifier> quickMovePredicates();
-    Set<Identifier> validatorPredicates();
-    Set<Identifier> tooltipPredicates();
+    boolean quickMoveCheck(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity);
+    boolean validatorCheck(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity);
+    boolean tooltipCheck(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity);
     TrinketDropRule dropRule();
 }

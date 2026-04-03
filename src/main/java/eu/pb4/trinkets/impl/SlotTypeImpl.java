@@ -6,6 +6,7 @@ import java.util.Set;
 
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketDropRule;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -13,6 +14,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public record SlotTypeImpl(String group, String name, int order, int amount, @Nullable Identifier icon,
@@ -111,5 +114,20 @@ public record SlotTypeImpl(String group, String name, int order, int amount, @Nu
 
 	@Override public String getId() {
 		return this.group + "/" + this.name;
+	}
+
+	@Override
+	public boolean quickMoveCheck(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
+		return TrinketUtilities.evaluatePredicateSet(this.quickMovePredicates, stack, slotRef, entity);
+	}
+
+	@Override
+	public boolean validatorCheck(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
+		return TrinketUtilities.evaluatePredicateSet(this.validatorPredicates, stack, slotRef, entity);
+	}
+
+	@Override
+	public boolean tooltipCheck(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
+		return TrinketUtilities.evaluatePredicateSet(this.tooltipPredicates, stack, slotRef, entity);
 	}
 }

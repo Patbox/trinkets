@@ -1,7 +1,7 @@
 package eu.pb4.trinkets.mixin.client;
 
 import eu.pb4.trinkets.mixin.client.accessor.RecipeBookScreenAccessor;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractRecipeBookScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
@@ -40,14 +40,14 @@ public abstract class InventoryScreenMixin extends AbstractRecipeBookScreen<Inve
 		TrinketScreenManager.tick();
 	}
 
-	@Inject(at = @At("HEAD"), method = "render")
-	private void render(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo info) {
+	@Inject(at = @At("HEAD"), method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V")
+	private void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta, CallbackInfo info) {
 		TrinketScreenManager.update(mouseX, mouseY);
 	}
 
-	@Inject(at = @At("RETURN"), method = "renderBg")
-	private void drawBackground(GuiGraphics context, float delta, int mouseX, int mouseY, CallbackInfo info) {
-		TrinketScreenManager.drawBackground(context);
+	@Inject(at = @At("RETURN"), method = "extractBackground")
+	private void drawBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
+		TrinketScreenManager.drawBackground(graphics);
 	}
 
 	@Override

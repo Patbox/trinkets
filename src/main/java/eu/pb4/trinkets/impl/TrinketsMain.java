@@ -141,7 +141,7 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 			TagKey<Item> tag = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("trinkets", slot.getId()));
 			var component = stack.get(TrinketDataComponents.EQUIPMENT);
 
-			if (stack.is(tag) || stack.is(trinketsAll) || component != null && component.slot().contains(slot.getId())) {
+			if (stack.is(tag) || stack.is(trinketsAll) || component != null && component.allowedSlots().contains(slot.getId())) {
 				return TriState.TRUE;
 			}
 			return TriState.DEFAULT;
@@ -161,15 +161,7 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 			SlotType slot = ref.inventory().slotType();
 			var component = stack.get(TrinketDataComponents.EQUIPMENT);
 
-			if (component != null && component.slot().contains(slot.getId())) {
-				return TriState.TRUE;
-			}
-			return TriState.DEFAULT;
-		});
-
-		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "relevant"), (stack, ref, entity) -> {
-			Multimap<Holder<Attribute>, AttributeModifier> map = TrinketModifiers.get(stack, ref, entity);
-			if (!map.isEmpty()) {
+			if (component != null && component.allowedSlots().contains(slot.getId())) {
 				return TriState.TRUE;
 			}
 			return TriState.DEFAULT;

@@ -16,8 +16,7 @@ public interface TrinketSlot {
 	public SlotType getType();
 
 	public static boolean canInsert(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
-		boolean res = TrinketsApi.evaluatePredicateSet(slotRef.inventory().slotType().validatorPredicates(),
-			stack, slotRef, entity);
+		boolean res = slotRef.inventory().slotType().validatorCheck(stack, slotRef, entity);
 
 		if (res) {
 			return TrinketCallback.getCallback(stack).canEquip(stack, slotRef, entity);

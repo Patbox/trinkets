@@ -69,7 +69,7 @@ public abstract class ItemStackMixin {
 					boolean anywhereButHidden = false;
 					for (int i = 0; i < trinketInventory.getContainerSize(); i++) {
 						TrinketSlotAccess ref = new TrinketSlotAccess(trinketInventory, i);
-						boolean res = TrinketsApi.evaluatePredicateSet(slotType.tooltipPredicates(), self, ref, player);
+						boolean res = slotType.tooltipCheck(self, ref, player);
 						boolean canInsert = TrinketSlot.canInsert(self, ref, player);
 						if (res && canInsert) {
 							boolean sameTranslationExists = false;

@@ -1,16 +1,21 @@
 package eu.pb4.trinkets.impl;
 
+import com.google.common.collect.Multimap;
+import com.mojang.datafixers.util.Function3;
 import eu.pb4.trinkets.api.TrinketAttachment;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
+import eu.pb4.trinkets.api.component.TrinketsAttributeModifiersComponent;
 import eu.pb4.trinkets.api.event.TrinketEquipCallback;
 import eu.pb4.trinkets.api.event.TrinketEquipmentChangedCallback;
 import eu.pb4.trinkets.api.event.TrinketUnequipCallback;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.fabricmc.fabric.api.util.TriState;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,6 +27,7 @@ import net.minecraft.world.item.enchantment.*;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
@@ -44,10 +50,30 @@ public class TrinketUtilities {
     }
 
 
+    public static boolean evaluatePredicateSet(Set<Identifier> set, ItemStack stack, TrinketSlotAccess ref, LivingEntity entity) {
+        TriState state = TriState.DEFAULT;
+        for (Identifier id : set) {
+            Optional<Function3<ItemStack, TrinketSlotAccess, LivingEntity, TriState>> function = TrinketsApi.getTrinketPredicate(id);
+            if (function.isPresent()) {
+                state = function.get().apply(stack, ref, entity);
+            }
+            if (state != TriState.DEFAULT) {
+                break;
+            }
+        }
+        return state.get();
+    }
+
+
     public static void forEachModifier(LivingEntity entity, ItemStack stack, TrinketSlotAccess slot, final BiConsumer<Holder<Attribute>, AttributeModifier> consumer) {
         //var modifiers = stack.getOrDefault(TrinketsAttributeModifiersComponent.TYPE, TrinketsAttributeModifiersComponent.DEFAULT);
         //modifiers.forEach(slot, consumer);
-        TrinketModifiers.get(stack, slot, entity).forEach(consumer);
+        Multimap<Holder<Attribute>, AttributeModifier> map = TrinketCallback.getCallback(stack).getModifiers(stack, slot, entity, slot.);
+        if (stack.has(TrinketDataComponents.ATTRIBUTE_MODIFIERS)) {
+            for (TrinketsAttributeModifiersComponent. Entry entry : stack.getOrDefault(TrinketDataComponents.ATTRIBUTE_MODIFIERS, TrinketsAttributeModifiersComponent.DEFAULT).modifiers()) {
+                map.put(entry.attribute(), entry.modifier());
+            }
+        }
 
         EnchantmentHelper.runIterationOnItem(stack, (enchantment, level) -> enchantment.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES).forEach((effect) -> {
             if (isEnchantmentTrinketCompatible(enchantment, slot)) {

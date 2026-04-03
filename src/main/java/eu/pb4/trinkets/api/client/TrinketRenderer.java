@@ -25,9 +25,9 @@ public interface TrinketRenderer {
 	 * @param slotReference The exact slot for the item being rendered
 	 * @param contextModel The model this Trinket is being rendered on
 	 */
-	void render(ItemStack stack, TrinketSlotAccess slotReference, EntityModel<? extends LivingEntityRenderState> contextModel,
-                PoseStack matrices, SubmitNodeCollector vertexConsumers, int light, LivingEntityRenderState state,
-                float limbAngle, float limbDistance);
+	void extractStates(ItemStack stack, TrinketSlotAccess slotReference, EntityModel<? extends LivingEntityRenderState> contextModel,
+					   PoseStack matrices, SubmitNodeCollector vertexConsumers, int light, LivingEntityRenderState state,
+					   float limbAngle, float limbDistance);
 
 	/**
 	 * Rotates the rendering for the models based on the entity's poses and movements. This will do

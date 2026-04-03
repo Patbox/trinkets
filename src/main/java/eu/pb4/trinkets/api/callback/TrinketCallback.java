@@ -143,7 +143,6 @@ public interface TrinketCallback {
 	 * @param entity the LivingEntity holding the Trinket
 	 * @param slotIdentifier The Identifier to use for creating attributes
 	 * @return the Multimap with any needed entries added
-	 * @see SlotAttributes#addSlotModifier
 	 */
 	default Multimap<Holder<Attribute>, AttributeModifier> getModifiers(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity, Identifier slotIdentifier) {
 		return Multimaps.newMultimap(Maps.newLinkedHashMap(), ArrayList::new);

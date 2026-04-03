@@ -9,7 +9,7 @@ import eu.pb4.trinkets.impl.TrinketSlot;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -199,7 +199,7 @@ public class TrinketScreenManager {
 		}
 	}
 
-	public static void drawGroup(GuiGraphics context, SlotGroup group, SlotType type) {
+	public static void drawGroup(GuiGraphicsExtractor context, SlotGroup group, SlotType type) {
 		TrinketScreen currentScreen = getCurrentScreen();
 		if (currentScreen == null) {
 			return;
@@ -276,11 +276,11 @@ public class TrinketScreenManager {
 		context.pose().popMatrix();
 	}
 
-	private static void drawTexture(GuiGraphics context, Identifier texture, int x, int y, int u, int v, int width, int height) {
+	private static void drawTexture(GuiGraphicsExtractor context, Identifier texture, int x, int y, int u, int v, int width, int height) {
 		context.blit(RenderPipelines.GUI_TEXTURED, texture,  x, y, u, v, width, height, 256, 256);
 	}
 
-	public static void drawForeground(GuiGraphics context) {
+	public static void drawForeground(GuiGraphicsExtractor context) {
 		if (TrinketsClient.activeGroup != null) {
 			TrinketScreenManager.drawGroup(context, TrinketsClient.activeGroup, TrinketsClient.activeType);
 		} else if (TrinketsClient.quickMoveGroup != null) {
@@ -288,7 +288,7 @@ public class TrinketScreenManager {
 		}
 	}
 
-	public static void drawBackground(GuiGraphics context) {
+	public static void drawBackground(GuiGraphicsExtractor context) {
 		TrinketScreen currentScreen = getCurrentScreen();
 		if (currentScreen == null) {
 			return;

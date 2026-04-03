@@ -53,7 +53,7 @@ public class TestTrinket extends Item implements TrinketRenderer, TrinketCallbac
 
 	@Override
 	@Environment(EnvType.CLIENT)
-	public void render(ItemStack stack, TrinketSlotAccess slotReference, EntityModel<? extends LivingEntityRenderState> contextModel, PoseStack matrices, SubmitNodeCollector queue, int light, LivingEntityRenderState state, float limbAngle, float limbDistance) {
+	public void extractStates(ItemStack stack, TrinketSlotAccess slotReference, EntityModel<? extends LivingEntityRenderState> contextModel, PoseStack matrices, SubmitNodeCollector queue, int light, LivingEntityRenderState state, float limbAngle, float limbDistance) {
 		if (state instanceof HumanoidRenderState bipedEntityRenderState) {
 			HumanoidModel<HumanoidRenderState> model = this.getModel();
 			model.setupAnim(bipedEntityRenderState);

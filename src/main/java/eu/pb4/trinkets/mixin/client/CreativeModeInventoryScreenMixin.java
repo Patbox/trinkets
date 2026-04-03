@@ -20,7 +20,7 @@ import eu.pb4.trinkets.impl.TrinketSlot;
 import eu.pb4.trinkets.impl.client.TrinketsClient;
 import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.api.TrinketsApi;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.ItemPickerMenu;
@@ -100,22 +100,22 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 		TrinketScreenManager.tick();
 	}
 
-	@Inject(at = @At("HEAD"), method = "render")
-	private void render(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo info) {
+	@Inject(at = @At("HEAD"), method = "extractRenderState")
+	private void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta, CallbackInfo info) {
 		if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
 			TrinketScreenManager.update(mouseX, mouseY);
 		}
 	}
 
-	@Inject(at = @At("RETURN"), method = "renderBg")
-	private void drawBackground(GuiGraphics context, float delta, int mouseX, int mouseY, CallbackInfo info) {
+	@Inject(at = @At("RETURN"), method = "extractBackground")
+	private void drawBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
 		if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
-			TrinketScreenManager.drawBackground(context);
+			TrinketScreenManager.drawBackground(graphics);
 		}
 	}
 
 	@Override
-	public void trinkets$renderCreative(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+	public void trinkets$renderCreative(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
 		if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
 			context.pose().pushMatrix();
 			context.pose().translate(this.leftPos, this.topPos);
@@ -128,7 +128,7 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 					if (slot == this.hoveredSlot && slot.isHighlightable()) {
 						context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_BACK_TEXTURE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
 					}
-					this.renderSlot(context, slot, mouseX, mouseY);
+					this.extractSlot(context, slot, mouseX, mouseY);
 					if (slot == this.hoveredSlot && slot.isHighlightable()) {
 						context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_FRONT_TEXTURE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
 					}
@@ -153,7 +153,7 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 	}
 	
 	@Inject(at = @At("HEAD"), method = "checkTabHovering", cancellable = true)
-	private void renderTabTooltipIfHovered(GuiGraphics context, CreativeModeTab group, int mouseX, int mouseY, CallbackInfoReturnable<Boolean> info) {
+	private void renderTabTooltipIfHovered(GuiGraphicsExtractor context, CreativeModeTab group, int mouseX, int mouseY, CallbackInfoReturnable<Boolean> info) {
 		if (TrinketsClient.activeGroup != null) {
 			info.setReturnValue(false);
 		}
