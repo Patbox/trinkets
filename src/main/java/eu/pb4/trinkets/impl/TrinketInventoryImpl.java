@@ -223,10 +223,10 @@ public final class TrinketInventoryImpl implements TrinketInventory {
                     if (i < newStacks.size()) {
                         newStacks.set(i, stack);
                     } else {
+                        if (this.getComponent() instanceof LivingEntityTrinketAttachment livingEntityTrinketAttachment) {
+                            livingEntityTrinketAttachment.stopTrinketLocationBasedEffects(stack, new TrinketSlotAccess(this, i), entity.getAttributes());
+                        }
                         if (entity.level() instanceof ServerLevel serverWorld) {
-                            if (this.getComponent() instanceof LivingEntityTrinketAttachment livingEntityTrinketAttachment) {
-                                livingEntityTrinketAttachment.stopTrinketLocationBasedEffects(stack, new TrinketSlotAccess(this, i), entity.getAttributes());
-                            }
                             entity.spawnAtLocation(serverWorld, stack);
                         }
                     }

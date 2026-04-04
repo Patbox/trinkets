@@ -2,9 +2,12 @@ package eu.pb4.trinkets.mixin.client;
 
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import eu.pb4.trinkets.api.TrinketInventory;
 import eu.pb4.trinkets.impl.client.CreativeTrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -27,9 +30,12 @@ import net.minecraft.world.inventory.Slot;
  */
 @Mixin(AbstractContainerScreen.class)
 public abstract class AbstractContainerScreenMixin extends Screen {
+	@Shadow @Nullable protected Slot hoveredSlot;
 	private AbstractContainerScreenMixin() {
 		super(null);
 	}
+
+	@Shadow protected abstract void onStopHovering(Slot slot);
 
 	@Inject(at = @At("HEAD"), method = "removed")
 	private void removed(CallbackInfo info) {
@@ -66,6 +72,18 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 				} else if (slot.index != TrinketsClient.activeGroup.slotId()) {
 					info.setReturnValue(false);
 				}
+			}
+		}
+	}
+
+	@Inject(at = @At("HEAD"), method = "onStopHovering", cancellable = true)
+	private void onStopHovering(Slot slot, CallbackInfo info) {
+		if (slot instanceof TrinketSlot && slot.container instanceof TrinketInventory inventory) {
+			if (slot.index >= inventory.getContainerSize()) {
+				if (slot != this.hoveredSlot && this.hoveredSlot != null) {
+					this.onStopHovering(this.hoveredSlot);
+				}
+				info.cancel();
 			}
 		}
 	}
