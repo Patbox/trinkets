@@ -15,7 +15,7 @@ public interface TrinketUnequipCallback {
 	});
 
 	/**
-	 * Called when an entity un-equips a trinket, after the {@link Trinket#onUnequip} method of the Trinket
+	 * Called when an entity un-equips a trinket, after the {@link eu.pb4.trinkets.api.callback.TrinketCallback#onUnequip} method of the Trinket
 	 *
 	 * @param stack The stack being unequipped
 	 * @param slot The slot the stack was unequipped from

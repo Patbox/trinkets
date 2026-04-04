@@ -3,7 +3,6 @@ package eu.pb4.trinkets.mixin;
 import eu.pb4.trinkets.api.*;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.event.TrinketDropCallback;
-import eu.pb4.trinkets.api.event.TrinketEquipmentChangedCallback;
 import eu.pb4.trinkets.impl.LivingEntityTrinketComponent;
 import eu.pb4.trinkets.impl.TrinketInventoryImpl;
 import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
@@ -129,7 +128,7 @@ public abstract class LivingEntityMixin extends Entity {
         LivingEntity entity = (LivingEntity) (Object) this;
 
         TrinketUtilities.forEachModifier(entity, previous, inSlot, (attribute, modifier) -> {
-            if (attribute.value() instanceof SlotAttributes.SlotEntityAttribute x) {
+            if (attribute.value() instanceof SlotAttributes.SlotModifyingAttribute x) {
                 trinkets.removeModifiers(x.slot, List.of(modifier));
                 return;
             }
@@ -173,7 +172,7 @@ public abstract class LivingEntityMixin extends Entity {
             this.lastEquippedTrinkets.put(slot.getSerializedName(), current.copy());
             if (!current.isEmpty() && !current.isBroken()) {
                 TrinketUtilities.forEachModifier(entity, current, slot, (attribute, modifier) -> {
-                    if (attribute.value() instanceof SlotAttributes.SlotEntityAttribute x) {
+                    if (attribute.value() instanceof SlotAttributes.SlotModifyingAttribute x) {
                         trinkets.addModifiers(x.slot, List.of(modifier));
                         return;
                     }

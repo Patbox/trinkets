@@ -18,6 +18,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
+import eu.pb4.trinkets.impl.SlotGroupImpl;
 import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
 import eu.pb4.trinkets.impl.TrinketsMain;
 import eu.pb4.trinkets.api.SlotGroup;
@@ -44,7 +45,7 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 	private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
 	private static final Identifier ID = Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "entities");
 
-	private final Map<EntityType<?>, Map<String, SlotGroup>> slots = new HashMap<>();
+	private final Map<EntityType<?>, Map<String, SlotGroupImpl>> slots = new HashMap<>();
 
 	@Override
 	protected Map<String, Map<String, Set<String>>> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
@@ -177,7 +178,7 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 		this.slots.clear();
 
 		groupBuilders.forEach((entity, groups) -> {
-			Map<String, SlotGroup> entitySlots = this.slots.computeIfAbsent(entity, (k) -> new HashMap<>());
+			var entitySlots = this.slots.computeIfAbsent(entity, (k) -> new HashMap<>());
 			groups.forEach((groupName, groupBuilder) -> entitySlots.putIfAbsent(groupName, groupBuilder.build()));
 		});
 	}
@@ -189,7 +190,7 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 		return ImmutableMap.of();
 	}
 
-	public void setSlots(Map<EntityType<?>, Map<String, SlotGroup>> slots) {
+	public void setSlots(Map<EntityType<?>, Map<String, SlotGroupImpl>> slots) {
 		this.slots.clear();
 		this.slots.putAll(slots);
 	}

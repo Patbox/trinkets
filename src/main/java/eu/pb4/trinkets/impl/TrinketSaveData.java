@@ -35,10 +35,11 @@ public record TrinketSaveData(Map<String, Map<String, InventoryData>> data) {
                 list -> new Metadata(list, List.of())
         );
     }
-    public record InventoryData(Metadata metadata, List<ItemStack> items) {
+    public record InventoryData(Metadata metadata, List<ItemStack> items, int inventorySize) {
         public static final Codec<InventoryData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Metadata.CODEC.optionalFieldOf("Metadata", Metadata.EMPTY).forGetter(InventoryData::metadata),
-                ItemStack.OPTIONAL_CODEC.listOf().optionalFieldOf("Items", List.of()).forGetter(InventoryData::items)
+                ItemStack.OPTIONAL_CODEC.listOf().optionalFieldOf("Items", List.of()).forGetter(InventoryData::items),
+                Codec.INT.optionalFieldOf("size", -1).forGetter(InventoryData::inventorySize)
         ).apply(instance, InventoryData::new));
     }
 }

@@ -14,6 +14,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
+import java.util.function.BiConsumer;
 
 public class TestTrinket2 extends Item implements TrinketCallback {
 
@@ -22,14 +23,12 @@ public class TestTrinket2 extends Item implements TrinketCallback {
 	}
 
 	@Override
-	public Multimap<Holder<Attribute>, AttributeModifier> getModifiers(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity, Identifier id) {
-		// un-comment to check - testing the composition of the new attribute suffix
+	public void forEachTrinketModifier(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity, Identifier id,
+									   BiConsumer<Holder<Attribute>, AttributeModifier> consumer) {		// un-comment to check - testing the composition of the new attribute suffix
 		// TrinketsTest.LOGGER.info(TrinketModifiers.toSlotReferencedModifier(new EntityAttributeModifier(id.withSuffixedPath("trinkets-testmod/movement_speed"),
 		//		0.4, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), slot));
-		Multimap<Holder<Attribute>, AttributeModifier> modifiers = Multimaps.newMultimap(Maps.newLinkedHashMap(), ArrayList::new);
 		AttributeModifier speedModifier = new AttributeModifier(id.withSuffix("trinkets-testmod/movement_speed"),
 				0.1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-		modifiers.put(Attributes.MOVEMENT_SPEED, speedModifier);
-		return modifiers;
+		consumer.accept(Attributes.MOVEMENT_SPEED, speedModifier);
 	}
 }

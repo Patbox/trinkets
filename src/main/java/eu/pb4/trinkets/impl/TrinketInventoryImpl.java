@@ -266,7 +266,8 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 		return new TrinketSaveData.Metadata(List.copyOf(this.persistentModifiers), cachedModifiers);
 	}
 
-	public void fromMetadata(TrinketSaveData.Metadata tag) {
+	public void fromMetadata(TrinketSaveData.Metadata tag, int size) {
+		this.size = size;
 		tag.persistentModifiers().forEach(this::addModifiers);
 
 		if (!tag.cachedModifiers().isEmpty()) {

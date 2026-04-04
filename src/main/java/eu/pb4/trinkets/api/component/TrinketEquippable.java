@@ -4,7 +4,6 @@ import eu.pb4.trinkets.api.TrinketDropRule;
 import eu.pb4.trinkets.impl.component.TrinketEquippableImpl;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;

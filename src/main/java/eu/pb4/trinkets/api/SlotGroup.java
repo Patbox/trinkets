@@ -32,7 +32,7 @@ public interface SlotGroup {
             return this;
         }
 
-        public SlotGroup build() {
+        public SlotGroupImpl build() {
             return new SlotGroupImpl(name, slotId, order, slots);
         }
     }

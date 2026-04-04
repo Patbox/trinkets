@@ -24,13 +24,21 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
 public class TestTrinket extends Item implements TrinketRenderer, TrinketCallback {
 
 	private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(TrinketsTest.MOD_ID, "textures/entity/trinket/hat.png");
+	private final Holder<Attribute> offhandRingAttribute;
+	private final Holder<Attribute> handGloveAttribute;
 	private HumanoidModel<HumanoidRenderState> model;
 
 	public TestTrinket(Properties settings) {
 		super(settings);
+
+		this.offhandRingAttribute = SlotAttributes.createAttributeForSlot("offhand/ring");
+		this.handGloveAttribute = SlotAttributes.createAttributeForSlot("hand/glove");
 	}
 
 	@Override
@@ -41,14 +49,14 @@ public class TestTrinket extends Item implements TrinketRenderer, TrinketCallbac
 	}
 
 	@Override
-	public Multimap<Holder<Attribute>, AttributeModifier> getModifiers(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity, Identifier id) {
-		Multimap<Holder<Attribute>, AttributeModifier> modifiers = TrinketCallback.super.getModifiers(stack, slot, entity, id);
+	public void forEachTrinketModifier(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity, Identifier id,
+									   BiConsumer<Holder<Attribute>, AttributeModifier> consumer) {
 		AttributeModifier speedModifier = new AttributeModifier(id.withSuffix("trinkets-testmod/movement_speed"),
 				0.4, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-		modifiers.put(Attributes.MOVEMENT_SPEED, speedModifier);
-		SlotAttributes.addSlotModifier(modifiers, "offhand/ring", id.withSuffix("trinkets-testmod/ring_slot"), 6, AttributeModifier.Operation.ADD_VALUE);
-		SlotAttributes.addSlotModifier(modifiers, "hand/glove", id.withSuffix("trinkets-testmod/glove_slot"), 1, AttributeModifier.Operation.ADD_VALUE);
-		return modifiers;
+		consumer.accept(Attributes.MOVEMENT_SPEED, speedModifier);
+
+		consumer.accept(this.offhandRingAttribute, new AttributeModifier(id.withSuffix("trinkets-testmod/ring_slot"), 6, AttributeModifier.Operation.ADD_VALUE));
+		consumer.accept(this.handGloveAttribute, new AttributeModifier(id.withSuffix("trinkets-testmod/glove_slot"), 1, AttributeModifier.Operation.ADD_VALUE));
 	}
 
 	@Override

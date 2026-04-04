@@ -2,14 +2,15 @@ package eu.pb4.trinkets.mixin;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
-import eu.pb4.trinkets.impl.TrinketModifiers;
 import eu.pb4.trinkets.impl.TrinketSlot;
 import eu.pb4.trinkets.api.SlotAttributes;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketsApi;
+import eu.pb4.trinkets.impl.TrinketUtilities;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,10 +18,7 @@ import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
@@ -82,7 +80,8 @@ public abstract class ItemStackMixin {
 							if (!sameTranslationExists) {
 								slots.add(slotType);
 							}
-							Multimap<Holder<Attribute>, AttributeModifier> map = TrinketModifiers.get(self, ref, player);
+							Multimap<Holder<Attribute>, AttributeModifier> map = Multimaps.newMultimap(Maps.newLinkedHashMap(), ArrayList::new);
+							TrinketUtilities.forEachModifier(player, self, ref, map::put);
 
 							if (defaultModifier == null) {
 								defaultModifier = map;
@@ -163,7 +162,7 @@ public abstract class ItemStackMixin {
 				}
 
 				Component text = Component.translatable(attribute.value().getDescriptionId());
-				if (attribute.isBound() && attribute.value() instanceof SlotAttributes.SlotEntityAttribute) {
+				if (attribute.isBound() && attribute.value() instanceof SlotAttributes.SlotModifyingAttribute) {
 					text = Component.translatable("trinkets.tooltip.attributes.slots", text);
 				}
 				if (g > 0.0D) {

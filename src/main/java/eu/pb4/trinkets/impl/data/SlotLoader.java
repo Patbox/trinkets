@@ -2,11 +2,7 @@ package eu.pb4.trinkets.impl.data;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableMap;
@@ -124,9 +120,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 	}
 
 	static class SlotData {
-		private static final Set<Identifier> DEFAULT_QUICK_MOVE_PREDICATES = ImmutableSet.of(Identifier.fromNamespaceAndPath("trinkets", "all"));
-		private static final Set<Identifier> DEFAULT_VALIDATOR_PREDICATES = ImmutableSet.of(Identifier.fromNamespaceAndPath("trinkets", "tag"));
-		private static final Set<Identifier> DEFAULT_TOOLTIP_PREDICATES = ImmutableSet.of(Identifier.fromNamespaceAndPath("trinkets", "all"));
+		private static final Identifier DEFAULT_VALIDATOR_PREDICATES = Identifier.fromNamespaceAndPath("trinkets", "default");
 
 		private int order = 0;
 		private int amount = -1;
@@ -138,22 +132,24 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 
 		SlotType create(String group, String name) {
 			Identifier finalIcon = icon == null || icon.isEmpty() ? null : Identifier.parse(icon);
-			Set<Identifier> finalValidatorPredicates = validatorPredicates.stream().map(Identifier::parse).collect(Collectors.toSet());
-			Set<Identifier> finalQuickMovePredicates = quickMovePredicates.stream().map(Identifier::parse).collect(Collectors.toSet());
-			Set<Identifier> finalTooltipPredicates = tooltipPredicates.stream().map(Identifier::parse).collect(Collectors.toSet());
+			SlotTypeImpl.Condition finalValidatorPredicates = new SlotTypeImpl.OrCondition(validatorPredicates.stream().map(Identifier::parse).map(SlotTypeImpl.DirectCondition::new).collect(Collectors.toList()));
+			SlotTypeImpl.Condition finalQuickMovePredicates = new SlotTypeImpl.OrCondition(quickMovePredicates.stream().map(Identifier::parse).map(SlotTypeImpl.DirectCondition::new).collect(Collectors.toList()));
+			SlotTypeImpl.Condition finalTooltipPredicates = new SlotTypeImpl.OrCondition(tooltipPredicates.stream().map(Identifier::parse).map(SlotTypeImpl.DirectCondition::new).collect(Collectors.toList()));
+
 			if (finalValidatorPredicates.isEmpty()) {
-				finalValidatorPredicates = DEFAULT_VALIDATOR_PREDICATES;
+				finalValidatorPredicates = new SlotTypeImpl.DirectCondition(DEFAULT_VALIDATOR_PREDICATES);
 			}
 			if (finalQuickMovePredicates.isEmpty()) {
-				finalQuickMovePredicates = DEFAULT_QUICK_MOVE_PREDICATES;
+				finalQuickMovePredicates = new SlotTypeImpl.ConstantCondition(true);
 			}
 			if (finalTooltipPredicates.isEmpty()) {
-				finalTooltipPredicates = DEFAULT_TOOLTIP_PREDICATES;
+				finalTooltipPredicates = new SlotTypeImpl.ConstantCondition(true);
 			}
+
 			if (amount == -1) {
 				amount = 1;
 			}
-			return new SlotTypeImpl(group, name, order, amount, finalIcon, finalQuickMovePredicates, finalValidatorPredicates,
+			return new SlotTypeImpl(group, name, order, amount, Optional.ofNullable(finalIcon), finalQuickMovePredicates, finalValidatorPredicates,
 				finalTooltipPredicates, TrinketDropRule.valueOf(dropRule));
 		}
 

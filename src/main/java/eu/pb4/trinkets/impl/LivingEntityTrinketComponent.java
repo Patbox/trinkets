@@ -2,32 +2,20 @@ package eu.pb4.trinkets.impl;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.mojang.serialization.DynamicOps;
 import eu.pb4.trinkets.api.*;
-import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistryV3;
 import org.ladysnake.cca.api.v3.component.ComponentV3;
-import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 import org.ladysnake.cca.api.v3.entity.RespawnableComponent;
 
 import java.util.*;
@@ -37,9 +25,8 @@ import java.util.function.Predicate;
 public class LivingEntityTrinketComponent implements TrinketAttachment, RespawnableComponent, ComponentV3 {
     public static final ComponentKey<LivingEntityTrinketComponent> TRINKET_COMPONENT = ComponentRegistryV3.INSTANCE
             .getOrCreate(Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "trinkets"), LivingEntityTrinketComponent.class);
-
-    public Map<String, Map<String, TrinketInventoryImpl>> inventory = new HashMap<>();
     private final Set<TrinketInventoryImpl> containerSizeChanged = new HashSet<>();
+    public Map<String, Map<String, TrinketInventoryImpl>> inventory = new HashMap<>();
     public Map<String, SlotGroup> groups = new HashMap<>();
     public int size;
     public LivingEntity entity;
@@ -181,7 +168,7 @@ public class LivingEntityTrinketComponent implements TrinketAttachment, Respawna
                             TrinketInventoryImpl inv = groupSlots.get(slotKey);
 
                             if (inv != null) {
-                                inv.fromMetadata(slotTag.metadata());
+                                inv.fromMetadata(slotTag.metadata(), slotTag.inventorySize());
                             }
 
                             for (int i = 0; i < slotTag.items().size(); i++) {
@@ -209,12 +196,11 @@ public class LivingEntityTrinketComponent implements TrinketAttachment, Respawna
         Multimap<String, AttributeModifier> slotMap = HashMultimap.create();
         this.forEach((ref, stack) -> {
             if (!stack.isEmpty()) {
-                Multimap<Holder<Attribute>, AttributeModifier> map = TrinketModifiers.get(stack, ref, entity);
-                for (Holder<Attribute> entityAttribute : map.keySet()) {
-                    if (entityAttribute.isBound() && entityAttribute.value() instanceof SlotAttributes.SlotEntityAttribute slotEntityAttribute) {
-                        slotMap.putAll(slotEntityAttribute.slot, map.get(entityAttribute));
+                TrinketUtilities.forEachModifier(entity, stack, ref, (entityAttribute, value) -> {
+                    if (entityAttribute.isBound() && entityAttribute.value() instanceof SlotAttributes.SlotModifyingAttribute slotEntityAttribute) {
+                        slotMap.put(slotEntityAttribute.slot, value);
                     }
-                }
+                });
             }
         });
         for (Map.Entry<String, Map<String, TrinketInventoryImpl>> groupEntry : this.getInventoryImpl().entrySet()) {
@@ -245,7 +231,7 @@ public class LivingEntityTrinketComponent implements TrinketAttachment, Respawna
                     items.add(inv.getItem(i).copy());
                 }
                 TrinketSaveData.Metadata metadata = this.syncing ? inv.getSyncMetadata() : inv.toMetadata();
-                groupTag.put(slot.getKey(), new TrinketSaveData.InventoryData(metadata, items));
+                groupTag.put(slot.getKey(), new TrinketSaveData.InventoryData(metadata, items, inv.getSize()));
             }
             data.data().put(group.getKey(), groupTag);
         }

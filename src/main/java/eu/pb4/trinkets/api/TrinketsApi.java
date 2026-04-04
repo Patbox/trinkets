@@ -1,13 +1,11 @@
 package eu.pb4.trinkets.api;
 
 import com.google.common.collect.ImmutableMap;
-import com.mojang.datafixers.util.Function3;
 import eu.pb4.trinkets.impl.TrinketSlotTarget;
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
 import eu.pb4.trinkets.impl.payload.BreakPayload;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.fabric.api.util.TriState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,6 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +28,7 @@ import java.util.function.Function;
 import static eu.pb4.trinkets.impl.LivingEntityTrinketComponent.TRINKET_COMPONENT;
 
 public class TrinketsApi {
-    private static final Map<Identifier, Function3<ItemStack, TrinketSlotAccess, LivingEntity, TriState>> PREDICATES = new HashMap<>();
+    private static final Map<Identifier, TrinketPredicate> PREDICATES = new HashMap<>();
 
     /**
      * @return The trinket component for this entity, if available
@@ -92,12 +91,17 @@ public class TrinketsApi {
     /**
      * Registers a predicate to be referenced in slot data
      */
-    public static void registerTrinketPredicate(Identifier id, Function3<ItemStack, TrinketSlotAccess, LivingEntity, TriState> predicate) {
+    public static void registerTrinketPredicate(Identifier id, TrinketPredicate predicate) {
         PREDICATES.put(id, predicate);
     }
 
-    public static Optional<Function3<ItemStack, TrinketSlotAccess, LivingEntity, TriState>> getTrinketPredicate(Identifier id) {
-        return Optional.ofNullable(PREDICATES.get(id));
+    @Nullable
+    public static TrinketPredicate getTrinketPredicate(Identifier id) {
+        return PREDICATES.get(id);
+    }
+
+    public interface TrinketPredicate {
+        boolean test(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity);
     }
 
     public static Enchantment.EnchantmentDefinition withTrinketSlots(Enchantment.EnchantmentDefinition definition, Set<String> slots) {

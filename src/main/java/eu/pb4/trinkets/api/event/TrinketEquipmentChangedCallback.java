@@ -15,7 +15,7 @@ public interface TrinketEquipmentChangedCallback {
 	});
 
 	/**
-	 * Called when an entity equips a trinket, after the {@link Trinket#onEquip} method of the Trinket
+	 * Called when an entity equips a trinket, after the {@link eu.pb4.trinkets.api.callback.TrinketCallback#onEquip} method of the Trinket
 	 *
 	 * @param previous Previously equipped item stack
 	 * @param stack The new stack

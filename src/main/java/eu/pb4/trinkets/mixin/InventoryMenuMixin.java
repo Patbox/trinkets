@@ -248,7 +248,7 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
                                 SlotType type = ts.getType();
                                 TrinketSlotAccess ref = new TrinketSlotAccess((TrinketInventoryImpl) ts.container, ts.getContainerSlot());
 
-                                boolean res = TrinketsApi.evaluatePredicateSet(type.quickMovePredicates(), stack, ref, player);
+                                boolean res = type.quickMoveCheck(stack, ref, player);
 
                                 if (res) {
                                     if (this.moveItemStackTo(stack, i, i + 1, false)) {

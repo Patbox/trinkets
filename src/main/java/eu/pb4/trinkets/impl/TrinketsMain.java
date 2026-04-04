@@ -6,6 +6,7 @@ import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
 import com.google.common.collect.Multimap;
+import com.sun.jna.WeakMemoryHolder;
 import eu.pb4.trinkets.api.*;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
@@ -53,10 +54,14 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 public class TrinketsMain implements ModInitializer, EntityComponentInitializer {
 
 	public static final String MOD_ID = "trinkets";
 	public static final Logger LOGGER = LogManager.getLogger();
+	public static final Map<Item, TrinketCallback> CALLBACKS = new IdentityHashMap<>();
 
 	@Override
 	public void onInitialize() {
@@ -132,8 +137,8 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 			));
 
 
-		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "all"), (stack, ref, entity) -> TriState.TRUE);
-		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "none"), (stack, ref, entity) -> TriState.FALSE);
+		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "all"), (stack, ref, entity) -> true);
+		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "none"), (stack, ref, entity) -> false);
 		TagKey<Item> trinketsAll = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("trinkets", "all"));
 
 		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "default"), (stack, ref, entity) -> {
@@ -142,9 +147,9 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 			var component = stack.get(TrinketDataComponents.EQUIPMENT);
 
 			if (stack.is(tag) || stack.is(trinketsAll) || component != null && component.allowedSlots().contains(slot.getId())) {
-				return TriState.TRUE;
+				return true;
 			}
-			return TriState.DEFAULT;
+			return false;
 		});
 
 		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "tag"), (stack, ref, entity) -> {
@@ -152,9 +157,9 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 			TagKey<Item> tag = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("trinkets", slot.getId()));
 
 			if (stack.is(tag) || stack.is(trinketsAll)) {
-				return TriState.TRUE;
+				return true;
 			}
-			return TriState.DEFAULT;
+			return false;
 		});
 
 		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "component"), (stack, ref, entity) -> {
@@ -162,9 +167,9 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 			var component = stack.get(TrinketDataComponents.EQUIPMENT);
 
 			if (component != null && component.allowedSlots().contains(slot.getId())) {
-				return TriState.TRUE;
+				return true;
 			}
-			return TriState.DEFAULT;
+			return false;
 		});
 	}
 

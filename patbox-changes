@@ -1,10 +1,11 @@
 These are changes for 4.0.0 release, compared to 3.11.0.
 Already done:
-- Updated to 26.1-snapshot-5
+- Updated to 26.1
 - Remapped to Mojmap
 - Changed namespace from eu.pb4.trinkets to eu.pb4.trinkets
 - Removed TrinketItem, you should use tags, component and TrinketCallback instead.
 - Renamed Trinket to TrinketCallback
+- Methods to get/set the Trinket were moved from TrinketsAPI to TrinketCallback.
 - Moved non-api classes to .impl package
 - TrinketEnums.DropRule -> TrinketDropRule
 - TrinketComponent -> TrinketAttachment
@@ -12,6 +13,8 @@ Already done:
   - trinkets:default -> allows the component and the tag to define the slot item is allowed in.
   - trinket:component -> allows the component to define the slot item is allowed in.
 - Changed default predicates from `trinket:tag` to `trinkets:default`
+- SlotAttributes was reworked and no longer depends on unregistered attribute instances:
+  - Instead it provides a method that will register / retrieve an attribute to use statically.
 - Reworked slot icons to work more like vanilla:
   - Icons no longer have a background.
   - Moved icon files from 'namespace:textures/gui/slots' to 'namespace:textures/gui/sprites/container/slots'
