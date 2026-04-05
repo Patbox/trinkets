@@ -7,13 +7,10 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.*;
 
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.JsonOps;
 import eu.pb4.trinkets.impl.SlotTypeImpl;
 import eu.pb4.trinkets.impl.TrinketsMain;
 import eu.pb4.trinkets.api.SlotType;
@@ -26,6 +23,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.jspecify.annotations.Nullable;
 
 public class SlotLoader extends SimplePreparableReloadListener<Map<String, GroupData>> implements IdentifiableResourceReloadListener {
 
@@ -125,24 +123,24 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 		private int order = 0;
 		private int amount = -1;
 		private String icon = "";
-		private final Set<String> quickMovePredicates = new HashSet<>();
-		private final Set<String> validatorPredicates = new HashSet<>();
-		private final Set<String> tooltipPredicates = new HashSet<>();
+		private SlotTypeImpl.Condition quickMovePredicates = null;
+		private SlotTypeImpl.Condition validatorPredicates = null;
+		private SlotTypeImpl.Condition tooltipPredicates = null;
 		private String dropRule = TrinketDropRule.DEFAULT.toString();
 
 		SlotType create(String group, String name) {
 			Identifier finalIcon = icon == null || icon.isEmpty() ? null : Identifier.parse(icon);
-			SlotTypeImpl.Condition finalValidatorPredicates = new SlotTypeImpl.OrCondition(validatorPredicates.stream().map(Identifier::parse).map(SlotTypeImpl.DirectCondition::new).collect(Collectors.toList()));
-			SlotTypeImpl.Condition finalQuickMovePredicates = new SlotTypeImpl.OrCondition(quickMovePredicates.stream().map(Identifier::parse).map(SlotTypeImpl.DirectCondition::new).collect(Collectors.toList()));
-			SlotTypeImpl.Condition finalTooltipPredicates = new SlotTypeImpl.OrCondition(tooltipPredicates.stream().map(Identifier::parse).map(SlotTypeImpl.DirectCondition::new).collect(Collectors.toList()));
+			SlotTypeImpl.Condition finalValidatorPredicates = validatorPredicates;
+			SlotTypeImpl.Condition finalQuickMovePredicates = quickMovePredicates;
+			SlotTypeImpl.Condition finalTooltipPredicates = finalValidatorPredicates;
 
-			if (finalValidatorPredicates.isEmpty()) {
+			if (finalValidatorPredicates == null) {
 				finalValidatorPredicates = new SlotTypeImpl.DirectCondition(DEFAULT_VALIDATOR_PREDICATES);
 			}
-			if (finalQuickMovePredicates.isEmpty()) {
+			if (finalQuickMovePredicates  == null) {
 				finalQuickMovePredicates = new SlotTypeImpl.ConstantCondition(true);
 			}
-			if (finalTooltipPredicates.isEmpty()) {
+			if (finalTooltipPredicates  == null) {
 				finalTooltipPredicates = new SlotTypeImpl.ConstantCondition(true);
 			}
 
@@ -163,49 +161,35 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 
 			icon = GsonHelper.getAsString(jsonObject, "icon", icon);
 
-			JsonArray jsonQuickMovePredicates = GsonHelper.getAsJsonArray(jsonObject, "quick_move_predicates", new JsonArray());
-
-			if (jsonQuickMovePredicates != null) {
-
-				if (replace && jsonQuickMovePredicates.size() > 0) {
-					quickMovePredicates.clear();
-				}
-
-				for (JsonElement jsonQuickMovePredicate : jsonQuickMovePredicates) {
-					quickMovePredicates.add(jsonQuickMovePredicate.getAsString());
-				}
-			}
+			quickMovePredicates = readPredicate(jsonObject, replace, "quick_move_predicates", quickMovePredicates);
+			validatorPredicates = readPredicate(jsonObject, replace, "validator_predicates", validatorPredicates);
+			tooltipPredicates = readPredicate(jsonObject, replace, "tooltip_predicates", tooltipPredicates);
 
 			String jsonDropRule = GsonHelper.getAsString(jsonObject, "drop_rule", dropRule).toUpperCase();
 
 			if (TrinketDropRule.has(jsonDropRule)) {
 				dropRule = jsonDropRule;
 			}
-			JsonArray jsonValidatorPredicates = GsonHelper.getAsJsonArray(jsonObject, "validator_predicates", new JsonArray());
+		}
 
-			if (jsonValidatorPredicates != null) {
+		private SlotTypeImpl.@Nullable Condition readPredicate(JsonObject jsonObject, boolean replace, String type, SlotTypeImpl.Condition currentPredicate) {
+			var predicate = Optional.ofNullable(jsonObject.get(type)).flatMap(x -> SlotTypeImpl.Condition.CODEC.decode(JsonOps.INSTANCE, x).result()).map(Pair::getFirst).orElse(null);
+			var rule = Optional.ofNullable(jsonObject.getAsJsonPrimitive(type + ":merge_type")).map(JsonPrimitive::getAsString).orElse("or").toLowerCase(Locale.ROOT);
+			replace |= rule.equals("replace") || rule.endsWith("override");
 
-				if (replace && jsonValidatorPredicates.size() > 0) {
-					validatorPredicates.clear();
-				}
-
-				for (JsonElement jsonValidatorPredicate : jsonValidatorPredicates) {
-					validatorPredicates.add(jsonValidatorPredicate.getAsString());
-				}
+			if (replace || currentPredicate == null) {
+				return predicate;
 			}
 
-			JsonArray jsonTooltipPredicates = GsonHelper.getAsJsonArray(jsonObject, "tooltip_predicates", new JsonArray());
-
-			if (jsonTooltipPredicates != null) {
-
-				if (replace && jsonTooltipPredicates.size() > 0) {
-					tooltipPredicates.clear();
-				}
-
-				for (JsonElement jsonTooltipPredicate : jsonTooltipPredicates) {
-					tooltipPredicates.add(jsonTooltipPredicate.getAsString());
-				}
+			if (predicate == null) {
+				return currentPredicate;
 			}
+
+			if (rule.equals("and")) {
+				return new SlotTypeImpl.AndCondition(List.of(currentPredicate, predicate));
+			}
+
+			return new SlotTypeImpl.OrCondition(List.of(currentPredicate, predicate));
 		}
 	}
 }

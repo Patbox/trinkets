@@ -44,8 +44,10 @@ dependencies {
 
 	// Mod dependencies
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-	api include("org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cca_version}")
-	api include("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
+	implementation include("org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cca_version}")
+	implementation include("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
+
+	implementation include("dev.yumi.mc.core:yumi-mc-foundation:1.0.0+26.1")
 
 	// Optional mod dependencies
 	/*modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}") {
@@ -99,7 +101,7 @@ java {
 
 jar {
 	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}"}
+		rename { "${it}_${project.archives_base_name}"}
 	}
 }
 
@@ -111,6 +113,26 @@ publishing {
 		}
 	}
     setupRepositories(repositories)
+}
+
+if (System.getenv("MODRINTH")) {
+	modrinth {
+		token = System.getenv("MODRINTH")
+		projectId = 'XaT8sLP6'// The ID of your modrinth project, slugs will not work.
+		versionNumber = "" + version // The version of the mod to upload.
+		versionType = "release"
+		uploadFile = jar // This links to a task that builds your mod jar and sets "uploadFile" to the mod jar.
+		gameVersions = [((String) project.minecraft_version)]
+		changelog = System.getenv("CHANGELOG")
+		loaders = ["fabric"]
+
+		dependencies {
+		}
+	}
+
+	jar {
+		finalizedBy project.tasks.modrinth
+	}
 }
 
 void setupRepositories(RepositoryHandler repositories) {

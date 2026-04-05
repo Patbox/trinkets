@@ -1,6 +1,6 @@
 These are changes for 4.0.0 release, compared to 3.11.0.
 Already done:
-- Updated to 26.1
+- Updated to 26.1.1
 - Remapped to Mojmap
 - Changed package from dev.emi.trinkets to eu.pb4.trinkets
 - Renamed TrinketItem, you should use tags, component and TrinketCallback instead.
@@ -20,8 +20,10 @@ Already done:
   - Moved icon files from 'namespace:textures/gui/slots' to 'namespace:textures/gui/sprites/container/slots'
   - Ids however should change from 'namespace:gui/slots' to 'namespace:container/slots'
 - Slot count is only calculated on server and sent from it.
+- Events now use the Yumi Framework over Fabric one (as pre-requisite of neoforge support)
+- Predicates can now work as an AND and OR logic in json, by using objects with "and" key or "or" key. These can be nested as much as one needs.
 
 Planned:
 - Refactor rendering to be more modern / flexible / data driven.
 - General cleanup
-- Make predicates support ANDing and ORing
+- NeoForge support via Yumi framework

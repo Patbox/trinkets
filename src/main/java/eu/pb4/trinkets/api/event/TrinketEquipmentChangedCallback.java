@@ -1,13 +1,14 @@
 package eu.pb4.trinkets.api.event;
 
+import dev.yumi.commons.event.Event;
+import dev.yumi.mc.core.api.YumiEvents;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 public interface TrinketEquipmentChangedCallback {
-	Event<TrinketEquipmentChangedCallback> EVENT = EventFactory.createArrayBacked(TrinketEquipmentChangedCallback.class,
+	Event<Identifier, TrinketEquipmentChangedCallback> EVENT = YumiEvents.EVENTS.create(TrinketEquipmentChangedCallback.class,
 	listeners -> (previous, stack, slot, entity) -> {
 		for (var listener: listeners){
 			listener.onEquipmentChanged(previous, stack, slot, entity);
