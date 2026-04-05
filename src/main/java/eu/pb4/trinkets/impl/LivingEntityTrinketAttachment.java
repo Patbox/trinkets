@@ -3,6 +3,7 @@ package eu.pb4.trinkets.impl;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import eu.pb4.trinkets.api.*;
+import net.minecraft.core.Holder;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerLevel;
@@ -10,6 +11,7 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -181,7 +183,19 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     }
 
     public void stopTrinketLocationBasedEffects(final ItemStack oldStack, final TrinketSlotAccess inSlot, final AttributeMap attributes) {
+        // MC-272769 Mitigation.
+        Multimap<Holder<Attribute>, AttributeModifier> existsElsewhere = HashMultimap.create();
+        this.forEach(((slotReference, itemStack) -> {
+            if (!slotReference.equals(inSlot) && !itemStack.isEmpty()) {
+                TrinketUtilities.forEachModifier(entity, itemStack, slotReference, existsElsewhere::put);
+            }
+        }));
+
         TrinketUtilities.forEachModifier(entity, oldStack, inSlot, (attribute, modifier) -> {
+            if (existsElsewhere.containsEntry(attribute, modifier)) {
+                return;
+            }
+
             if (attribute.value() instanceof SlotAttributes.SlotModifyingAttribute x) {
                 this.removeModifiers(x.slot, List.of(modifier));
                 return;
