@@ -44,7 +44,7 @@ dependencies {
 
 	// Mod dependencies
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-Drop
+
 	implementation include("dev.yumi.mc.core:yumi-mc-foundation:1.0.0+26.1")
 
 	// Optional mod dependencies
