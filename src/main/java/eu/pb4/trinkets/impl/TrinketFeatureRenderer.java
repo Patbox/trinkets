@@ -1,14 +1,11 @@
 package eu.pb4.trinkets.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import eu.pb4.trinkets.api.TrinketAttachment;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
-import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.api.client.TrinketRendererRegistry;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.client.renderer.entity.layers.EquipmentLayerRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.util.Tuple;
@@ -17,7 +14,6 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class TrinketFeatureRenderer<T extends LivingEntityRenderState, M extends EntityModel<T>> extends RenderLayer<T, M> {
 
@@ -26,14 +22,10 @@ public class TrinketFeatureRenderer<T extends LivingEntityRenderState, M extends
     }
 
     public static void update(LivingEntity livingEntity, LivingEntityRenderState entityState, float tickDelta, TrinketEntityRenderState state) {
-        Optional<TrinketAttachment> component = TrinketsApi.getTrinketAttachment(livingEntity);
-        if (component.isEmpty()) {
-            state.trinkets$setState(List.of());
-        } else {
-            List<Tuple<ItemStack, TrinketSlotAccess>> items = new ArrayList<>();
-            component.get().forEach((slotReference, stack) -> items.add(new Tuple<>(stack, slotReference)));
-            state.trinkets$setState(items);
-        }
+        var component = LivingEntityTrinketAttachment.get(livingEntity);
+        List<Tuple<ItemStack, TrinketSlotAccess>> items = new ArrayList<>();
+        component.forEach((slotReference, stack) -> items.add(new Tuple<>(stack, slotReference)));
+        state.trinkets$setState(items);
     }
 
     @Override

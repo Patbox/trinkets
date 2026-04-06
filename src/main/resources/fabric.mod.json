@@ -1,9 +1,9 @@
 {
 	"schemaVersion": 1,
-	"id": "trinkets",
+	"id": "trinkets-updated",
 	"version": "${version}",
-
-	"name": "Trinkets",
+	"provides": ["trinkets"],
+	"name": "Trinkets Updated",
 	"description": "Adds a data-driven accessory system to Minecraft",
 	"authors": [
 		{
@@ -41,31 +41,21 @@
 		"client": [
 			"eu.pb4.trinkets.impl.client.TrinketsClient"
 		],
-		"cardinal-components-entity": [
-			"eu.pb4.trinkets.impl.TrinketsMain"
-		],
-		"rei_client": [
+		"rei_client_": [
 			"eu.pb4.trinkets.impl.client.compat.TrinketsREIPlugin"
 		],
-		"emi": [
+		"emi_": [
 			"eu.pb4.trinkets.impl.client.compat.TrinketsEmiPlugin"
 		]
 	},
   "accessWidener": "trinkets.accesswidener",
-	"custom": {
-		"cardinal-components": [
-			"trinkets:trinkets"
-		]
-	},
 	"mixins": [
 		"trinkets.mixins.json"
 	],
 
 	"depends": {
-		"minecraft": ">=26.1-alpha",
-		"fabricloader": ">=0.16.0",
-		"cardinal-components-base": "*",
-		"cardinal-components-entity": "*",
+		"minecraft": ">=26.1-",
+		"fabricloader": ">=0.18.0",
 		"fabric-api": "*"
 	}
 }

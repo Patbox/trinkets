@@ -25,4 +25,26 @@ public record SlotGroupImpl(String name, int slotId, int order,
     public Map<String, SlotType> slots() {
         return ImmutableMap.copyOf(this.slotsImpl);
     }
+
+    public static class Builder {
+        private final String name;
+        private final int slotId;
+        private final int order;
+        private final Map<String, SlotTypeImpl> slots = new HashMap<>();
+
+        public Builder(String name, int slotId, int order) {
+            this.name = name;
+            this.slotId = slotId;
+            this.order = order;
+        }
+
+        public Builder addSlot(String name, SlotType slot) {
+            this.slots.put(name, (SlotTypeImpl) slot);
+            return this;
+        }
+
+        public SlotGroupImpl build() {
+            return new SlotGroupImpl(name, slotId, order, slots);
+        }
+    }
 }

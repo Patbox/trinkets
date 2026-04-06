@@ -5,37 +5,29 @@ import static com.mojang.brigadier.arguments.StringArgumentType.string;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
-import com.google.common.collect.Multimap;
-import com.sun.jna.WeakMemoryHolder;
+import com.mojang.logging.LogUtils;
 import eu.pb4.trinkets.api.*;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
 import eu.pb4.trinkets.impl.payload.BreakPayload;
 import eu.pb4.trinkets.impl.payload.SyncInventoryPayload;
 import eu.pb4.trinkets.impl.payload.SyncSlotsPayload;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.player.ItemEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.util.TriState;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
 import eu.pb4.trinkets.impl.data.SlotLoader;
-import org.ladysnake.cca.api.v3.entity.EntityComponentFactoryRegistry;
-import org.ladysnake.cca.api.v3.entity.EntityComponentInitializer;
-import org.ladysnake.cca.api.v3.entity.RespawnCopyStrategy;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -51,17 +43,20 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.slf4j.Logger;
 
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-public class TrinketsMain implements ModInitializer, EntityComponentInitializer {
+public class TrinketsMain implements ModInitializer {
 
 	public static final String MOD_ID = "trinkets";
-	public static final Logger LOGGER = LogManager.getLogger();
+	public static final Logger LOGGER = LogUtils.getLogger();
 	public static final Map<Item, TrinketCallback> CALLBACKS = new IdentityHashMap<>();
+	public static final Map<Identifier, TrinketsApi.TrinketPredicate> PREDICATES = new HashMap<>();
 
 	@Override
 	public void onInitialize() {
@@ -171,12 +166,23 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 			}
 			return false;
 		});
+
+		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "attributes"), (stack, ref, entity) -> {
+			var b = new MutableBoolean();
+
+			TrinketUtilities.forEachModifier(entity, stack, ref, (_, _) -> b.setTrue());
+
+			return b.booleanValue();
+		});
+
+		ServerLivingEntityEvents.MOB_CONVERSION.register(LivingEntityTrinketAttachment::copyData);
+		ServerPlayerEvents.COPY_FROM.register(LivingEntityTrinketAttachment::copyData);
 	}
 
 	private static int clearCommand(CommandContext<CommandSourceStack> context){
 		ServerPlayer player = context.getSource().getPlayer();
 		if (player != null) {
-			TrinketAttachment comp = TrinketsApi.getTrinketAttachment(player).get();
+			TrinketAttachment comp = TrinketsApi.getAttachment(player);
 			for (var entry : comp.getInventory().entrySet()){
 				for (var inv : entry.getValue().values()){
 					inv.clearContent();
@@ -194,7 +200,7 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 			ItemInput stack = context.getArgument("stack", ItemInput.class);
 			ServerPlayer player = context.getSource().getPlayer();
 			if (player != null) {
-				TrinketAttachment comp = TrinketsApi.getTrinketAttachment(player).get();
+				TrinketAttachment comp = TrinketsApi.getAttachment(player);
 				SlotGroup slotGroup = comp.getGroups().getOrDefault(group, null);
 				if (slotGroup != null) {
 					SlotType slotType = slotGroup.slots().getOrDefault(slot, null);
@@ -216,11 +222,5 @@ public class TrinketsMain implements ModInitializer, EntityComponentInitializer 
 			e.printStackTrace();
 		}
 		return -1;
-	}
-
-	@Override
-	public void registerEntityComponentFactories(EntityComponentFactoryRegistry registry) {
-		registry.registerFor(LivingEntity.class, LivingEntityTrinketComponent.TRINKET_COMPONENT, LivingEntityTrinketComponent::new);
-		registry.registerForPlayers(LivingEntityTrinketComponent.TRINKET_COMPONENT, LivingEntityTrinketComponent::new, RespawnCopyStrategy.ALWAYS_COPY);
 	}
 }

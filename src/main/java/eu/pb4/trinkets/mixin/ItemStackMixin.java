@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
+import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.TrinketSlot;
 import eu.pb4.trinkets.api.SlotAttributes;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
@@ -42,8 +43,11 @@ import net.minecraft.world.item.component.TooltipDisplay;
 public abstract class ItemStackMixin {
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;addAttributeTooltips(Ljava/util/function/Consumer;Lnet/minecraft/world/item/component/TooltipDisplay;Lnet/minecraft/world/entity/player/Player;)V", shift = Shift.BEFORE), method = "addDetailsToTooltip")
 	private void getTooltip(Item.TooltipContext context, TooltipDisplay displayComponent, Player player, TooltipFlag type, Consumer<Component> textConsumer, CallbackInfo ci) {
-		TrinketsApi.getTrinketAttachment(player).ifPresent(comp -> {
-			ItemStack self = (ItemStack) (Object) this;
+		if (player == null) return;
+
+		var comp = LivingEntityTrinketAttachment.get(player);
+
+		ItemStack self = (ItemStack) (Object) this;
 
             boolean showAttributeTooltip = displayComponent.shows(TrinketDataComponents.ATTRIBUTE_MODIFIERS);
 			if (!showAttributeTooltip) {
@@ -142,7 +146,6 @@ public abstract class ItemStackMixin {
 					}
 				}
 			}
-		});
 	}
 
 	@Unique

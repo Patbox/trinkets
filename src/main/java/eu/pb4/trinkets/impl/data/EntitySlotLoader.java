@@ -126,7 +126,7 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 	@Override
 	protected void apply(Map<String, Map<String, Set<String>>> loader, ResourceManager manager, ProfilerFiller profiler) {
 		Map<String, GroupData> slots = SlotLoader.INSTANCE.getSlots();
-		Map<EntityType<?>, Map<String, SlotGroup.Builder>> groupBuilders = new HashMap<>();
+		Map<EntityType<?>, Map<String, SlotGroupImpl.Builder>> groupBuilders = new HashMap<>();
 
 		loader.forEach((entityName, groups) -> {
 			Set<EntityType<?>> types = new HashSet<>();
@@ -153,13 +153,13 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 			}
 
 			for (EntityType<?> type : types) {
-				Map<String, SlotGroup.Builder> builders = groupBuilders.computeIfAbsent(type, (k) -> new HashMap<>());
+				Map<String, SlotGroupImpl.Builder> builders = groupBuilders.computeIfAbsent(type, (k) -> new HashMap<>());
 				groups.forEach((groupName, slotNames) -> {
 					GroupData group = slots.get(groupName);
 
 					if (group != null) {
-						SlotGroup.Builder builder = builders.computeIfAbsent(groupName,
-								(k) -> new SlotGroup.Builder(groupName, group.getSlotId(), group.getOrder()));
+						var builder = builders.computeIfAbsent(groupName,
+								(k) -> new SlotGroupImpl.Builder(groupName, group.getSlotId(), group.getOrder()));
 						slotNames.forEach(slotName -> {
 							SlotData slotData = group.getSlot(slotName);
 

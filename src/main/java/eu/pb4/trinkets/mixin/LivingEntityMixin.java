@@ -1,9 +1,12 @@
 package eu.pb4.trinkets.mixin;
 
-import eu.pb4.trinkets.api.*;
+import eu.pb4.trinkets.api.SlotAttributes;
+import eu.pb4.trinkets.api.TrinketDropRule;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.event.TrinketDropCallback;
-import eu.pb4.trinkets.impl.LivingEntityTrinketComponent;
+import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.TrinketInventoryImpl;
 import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
 import eu.pb4.trinkets.impl.TrinketUtilities;
@@ -25,6 +28,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -41,9 +46,12 @@ import java.util.*;
  * @author Emi
  */
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityMixin extends Entity {
+public abstract class LivingEntityMixin extends Entity implements LivingEntityTrinketAttachment.Provider {
     @Unique
     private final Map<String, ItemStack> lastEquippedTrinkets = new HashMap<>();
+
+    @Unique
+    private final LivingEntityTrinketAttachment trinketAttachment = new LivingEntityTrinketAttachment((LivingEntity) (Object) this);
 
     private LivingEntityMixin() {
         super(null, null);
@@ -55,15 +63,34 @@ public abstract class LivingEntityMixin extends Entity {
     @Shadow
     public abstract boolean equipmentHasChanged(ItemStack previous, ItemStack current);
 
+    @Override
+    public LivingEntityTrinketAttachment trinkets$getAttachment() {
+        return this.trinketAttachment;
+    }
+
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    private void readTrinketData(ValueInput input, CallbackInfo ci) {
+        if (input.contains("trinkets")) {
+            this.trinketAttachment.readData(input.childOrEmpty("trinkets"));
+        } else if (input.contains("cardinal_components")) { // Old data location
+            var cardinalComponents = input.childOrEmpty("cardinal_components").child("trinkets:trinkets");
+            if (cardinalComponents.isPresent()) {
+                this.trinketAttachment.readData(cardinalComponents.get());
+            }
+        }
+    }
+
+    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
+    private void writeTrinketData(ValueOutput output, CallbackInfo ci) {
+        this.trinketAttachment.writeData(output.child("trinkets"));
+    }
+
     @Inject(at = @At("HEAD"), method = "canFreeze", cancellable = true)
     private void canFreeze(CallbackInfoReturnable<Boolean> cir) {
-        Optional<TrinketAttachment> component = TrinketsApi.getTrinketAttachment((LivingEntity) (Object) this);
-        if (component.isPresent()) {
-            for (Tuple<TrinketSlotAccess, ItemStack> equipped : component.get().getAllEquipped()) {
-                if (equipped.getB().is(ItemTags.FREEZE_IMMUNE_WEARABLES)) {
-                    cir.setReturnValue(false);
-                    break;
-                }
+        for (Tuple<TrinketSlotAccess, ItemStack> equipped : this.trinketAttachment.getAllEquipped()) {
+            if (equipped.getB().is(ItemTags.FREEZE_IMMUNE_WEARABLES)) {
+                cir.setReturnValue(false);
+                break;
             }
         }
     }
@@ -73,7 +100,7 @@ public abstract class LivingEntityMixin extends Entity {
         LivingEntity entity = (LivingEntity) (Object) this;
 
         boolean keepInv = world.getGameRules().get(GameRules.KEEP_INVENTORY);
-        TrinketsApi.getTrinketAttachment(entity).ifPresent(trinkets -> trinkets.forEach((ref, stack) -> {
+        this.trinketAttachment.forEach((ref, stack) -> {
             if (stack.isEmpty()) {
                 return;
             }
@@ -110,7 +137,7 @@ public abstract class LivingEntityMixin extends Entity {
                 default:
                     break;
             }
-        }));
+        });
     }
 
     @Unique
@@ -124,7 +151,7 @@ public abstract class LivingEntityMixin extends Entity {
     }
 
     @Unique
-    private void stopTrinketLocationBasedEffects(LivingEntityTrinketComponent trinkets, final ItemStack previous, final TrinketSlotAccess inSlot, final AttributeMap attributes) {
+    private void stopTrinketLocationBasedEffects(LivingEntityTrinketAttachment trinkets, final ItemStack previous, final TrinketSlotAccess inSlot, final AttributeMap attributes) {
         LivingEntity entity = (LivingEntity) (Object) this;
 
         TrinketUtilities.forEachModifier(entity, previous, inSlot, (attribute, modifier) -> {
@@ -146,9 +173,7 @@ public abstract class LivingEntityMixin extends Entity {
     private void handleEquipmentUpdates(CallbackInfo ci) {
         LivingEntity entity = (LivingEntity) (Object) this;
         AttributeMap attributes = this.getAttributes();
-        var optional = TrinketsApi.getTrinketAttachment(entity);
-        if (optional.isEmpty()) return;
-        var trinkets = (LivingEntityTrinketComponent) optional.get();
+        var trinkets = this.trinketAttachment;
 
         List<TrinketSlotAccess> changedItems = new ArrayList<>();
         //noinspection unchecked

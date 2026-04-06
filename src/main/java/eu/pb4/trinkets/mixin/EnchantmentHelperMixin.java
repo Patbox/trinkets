@@ -1,11 +1,11 @@
 package eu.pb4.trinkets.mixin;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Predicate;
-
+import com.llamalad7.mixinextras.sugar.Local;
+import eu.pb4.trinkets.api.TrinketsApi;
+import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
+import eu.pb4.trinkets.impl.TrinketSlotTarget;
 import eu.pb4.trinkets.impl.TrinketUtilities;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -16,16 +16,16 @@ import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
-import com.llamalad7.mixinextras.sugar.Local;
-import eu.pb4.trinkets.impl.TrinketSlotTarget;
-import eu.pb4.trinkets.api.TrinketAttachment;
-import eu.pb4.trinkets.api.TrinketsApi;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Allows enchantments to work on trinket items when used in global entity context
@@ -35,55 +35,52 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(EnchantmentHelper.class)
 public abstract class EnchantmentHelperMixin {
 
-	@Inject(at = @At("TAIL"), method = "runIterationOnEquipment(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentInSlotVisitor;)V")
-	private static void forEachTrinket(LivingEntity entity, EnchantmentHelper.EnchantmentInSlotVisitor contextAwareConsumer, CallbackInfo info) {
-		Optional<TrinketAttachment> optional = TrinketsApi.getTrinketAttachment(entity);
-		if (optional.isPresent()) {
-			TrinketAttachment comp = optional.get();
-			comp.forEach((ref, stack) -> {
-				if (!stack.isEmpty()) {
-					ItemEnchantments enchantments = stack.get(DataComponents.ENCHANTMENTS);
-					if (enchantments != null && !enchantments.isEmpty()) {
-						EnchantedItemInUse context = new EnchantedItemInUse(stack, null, entity, (item) -> {
-							TrinketsApi.onTrinketBroken(stack, ref, entity);
-						});
+    @Inject(at = @At("TAIL"), method = "runIterationOnEquipment(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentInSlotVisitor;)V")
+    private static void forEachTrinket(LivingEntity entity, EnchantmentHelper.EnchantmentInSlotVisitor contextAwareConsumer, CallbackInfo info) {
+        var comp = LivingEntityTrinketAttachment.get(entity);
 
-						for (Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
-							Holder<Enchantment> registryEntry = entry.getKey();
-							if (TrinketUtilities.isEnchantmentTrinketCompatible(registryEntry, ref)) {
-								contextAwareConsumer.accept(registryEntry, entry.getIntValue(), context);
-							}
-						}
-					}
-				}
-			});
-		}
-	}
+        comp.forEach((ref, stack) -> {
+            if (!stack.isEmpty()) {
+                ItemEnchantments enchantments = stack.get(DataComponents.ENCHANTMENTS);
+                if (enchantments != null && !enchantments.isEmpty()) {
+                    EnchantedItemInUse context = new EnchantedItemInUse(stack, null, entity, (item) -> {
+                        TrinketsApi.onTrinketBroken(stack, ref, entity);
+                    });
 
-	@Inject(at = @At(value = "INVOKE", target = "Ljava/util/List;iterator()Ljava/util/Iterator;", ordinal = 0), method = "getRandomItemWith")
-	private static void addTrinketsAsChoices(DataComponentType<?> componentType, LivingEntity entity, Predicate<ItemStack> stackPredicate, CallbackInfoReturnable<Optional<EnchantedItemInUse>> info, @Local List<EnchantedItemInUse> list) {
-		Optional<TrinketAttachment> optional = TrinketsApi.getTrinketAttachment(entity);
-		if (optional.isPresent()) {
-			TrinketAttachment comp = optional.get();
-			comp.forEach((ref, stack) -> {
-				if (stackPredicate.test(stack)) {
-					ItemEnchantments enchantments = stack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
-					for(Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
-						Holder<Enchantment> registryEntry = entry.getKey();
-						List<EquipmentSlotGroup> slots = registryEntry.value().definition().slots();
-						Set<String> trinketSlots = ((TrinketSlotTarget) (Object) registryEntry.value().definition()).trinkets$slots();
+                    for (Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
+                        Holder<Enchantment> registryEntry = entry.getKey();
+                        if (TrinketUtilities.isEnchantmentTrinketCompatible(registryEntry, ref)) {
+                            contextAwareConsumer.accept(registryEntry, entry.getIntValue(), context);
+                        }
+                    }
+                }
 
-						if (registryEntry.value().effects().has(componentType)
-								&& (slots.contains(EquipmentSlotGroup.ANY) || slots.contains(EquipmentSlotGroup.ARMOR)
-								|| trinketSlots.contains(ref.inventory().slotType().getId()))
-						) {
-							list.add(new EnchantedItemInUse(stack, null, entity, (item) -> {
-								TrinketsApi.onTrinketBroken(stack, ref, entity);
-							}));
-						}
-					}
-				}
-			});
-		}
-	}
+            }
+        });
+    }
+
+    @Inject(at = @At(value = "INVOKE", target = "Ljava/util/List;iterator()Ljava/util/Iterator;", ordinal = 0), method = "getRandomItemWith")
+    private static void addTrinketsAsChoices(DataComponentType<?> componentType, LivingEntity entity, Predicate<ItemStack> stackPredicate, CallbackInfoReturnable<Optional<EnchantedItemInUse>> info, @Local List<EnchantedItemInUse> list) {
+        var comp = LivingEntityTrinketAttachment.get(entity);
+
+        comp.forEach((ref, stack) -> {
+            if (stackPredicate.test(stack)) {
+                ItemEnchantments enchantments = stack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+                for (Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
+                    Holder<Enchantment> registryEntry = entry.getKey();
+                    List<EquipmentSlotGroup> slots = registryEntry.value().definition().slots();
+                    Set<String> trinketSlots = ((TrinketSlotTarget) (Object) registryEntry.value().definition()).trinkets$slots();
+
+                    if (registryEntry.value().effects().has(componentType)
+                            && (slots.contains(EquipmentSlotGroup.ANY) || slots.contains(EquipmentSlotGroup.ARMOR)
+                            || trinketSlots.contains(ref.inventory().slotType().getId()))
+                    ) {
+                        list.add(new EnchantedItemInUse(stack, null, entity, (item) -> {
+                            TrinketsApi.onTrinketBroken(stack, ref, entity);
+                        }));
+                    }
+                }
+            }
+        });
+    }
 }

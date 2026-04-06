@@ -19,10 +19,6 @@ repositories {
 		url = "https://maven.terraformersmc.com/"
 	}
 	maven {
-		name = "Ladysnake Libs"
-		url = 'https://maven.ladysnake.org/releases'
-	}
-	maven {
 		name = "Nucleoid"
 		url = 'https://maven.nucleoid.xyz/releases'
 	}
@@ -31,9 +27,9 @@ repositories {
 And then to add Trinkets you add it as a dependency in your build.gradle
 ```gradle
 dependencies {
-	modImplementation "eu.pb4.fork:trinkets:${trinkets_version}"
+	modImplementation "eu.pb4:trinkets:${trinkets_version}"
 }
 ```
-For version, see <https://maven.nucleoid.xyz/#/releases/eu/pb4/fork/trinkets>
+For version, see <https://maven.nucleoid.xyz/#/releases/eu/pb4/trinkets>
 
-For basic tutorials and comprehensive documentation, visit this repository's [wiki](https://github.com/emilyploszaj/trinkets/wiki/Home).
+For basic tutorials and comprehensive documentation, visit this repository's [wiki](https://github.com/patbox/trinkets/wiki/Home), it might be outdated through!

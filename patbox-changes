@@ -22,8 +22,9 @@ Already done:
 - Slot count is only calculated on server and sent from it.
 - Events now use the Yumi Framework over Fabric one (as pre-requisite of neoforge support)
 - Predicates can now work as an AND and OR logic in json, by using objects with "and" key or "or" key. These can be nested as much as one needs.
+- Dropped dependency on Cardinal Components API.
 
 Planned:
 - Refactor rendering to be more modern / flexible / data driven.
-- General cleanup
+- General implementation cleanup
 - NeoForge support via Yumi framework

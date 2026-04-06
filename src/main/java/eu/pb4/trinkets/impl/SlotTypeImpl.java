@@ -173,7 +173,7 @@ public record SlotTypeImpl(String group, String name, int order, int amount, Opt
 
     public record DirectCondition(Identifier identifier) implements Condition {
         public boolean test(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
-            var x = TrinketsApi.getTrinketPredicate(identifier);
+            var x = TrinketsMain.PREDICATES.get(identifier);
             return x != null && x.test(stack, slotRef, entity);
         }
 

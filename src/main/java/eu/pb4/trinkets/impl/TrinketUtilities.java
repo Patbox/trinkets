@@ -12,10 +12,8 @@ import eu.pb4.trinkets.api.event.TrinketEquipCallback;
 import eu.pb4.trinkets.api.event.TrinketEquipmentChangedCallback;
 import eu.pb4.trinkets.api.event.TrinketUnequipCallback;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import net.fabricmc.fabric.api.util.TriState;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
@@ -90,12 +88,8 @@ public class TrinketUtilities {
         var equipment = inHand.get(TrinketDataComponents.EQUIPMENT);
 
         if (equipment == null || equipment.canBeEquippedBy(user)) {
-            var optional = TrinketsApi.getTrinketAttachment(user);
-            if (optional.isEmpty()) {
-                return InteractionResult.PASS;
-            }
+            var comp = LivingEntityTrinketAttachment.get(user);
 
-            TrinketAttachment comp = optional.get();
             for (var group : comp.getInventory().values()) {
                 for (var inv : group.values()) {
                     for (int i = 0; i < inv.getContainerSize(); i++) {

@@ -6,33 +6,32 @@ import eu.pb4.trinkets.api.*;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import org.ladysnake.cca.api.v3.component.ComponentKey;
-import org.ladysnake.cca.api.v3.component.ComponentRegistryV3;
-import org.ladysnake.cca.api.v3.component.ComponentV3;
-import org.ladysnake.cca.api.v3.entity.RespawnableComponent;
 
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
-public class LivingEntityTrinketComponent implements TrinketAttachment, RespawnableComponent, ComponentV3 {
-    public static final ComponentKey<LivingEntityTrinketComponent> TRINKET_COMPONENT = ComponentRegistryV3.INSTANCE
-            .getOrCreate(Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "trinkets"), LivingEntityTrinketComponent.class);
+public class LivingEntityTrinketAttachment implements TrinketAttachment {
     private final Set<TrinketInventoryImpl> containerSizeChanged = new HashSet<>();
     public Map<String, Map<String, TrinketInventoryImpl>> inventory = new HashMap<>();
     public Map<String, SlotGroup> groups = new HashMap<>();
     public int size;
     public LivingEntity entity;
-    private boolean syncing;
 
-    public LivingEntityTrinketComponent(LivingEntity entity) {
+    public LivingEntityTrinketAttachment(LivingEntity entity) {
         this.entity = entity;
         this.update();
     }
@@ -152,7 +151,6 @@ public class LivingEntityTrinketComponent implements TrinketAttachment, Respawna
     }
 
     @SuppressWarnings("removal")
-    @Override
     public void readData(ValueInput view) {
         Optional<TrinketSaveData> optional = view.read(TrinketSaveData.MAP_CODEC);
         NonNullList<ItemStack> dropped = NonNullList.create();
@@ -218,7 +216,6 @@ public class LivingEntityTrinketComponent implements TrinketAttachment, Respawna
         }
     }
 
-    @Override
     public void writeData(ValueOutput view) {
         TrinketSaveData data = new TrinketSaveData(new HashMap<>());
         for (Map.Entry<String, Map<String, TrinketInventoryImpl>> group : this.getInventoryImpl().entrySet()) {
@@ -230,7 +227,7 @@ public class LivingEntityTrinketComponent implements TrinketAttachment, Respawna
                 for (int i = 0; i < inv.getContainerSize(); i++) {
                     items.add(inv.getItem(i).copy());
                 }
-                TrinketSaveData.Metadata metadata = this.syncing ? inv.getSyncMetadata() : inv.toMetadata();
+                var metadata = inv.toMetadata();
                 groupTag.put(slot.getKey(), new TrinketSaveData.InventoryData(metadata, items, inv.getSize()));
             }
             data.data().put(group.getKey(), groupTag);
@@ -239,15 +236,10 @@ public class LivingEntityTrinketComponent implements TrinketAttachment, Respawna
     }
 
     @Override
-    public boolean shouldCopyForRespawn(boolean lossless, boolean keepInventory, boolean sameCharacter) {
-        return lossless || keepInventory;
-    }
-
-    @Override
     public boolean isEquipped(Predicate<ItemStack> predicate) {
-        for (Map.Entry<String, Map<String, TrinketInventoryImpl>> group : this.getInventoryImpl().entrySet()) {
-            for (Map.Entry<String, TrinketInventoryImpl> slotType : group.getValue().entrySet()) {
-                TrinketInventoryImpl inv = slotType.getValue();
+        for (var group : this.inventory.entrySet()) {
+            for (var slotType : group.getValue().entrySet()) {
+                var inv = slotType.getValue();
                 for (int i = 0; i < inv.getContainerSize(); i++) {
                     if (predicate.test(inv.getItem(i))) {
                         return true;
@@ -271,13 +263,45 @@ public class LivingEntityTrinketComponent implements TrinketAttachment, Respawna
 
     @Override
     public void forEach(BiConsumer<TrinketSlotAccess, ItemStack> consumer) {
-        for (Map.Entry<String, Map<String, TrinketInventoryImpl>> group : this.getInventoryImpl().entrySet()) {
-            for (Map.Entry<String, TrinketInventoryImpl> slotType : group.getValue().entrySet()) {
+        for (var group : this.getInventoryImpl().entrySet()) {
+            for (var slotType : group.getValue().entrySet()) {
                 TrinketInventoryImpl inv = slotType.getValue();
                 for (int i = 0; i < inv.getContainerSize(); i++) {
                     consumer.accept(new TrinketSlotAccess(inv, i), inv.getItem(i));
                 }
             }
         }
+    }
+
+    public static LivingEntityTrinketAttachment get(LivingEntity livingEntity) {
+        return ((LivingEntityTrinketAttachment.Provider) livingEntity).trinkets$getAttachment();
+    }
+
+    public static void copyData(LivingEntity from, LivingEntity to, ConversionParams conversionParams) {
+        if (!conversionParams.keepEquipment()) {
+            return;
+        }
+
+        copyData(from, to);
+    }
+
+    public static void copyData(LivingEntity from, LivingEntity to, boolean copyInventory) {
+        if (!copyInventory) {
+            return;
+        }
+        copyData(from, to);
+    }
+
+
+    public static void copyData(LivingEntity from, LivingEntity to) {
+        try (var errorReporter = new ProblemReporter.ScopedCollector(TrinketsMain.LOGGER)) {
+            TagValueOutput writeView = TagValueOutput.createWithContext(errorReporter, from.registryAccess());
+            get(from).writeData(writeView);
+            get(to).readData(TagValueInput.create(errorReporter, to.registryAccess(), writeView.buildResult()));
+        }
+    }
+
+    public interface Provider {
+        LivingEntityTrinketAttachment trinkets$getAttachment();
     }
 }

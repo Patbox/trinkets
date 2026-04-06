@@ -65,10 +65,8 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
     }
 
     @Override
-    public void  trinkets$updateTrinketSlots(boolean slotsChanged) {
-        var opt = TrinketsApi.getTrinketAttachment(owner);
-        if (opt.isEmpty()) return;
-        var trinkets = (LivingEntityTrinketComponent) opt.get();
+    public void trinkets$updateTrinketSlots(boolean slotsChanged) {
+        var trinkets = LivingEntityTrinketAttachment.get(owner);
 
         if (slotsChanged) {
             trinkets.update();
@@ -238,35 +236,33 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
                     info.setReturnValue(stack);
                 }
             } else if (index >= 9 && index < 45) {
-                TrinketsApi.getTrinketAttachment(player).ifPresent(trinkets -> {
-                            for (int i = trinketSlotStart; i < trinketSlotEnd; i++) {
-                                Slot s = slots.get(i);
-                                if (!(s instanceof SurvivalTrinketSlot ts) || !s.mayPlace(stack)) {
-                                    continue;
-                                }
+                var trinkets = LivingEntityTrinketAttachment.get(owner);
+                for (int i = trinketSlotStart; i < trinketSlotEnd; i++) {
+                    Slot s = slots.get(i);
+                    if (!(s instanceof SurvivalTrinketSlot ts) || !s.mayPlace(stack)) {
+                        continue;
+                    }
 
-                                SlotType type = ts.getType();
-                                TrinketSlotAccess ref = new TrinketSlotAccess((TrinketInventoryImpl) ts.container, ts.getContainerSlot());
+                    SlotType type = ts.getType();
+                    TrinketSlotAccess ref = new TrinketSlotAccess((TrinketInventoryImpl) ts.container, ts.getContainerSlot());
 
-                                boolean res = type.quickMoveCheck(stack, ref, player);
+                    boolean res = type.quickMoveCheck(stack, ref, player);
 
-                                if (res) {
-                                    if (this.moveItemStackTo(stack, i, i + 1, false)) {
-                                        Level world = player.level();
-                                        if (world.isClientSide()) {
-                                            TrinketsClient.quickMoveTimer = 20;
-                                            TrinketsClient.quickMoveGroup = TrinketsApi.getPlayerSlots(this.owner).get(type.group());
-                                            if (ref.index() > 0) {
-                                                TrinketsClient.quickMoveType = type;
-                                            } else {
-                                                TrinketsClient.quickMoveType = null;
-                                            }
-                                        }
-                                    }
+                    if (res) {
+                        if (this.moveItemStackTo(stack, i, i + 1, false)) {
+                            Level world = player.level();
+                            if (world.isClientSide()) {
+                                TrinketsClient.quickMoveTimer = 20;
+                                TrinketsClient.quickMoveGroup = TrinketsApi.getPlayerSlots(this.owner).get(type.group());
+                                if (ref.index() > 0) {
+                                    TrinketsClient.quickMoveType = type;
+                                } else {
+                                    TrinketsClient.quickMoveType = null;
                                 }
                             }
                         }
-                );
+                    }
+                }
             }
         }
     }

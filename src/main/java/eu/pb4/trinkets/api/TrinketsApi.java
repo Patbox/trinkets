@@ -1,7 +1,9 @@
 package eu.pb4.trinkets.api;
 
 import com.google.common.collect.ImmutableMap;
+import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.TrinketSlotTarget;
+import eu.pb4.trinkets.impl.TrinketsMain;
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
 import eu.pb4.trinkets.impl.payload.BreakPayload;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
@@ -20,21 +22,16 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
-import static eu.pb4.trinkets.impl.LivingEntityTrinketComponent.TRINKET_COMPONENT;
 
 public class TrinketsApi {
-    private static final Map<Identifier, TrinketPredicate> PREDICATES = new HashMap<>();
-
     /**
      * @return The trinket component for this entity, if available
      */
-    public static Optional<TrinketAttachment> getTrinketAttachment(LivingEntity livingEntity) {
-        return TRINKET_COMPONENT.maybeGet(livingEntity).map(Function.identity());
+    public static TrinketAttachment getAttachment(LivingEntity livingEntity) {
+        return ((LivingEntityTrinketAttachment.Provider) livingEntity).trinkets$getAttachment();
     }
 
     /**
@@ -92,12 +89,7 @@ public class TrinketsApi {
      * Registers a predicate to be referenced in slot data
      */
     public static void registerTrinketPredicate(Identifier id, TrinketPredicate predicate) {
-        PREDICATES.put(id, predicate);
-    }
-
-    @Nullable
-    public static TrinketPredicate getTrinketPredicate(Identifier id) {
-        return PREDICATES.get(id);
+        TrinketsMain.PREDICATES.put(id, predicate);
     }
 
     public interface TrinketPredicate {

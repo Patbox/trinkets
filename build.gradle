@@ -44,9 +44,7 @@ dependencies {
 
 	// Mod dependencies
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-	implementation include("org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cca_version}")
-	implementation include("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
-
+Drop
 	implementation include("dev.yumi.mc.core:yumi-mc-foundation:1.0.0+26.1")
 
 	// Optional mod dependencies
@@ -105,16 +103,6 @@ jar {
 	}
 }
 
-// configure the maven publication
-publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			from components.java
-		}
-	}
-    setupRepositories(repositories)
-}
-
 if (System.getenv("MODRINTH")) {
 	modrinth {
 		token = System.getenv("MODRINTH")
@@ -135,14 +123,22 @@ if (System.getenv("MODRINTH")) {
 	}
 }
 
-void setupRepositories(RepositoryHandler repositories) {
-	if (project.hasProperty("mavenUrl")) {
-        repositories.maven {
-            url project.mavenUrl
-            credentials {
-                username project.mavenUsername
-                password project.mavenPassword
-            }
-        }
-    }
+repositories {
+	// Add repositories to publish to here.
+	// Notice: This block does NOT have the same function as the block in the top level.
+	// The repositories here will be used for publishing your artifact, not for
+	// retrieving dependencies.
+	repositories {
+		if (env.MAVEN_URL) {
+			maven {
+				credentials {
+					username env.MAVEN_USERNAME
+					password env.MAVEN_PASSWORD
+				}
+				url env.MAVEN_URL
+			}
+		} else {
+			mavenLocal()
+		}
+	}
 }
