@@ -32,6 +32,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
     private NonNullList<ItemStack> stacks;
     private int size;
     private boolean update = false;
+    private boolean suppressUpdates = false;
     private int forcedSlotCount;
 
     public TrinketInventoryImpl(SlotType slotType, TrinketAttachment comp, Consumer<TrinketInventoryImpl> markDirty, InventorySizeChangedCallback updateSizeCallback, boolean clientSide) {
@@ -191,8 +192,9 @@ public final class TrinketInventoryImpl implements TrinketInventory {
     }
 
     public void update() {
-        if (this.update) {
+        if (this.update && !suppressUpdates) {
             this.update = false;
+            this.suppressUpdates = true;
             if (this.forcedSlotCount < 0) {
                 double baseSize = this.baseSize;
                 for (AttributeModifier mod : this.getModifiersByOperation(AttributeModifier.Operation.ADD_VALUE)) {
@@ -235,6 +237,9 @@ public final class TrinketInventoryImpl implements TrinketInventory {
                 this.stacks = newStacks;
                 this.updateSizeCallback.callSizeChanged(this, oldSize, this.size);
             }
+            // Process updates sequentially, instead of in the middle of an incomplete update.
+            this.suppressUpdates = false;
+            this.update();
         }
     }
 
