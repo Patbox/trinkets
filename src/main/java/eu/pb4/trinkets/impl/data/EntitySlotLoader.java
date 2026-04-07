@@ -25,11 +25,11 @@ import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.impl.data.SlotLoader.GroupData;
 import eu.pb4.trinkets.impl.data.SlotLoader.SlotData;
 import eu.pb4.trinkets.impl.payload.SyncSlotsPayload;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -37,13 +37,13 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.EntityType;
 
-public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String, Map<String, Set<String>>>> implements IdentifiableResourceReloadListener {
+public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String, Map<String, Set<String>>>> implements PreparableReloadListener {
 
 	public static final EntitySlotLoader CLIENT = new EntitySlotLoader();
 	public static final EntitySlotLoader SERVER = new EntitySlotLoader();
 
 	private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
-	private static final Identifier ID = Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "entities");
+	public static final Identifier ID = Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "entities");
 
 	private final Map<EntityType<?>, Map<String, SlotGroupImpl>> slots = new HashMap<>();
 
@@ -196,22 +196,13 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 	}
 
 	public void sync(ServerPlayer playerEntity) {
-		ServerPlayNetworking.send(playerEntity, new SyncSlotsPayload(Map.copyOf(this.slots)));
+		playerEntity.connection.send(new ClientboundCustomPayloadPacket(new SyncSlotsPayload(Map.copyOf(this.slots))));
 	}
 
 	public void sync(List<? extends ServerPlayer> players) {
-		SyncSlotsPayload packet = new SyncSlotsPayload(Map.copyOf(this.slots));
-		players.forEach(player -> ServerPlayNetworking.send(player, packet));
+		var packet = new ClientboundCustomPayloadPacket(new SyncSlotsPayload(Map.copyOf(this.slots)));
+
+		players.forEach(player -> player.connection.send(packet));
 		players.forEach(player -> ((TrinketPlayerScreenHandler) player.inventoryMenu).trinkets$updateTrinketSlots(true));
-	}
-
-	@Override
-	public Identifier getFabricId() {
-		return ID;
-	}
-
-	@Override
-	public Collection<Identifier> getFabricDependencies() {
-		return Lists.newArrayList(SlotLoader.ID);
 	}
 }

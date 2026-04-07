@@ -10,12 +10,13 @@ import eu.pb4.trinkets.impl.TrinketSlot;
 import eu.pb4.trinkets.api.SlotAttributes;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.SlotType;
-import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.impl.TrinketUtilities;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.At.Shift;
+import org.spongepowered.asm.mixin.injection.Desc;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -41,8 +42,24 @@ import net.minecraft.world.item.component.TooltipDisplay;
  */
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
-	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;addAttributeTooltips(Ljava/util/function/Consumer;Lnet/minecraft/world/item/component/TooltipDisplay;Lnet/minecraft/world/entity/player/Player;)V", shift = Shift.BEFORE), method = "addDetailsToTooltip")
-	private void getTooltip(Item.TooltipContext context, TooltipDisplay displayComponent, Player player, TooltipFlag type, Consumer<Component> textConsumer, CallbackInfo ci) {
+	@Inject(method = "addDetailsToTooltip", at = @At(value = "INVOKE",
+			target = "Lnet/minecraft/world/item/ItemStack;addAttributeTooltips(Ljava/util/function/Consumer;Lnet/minecraft/world/item/component/TooltipDisplay;Lnet/minecraft/world/entity/player/Player;)V",
+			shift = Shift.BEFORE), require = 0)
+	private void getTooltipVanilla(Item.TooltipContext context, TooltipDisplay display, @Nullable Player player, TooltipFlag tooltipFlag, Consumer<Component> builder, CallbackInfo ci) {
+		getTooltip(display, player, builder);
+	}
+
+	@SuppressWarnings("MixinAnnotationTarget")
+    @Inject(method = "addDetailsToTooltip", at = @At(value = "INVOKE",
+			target = "Lnet/neoforged/neoforge/common/util/AttributeUtil;addAttributeTooltips(Lnet/minecraft/world/item/ItemStack;Ljava/util/function/Consumer;Lnet/minecraft/world/item/component/TooltipDisplay;Lnet/neoforged/neoforge/common/util/AttributeTooltipContext;)V",
+			shift = Shift.BEFORE), require = 0)
+	private void getTooltipNeoForge(Item.TooltipContext context, TooltipDisplay display, @Nullable Player player, TooltipFlag tooltipFlag, Consumer<Component> builder, CallbackInfo ci) {
+		getTooltip(display, player, builder);
+	}
+
+
+	@Unique
+    private void getTooltip(TooltipDisplay displayComponent, Player player, Consumer<Component> textConsumer) {
 		if (player == null) return;
 
 		var comp = LivingEntityTrinketAttachment.get(player);

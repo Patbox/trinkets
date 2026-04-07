@@ -1,4 +1,4 @@
-package eu.pb4.trinkets.impl;
+package eu.pb4.trinkets.impl.client;
 
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import java.util.List;

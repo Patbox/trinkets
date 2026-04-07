@@ -1,0 +1,16 @@
+{
+	"jars": [
+		{
+			"identifier": {
+				"group": "dev.yumi.mc.core",
+				"artifact": "yumi-mc-foundation"
+			},
+			"version": {
+				"range": "[${yumi_version},)",
+				"artifactVersion": "${yumi_version}"
+			},
+			"path": "META-INF/jars/yumi-mc-foundation-${yumi_version}.jar",
+			"isObfuscated": false
+		}
+	]
+}

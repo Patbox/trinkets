@@ -1,8 +1,8 @@
 {
 	"schemaVersion": 1,
-	"id": "trinkets-updated",
+	"id": "trinkets_updated",
 	"version": "${version}",
-	"provides": ["trinkets"],
+	"provides": ["trinkets", "trinkets-updated"],
 	"name": "Trinkets Updated",
 	"description": "Adds a data-driven accessory system to Minecraft",
 	"authors": [
@@ -35,10 +35,10 @@
 
 	"environment": "*",
 	"entrypoints": {
-		"main": [
+		"yumi:init": [
 			"eu.pb4.trinkets.impl.TrinketsMain"
 		],
-		"client": [
+		"yumi:client_init": [
 			"eu.pb4.trinkets.impl.client.TrinketsClient"
 		],
 		"rei_client_": [
@@ -56,6 +56,7 @@
 	"depends": {
 		"minecraft": ">=26.1-",
 		"fabricloader": ">=0.18.0",
-		"fabric-api": "*"
+		"fabric-api": "*",
+		"yumi_mc_core": ">=1.0.0+26.1"
 	}
 }

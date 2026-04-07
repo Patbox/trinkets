@@ -6,9 +6,9 @@ import eu.pb4.trinkets.impl.TrinketSlotTarget;
 import eu.pb4.trinkets.impl.TrinketsMain;
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
 import eu.pb4.trinkets.impl.payload.BreakPayload;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -18,7 +18,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
-import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,13 +40,14 @@ public class TrinketsApi {
     public static void onTrinketBroken(ItemStack stack, TrinketSlotAccess ref, LivingEntity entity) {
         Level world = entity.level();
         if (!world.isClientSide()) {
-            BreakPayload packet = new BreakPayload(entity.getId(), ref.inventory().slotType().group(), ref.inventory().slotType().name(), ref.index());
+            var packet = new ClientboundCustomPayloadPacket(new BreakPayload(entity.getId(), ref.inventory().slotType().group(), ref.inventory().slotType().name(), ref.index()));
             if (entity instanceof ServerPlayer player) {
-                ServerPlayNetworking.send(player, packet);
+                player.connection.send(packet);
             }
-            PlayerLookup.tracking(entity).forEach(watcher -> {
-                ServerPlayNetworking.send(watcher, packet);
-            });
+
+            if (entity.level().getChunkSource() instanceof ServerChunkCache cache) {
+                cache.sendToTrackingPlayers(entity, packet);
+            }
         }
     }
 

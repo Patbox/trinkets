@@ -11,8 +11,9 @@ import eu.pb4.trinkets.impl.TrinketInventoryImpl;
 import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
 import eu.pb4.trinkets.impl.TrinketUtilities;
 import eu.pb4.trinkets.impl.payload.SyncInventoryPayload;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import eu.pb4.trinkets.impl.platform.CommonAbstraction;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
@@ -70,9 +71,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
     private void readTrinketData(ValueInput input, CallbackInfo ci) {
-        if (input.contains("trinkets")) {
-            this.trinketAttachment.readData(input.childOrEmpty("trinkets"));
-        } else if (input.contains("cardinal_components")) { // Old data location
+        var trinkets = input.child("trinkets");
+
+        if (trinkets.isPresent()) {
+            this.trinketAttachment.readData(trinkets.get());
+        } else if (CommonAbstraction.IS_FABRIC && input.contains("cardinal_components")) { // Old data location
             var cardinalComponents = input.childOrEmpty("cardinal_components").child("trinkets:trinkets");
             if (cardinalComponents.isPresent()) {
                 this.trinketAttachment.readData(cardinalComponents.get());
@@ -236,14 +239,14 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
             for (TrinketInventoryImpl trinketInventory : inventoriesToSend) {
                 map.put(trinketInventory.slotType().getId(), trinketInventory.getSize());
             }
-            SyncInventoryPayload packet = new SyncInventoryPayload(this.getId(), items, map);
+            var packet = new ClientboundCustomPayloadPacket(new SyncInventoryPayload(this.getId(), items, map));
 
-            for (ServerPlayer player : PlayerLookup.tracking(entity)) {
-                ServerPlayNetworking.send(player, packet);
+            if (this.level().getChunkSource() instanceof ServerChunkCache cache) {
+                cache.sendToTrackingPlayers(entity, packet);
             }
 
             if (entity instanceof ServerPlayer serverPlayer && !map.isEmpty()) {
-                ServerPlayNetworking.send(serverPlayer, new SyncInventoryPayload(this.getId(), Map.of(), map));
+                serverPlayer.connection.send(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(this.getId(), Map.of(), map)));
                 ((TrinketPlayerScreenHandler) serverPlayer.inventoryMenu).trinkets$updateTrinketSlots(false);
             }
 

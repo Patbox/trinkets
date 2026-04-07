@@ -1,5 +1,7 @@
 package eu.pb4.trinkets.impl.client;
 
+import dev.yumi.mc.core.api.ModContainer;
+import dev.yumi.mc.core.api.entrypoint.client.ClientModInitializer;
 import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
@@ -9,12 +11,9 @@ import eu.pb4.trinkets.impl.TrinketInventoryImpl;
 import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
 import eu.pb4.trinkets.impl.TrinketsNetwork;
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
-import net.fabricmc.api.ClientModInitializer;
+import eu.pb4.trinkets.impl.platform.ClientAbstraction;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -31,9 +30,8 @@ public class TrinketsClient implements ClientModInitializer {
     public static int quickMoveTimer;
 
     @Override
-    public void onInitializeClient() {
-        ClientPlayNetworking.registerGlobalReceiver(TrinketsNetwork.SYNC_INVENTORY, (payload, context) -> {
-            Minecraft client = context.client();
+    public void onInitializeClient(ModContainer modContainer) {
+        ClientAbstraction.get().registerGlobalReceiverPlay(TrinketsNetwork.SYNC_INVENTORY, (client, player, payload) -> {
             Entity entity = client.level.getEntity(payload.entityId());
             if (entity instanceof LivingEntity livingEntity) {
                 var trinkets = LivingEntityTrinketAttachment.get(livingEntity);
@@ -71,28 +69,23 @@ public class TrinketsClient implements ClientModInitializer {
                 }
             }
         });
-        ClientPlayNetworking.registerGlobalReceiver(TrinketsNetwork.SYNC_SLOTS, (payload, context) -> {
-
+        ClientAbstraction.get().registerGlobalReceiverPlay(TrinketsNetwork.SYNC_SLOTS, (client, player, payload) -> {
             EntitySlotLoader.CLIENT.setSlots(payload.map());
-            LocalPlayer player = context.player();
 
             if (player != null) {
                 ((TrinketPlayerScreenHandler) player.inventoryMenu).trinkets$updateTrinketSlots(true);
 
-                Minecraft client = context.client();
                 if (client.screen instanceof TrinketScreen trinketScreen) {
                     trinketScreen.trinkets$updateTrinketSlots();
                 }
 
-                for (Player clientWorldPlayer : context.player().level().players()) {
+                for (Player clientWorldPlayer : player.level().players()) {
                     ((TrinketPlayerScreenHandler) clientWorldPlayer.inventoryMenu).trinkets$updateTrinketSlots(true);
                 }
             }
 
         });
-        ClientPlayNetworking.registerGlobalReceiver(TrinketsNetwork.BREAK, (payload, context) -> {
-
-            Minecraft client = context.client();
+        ClientAbstraction.get().registerGlobalReceiverPlay(TrinketsNetwork.BREAK, (client, player, payload) -> {
             Entity e = client.level.getEntity(payload.entityId());
             if (e instanceof LivingEntity livingEntity) {
                 var comp = LivingEntityTrinketAttachment.get(livingEntity);

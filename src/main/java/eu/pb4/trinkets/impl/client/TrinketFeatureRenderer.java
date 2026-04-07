@@ -1,8 +1,9 @@
-package eu.pb4.trinkets.impl;
+package eu.pb4.trinkets.impl.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.client.TrinketRendererRegistry;
+import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;

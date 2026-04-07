@@ -1,6 +1,6 @@
 package eu.pb4.trinkets.mixin;
 
-import eu.pb4.trinkets.impl.TrinketEntityRenderState;
+import eu.pb4.trinkets.impl.client.TrinketEntityRenderState;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

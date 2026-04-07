@@ -16,8 +16,8 @@ import eu.pb4.trinkets.impl.TrinketsMain;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketDropRule;
 import eu.pb4.trinkets.impl.data.SlotLoader.GroupData;
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -25,11 +25,11 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.jspecify.annotations.Nullable;
 
-public class SlotLoader extends SimplePreparableReloadListener<Map<String, GroupData>> implements IdentifiableResourceReloadListener {
+public class SlotLoader extends SimplePreparableReloadListener<Map<String, GroupData>> implements PreparableReloadListener {
 
 	public static final SlotLoader INSTANCE = new SlotLoader();
 
-	static final Identifier ID = Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "slots");
+	public static final Identifier ID = Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "slots");
 
 	private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
 	private static final int FILE_SUFFIX_LENGTH = ".json".length();
@@ -86,11 +86,6 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 
 	public Map<String, GroupData> getSlots() {
 		return ImmutableMap.copyOf(this.slots);
-	}
-
-	@Override
-	public Identifier getFabricId() {
-		return ID;
 	}
 
 	static class GroupData {

@@ -2,7 +2,6 @@ package eu.pb4.trinkets.impl;
 
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.SlotType;
-import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;

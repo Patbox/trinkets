@@ -1,17 +1,15 @@
 package eu.pb4.trinkets.impl;
 
+import com.google.common.collect.ForwardingListIterator;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import eu.pb4.trinkets.api.*;
 import net.minecraft.core.NonNullList;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -19,9 +17,11 @@ import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 public class LivingEntityTrinketAttachment implements TrinketAttachment {
@@ -34,6 +34,30 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     public LivingEntityTrinketAttachment(LivingEntity entity) {
         this.entity = entity;
         this.update();
+    }
+
+    public static LivingEntityTrinketAttachment get(LivingEntity livingEntity) {
+        return ((LivingEntityTrinketAttachment.Provider) livingEntity).trinkets$getAttachment();
+    }
+
+    public static void copyData(LivingEntity from, LivingEntity to, ConversionParams conversionParams) {
+        if (!conversionParams.keepEquipment()) {
+            return;
+        }
+
+        copyData(from, to);
+    }
+
+    public static void copyData(LivingEntity from, LivingEntity to, boolean restoreAll) {
+        copyData(from, to);
+    }
+
+    public static void copyData(LivingEntity from, LivingEntity to) {
+        try (var errorReporter = new ProblemReporter.ScopedCollector(TrinketsMain.LOGGER)) {
+            TagValueOutput writeView = TagValueOutput.createWithContext(errorReporter, from.registryAccess());
+            get(from).writeData(writeView);
+            get(to).readData(TagValueInput.create(errorReporter, to.registryAccess(), writeView.buildResult()));
+        }
     }
 
     @Override
@@ -263,9 +287,8 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
 
     @Override
     public void forEach(BiConsumer<TrinketSlotAccess, ItemStack> consumer) {
-        for (var group : this.getInventoryImpl().entrySet()) {
-            for (var slotType : group.getValue().entrySet()) {
-                TrinketInventoryImpl inv = slotType.getValue();
+        for (var group : this.getInventoryImpl().values()) {
+            for (var inv : group.values()) {
                 for (int i = 0; i < inv.getContainerSize(); i++) {
                     consumer.accept(new TrinketSlotAccess(inv, i), inv.getItem(i));
                 }
@@ -273,31 +296,16 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         }
     }
 
-    public static LivingEntityTrinketAttachment get(LivingEntity livingEntity) {
-        return ((LivingEntityTrinketAttachment.Provider) livingEntity).trinkets$getAttachment();
-    }
-
-    public static void copyData(LivingEntity from, LivingEntity to, ConversionParams conversionParams) {
-        if (!conversionParams.keepEquipment()) {
-            return;
-        }
-
-        copyData(from, to);
-    }
-
-    public static void copyData(LivingEntity from, LivingEntity to, boolean copyInventory) {
-        if (!copyInventory) {
-            return;
-        }
-        copyData(from, to);
-    }
-
-
-    public static void copyData(LivingEntity from, LivingEntity to) {
-        try (var errorReporter = new ProblemReporter.ScopedCollector(TrinketsMain.LOGGER)) {
-            TagValueOutput writeView = TagValueOutput.createWithContext(errorReporter, from.registryAccess());
-            get(from).writeData(writeView);
-            get(to).readData(TagValueInput.create(errorReporter, to.registryAccess(), writeView.buildResult()));
+    @Override
+    public void forEachWhileTrue(BiPredicate<TrinketSlotAccess, ItemStack> consumer) {
+        for (var group : this.getInventoryImpl().values()) {
+            for (var inv : group.values()) {
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    if (!consumer.test(new TrinketSlotAccess(inv, i), inv.getItem(i))) {
+                        return;
+                    }
+                }
+            }
         }
     }
 

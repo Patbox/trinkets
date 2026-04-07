@@ -6,9 +6,13 @@
     "EnchantmentDefinitionMixin",
     "EnchantmentHelperMixin",
     "InventoryMenuMixin",
+    "ItemMixin",
     "LivingEntityMixin",
     "PlayerListMixin",
     "ServerGamePacketListenerImplMixin",
+    "ServerPlayerMixin",
+    "behaviour.LivingEntityMixin",
+    "behaviour.PiglinAiMixin",
     "client.accessor.ScreenHandlerAccessor",
     "datafixer.V1460Mixin"
   ],

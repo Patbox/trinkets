@@ -6,32 +6,24 @@ import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
 import com.mojang.logging.LogUtils;
+import dev.yumi.mc.core.api.ModContainer;
+import dev.yumi.mc.core.api.entrypoint.ModInitializer;
 import eu.pb4.trinkets.api.*;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
 import eu.pb4.trinkets.impl.payload.BreakPayload;
 import eu.pb4.trinkets.impl.payload.SyncInventoryPayload;
 import eu.pb4.trinkets.impl.payload.SyncSlotsPayload;
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
-import net.fabricmc.fabric.api.event.player.ItemEvents;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import eu.pb4.trinkets.impl.platform.CommonAbstraction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.Level;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
 import eu.pb4.trinkets.impl.data.SlotLoader;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.item.ItemArgument;
@@ -41,9 +33,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
 
@@ -54,37 +43,24 @@ import java.util.Map;
 public class TrinketsMain implements ModInitializer {
 
 	public static final String MOD_ID = "trinkets";
+	public static final String UNIVERSAL_MOD_ID = "trinkets_updated";
 	public static final Logger LOGGER = LogUtils.getLogger();
 	public static final Map<Item, TrinketCallback> CALLBACKS = new IdentityHashMap<>();
 	public static final Map<Identifier, TrinketsApi.TrinketPredicate> PREDICATES = new HashMap<>();
 
 	@Override
-	public void onInitialize() {
-		ResourceManagerHelper resourceManagerHelper = ResourceManagerHelper.get(PackType.SERVER_DATA);
-		resourceManagerHelper.registerReloadListener(SlotLoader.INSTANCE);
-		resourceManagerHelper.registerReloadListener(EntitySlotLoader.SERVER);
-		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, serverResourceManager, success)
-				-> EntitySlotLoader.SERVER.sync(server.getPlayerList().getPlayers()));
-
-		ItemEvents.USE.register((Level level, Player player, InteractionHand hand) -> {
-			ItemStack stack = player.getItemInHand(hand);
-			var trinket = TrinketCallback.getCallback(stack);
-			if (trinket.canEquipFromUse(stack, player)) {
-				var res = TrinketUtilities.swapWithEquipmentSlot(stack, player);
-				if (res != InteractionResult.PASS) {
-					return res;
-				}
-			}
-			return null;
-		});
+	public void onInitialize(ModContainer modContainer) {
+		CommonAbstraction.get().registerServerReloadListener(SlotLoader.ID, SlotLoader.INSTANCE);
+		CommonAbstraction.get().registerServerReloadListener(EntitySlotLoader.ID ,EntitySlotLoader.SERVER, SlotLoader.ID);
 
 		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, "attribute_modifiers"), TrinketDataComponents.ATTRIBUTE_MODIFIERS);
 		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, "equipment"), TrinketDataComponents.EQUIPMENT);
 
-		PayloadTypeRegistry.clientboundPlay().register(TrinketsNetwork.BREAK, BreakPayload.CODEC);
-		PayloadTypeRegistry.clientboundPlay().register(TrinketsNetwork.SYNC_INVENTORY, SyncInventoryPayload.CODEC);
-		PayloadTypeRegistry.clientboundPlay().register(TrinketsNetwork.SYNC_SLOTS, SyncSlotsPayload.CODEC);
-		CommandRegistrationCallback.EVENT.register((dispatcher, registry, env) ->
+		CommonAbstraction.get().registerClientboundPlayPayload(TrinketsNetwork.BREAK, BreakPayload.CODEC);
+		CommonAbstraction.get().registerClientboundPlayPayload(TrinketsNetwork.SYNC_INVENTORY, SyncInventoryPayload.CODEC);
+		CommonAbstraction.get().registerClientboundPlayPayload(TrinketsNetwork.SYNC_SLOTS, SyncSlotsPayload.CODEC);
+
+		CommonAbstraction.get().registerCommand((dispatcher, registry) ->
 			dispatcher.register(literal("trinkets")
 				.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
 				.then(
@@ -175,8 +151,7 @@ public class TrinketsMain implements ModInitializer {
 			return b.booleanValue();
 		});
 
-		ServerLivingEntityEvents.MOB_CONVERSION.register(LivingEntityTrinketAttachment::copyData);
-		ServerPlayerEvents.COPY_FROM.register(LivingEntityTrinketAttachment::copyData);
+		CommonAbstraction.get().registerMobConversion(LivingEntityTrinketAttachment::copyData);
 	}
 
 	private static int clearCommand(CommandContext<CommandSourceStack> context){
