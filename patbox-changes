@@ -25,6 +25,7 @@ Already done:
 - Dropped dependency on Cardinal Components API.
 - Added support for NeoForge Mod Loader
 - minecraft:piglin_safe_armor tag now works on trinkets.
+- Glider component now works correctly in trinkets slots (no visual change for things like wings yet!).
 
 Planned:
 - Refactor rendering to be more modern / flexible / data driven.

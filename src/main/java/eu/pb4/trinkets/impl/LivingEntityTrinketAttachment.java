@@ -1,9 +1,9 @@
 package eu.pb4.trinkets.impl;
 
-import com.google.common.collect.ForwardingListIterator;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import eu.pb4.trinkets.api.*;
+import eu.pb4.trinkets.api.callback.TrinketCallback;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
@@ -304,6 +304,19 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                     if (!consumer.test(new TrinketSlotAccess(inv, i), inv.getItem(i))) {
                         return;
                     }
+                }
+            }
+        }
+    }
+
+    public void tick() {
+        for (var group : this.inventory.values()) {
+            for (var inv : group.values()) {
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    var stack = inv.getItem(i);
+                    if (stack.isEmpty()) continue;
+
+                    TrinketCallback.getCallback(stack).tick(stack, new TrinketSlotAccess(inv, i), this.entity);
                 }
             }
         }

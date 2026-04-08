@@ -38,7 +38,7 @@ public record TrinketEquippableImpl(
     public static final TrinketEquippable DEFAULT = new TrinketEquippableImpl(List.of(), SoundEvents.ARMOR_EQUIP_GENERIC, Optional.empty(), Optional.empty(), TrinketDropRule.DEFAULT, false,  true);
 
     public static final Codec<TrinketEquippable> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-            ExtraCodecs.compactListCodec(Codec.STRING).fieldOf("slot").forGetter(TrinketEquippable::allowedSlots),
+            ExtraCodecs.compactListCodec(Codec.STRING).optionalFieldOf("slot", List.of()).forGetter(TrinketEquippable::allowedSlots),
             SoundEvent.CODEC.optionalFieldOf("equip_sound", SoundEvents.ARMOR_EQUIP_GENERIC).forGetter(TrinketEquippable::equipSound),
             ResourceKey.codec(EquipmentAssets.ROOT_ID).optionalFieldOf("asset_id").forGetter(TrinketEquippable::assetId),
             RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE).optionalFieldOf("allowed_entities").forGetter(TrinketEquippable::allowedEntities),
@@ -66,7 +66,6 @@ public record TrinketEquippableImpl(
     @Override
     public TrinketEquippable withSlots(String... slots) {
         return new TrinketEquippableImpl(List.of(slots), equipSound, assetId, allowedEntities, dropRule, swappable, equipOnInteract);
-        //return new TrinketEquippable(slot, equipSound, assetId, allowedEntities, dropRule, swappable, equipOnInteract);
     }
 
     @Override

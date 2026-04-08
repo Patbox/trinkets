@@ -19,7 +19,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -27,10 +26,19 @@ import java.util.function.Consumer;
 
 public class TrinketsApi {
     /**
-     * @return The trinket component for this entity, if available
+     * @return The trinket component for this entity
      */
     public static TrinketAttachment getAttachment(LivingEntity livingEntity) {
         return ((LivingEntityTrinketAttachment.Provider) livingEntity).trinkets$getAttachment();
+    }
+
+    /**
+     * A simple to use, trinkets-aware implementation of {@link ItemStack#hurtAndBreak}
+     */
+    public void hurtAndBreakItemStack(ItemStack itemStack, int amount, LivingEntity owner, TrinketSlotAccess access) {
+        if (owner.level() instanceof ServerLevel serverLevel) {
+            itemStack.hurtAndBreak(amount, serverLevel, owner instanceof ServerPlayer player ? player : null, (brokenItem) -> onTrinketBroken(itemStack, access, owner));
+        }
     }
 
     /**

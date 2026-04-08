@@ -1,9 +1,9 @@
 package eu.pb4.trinkets;
 
-import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import eu.pb4.trinkets.api.SlotAttributes;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.client.TrinketRenderer;
 import eu.pb4.trinkets.client.TrinketModel;
@@ -17,6 +17,8 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -25,7 +27,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class TestTrinket extends Item implements TrinketRenderer, TrinketCallback {
 
@@ -43,9 +44,11 @@ public class TestTrinket extends Item implements TrinketRenderer, TrinketCallbac
 
 	@Override
 	public void tick(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
-		/*stack.damage(1, entity, e -> {
-			TrinketsApi.onTrinketBroken(stack, slot, entity);
-		});*/
+		if (entity.level() instanceof ServerLevel level) {
+			stack.hurtAndBreak(1, level, entity instanceof ServerPlayer player ? player : null, e -> {
+				TrinketsApi.onTrinketBroken(stack, slot, entity);
+			});
+		}
 	}
 
 	@Override

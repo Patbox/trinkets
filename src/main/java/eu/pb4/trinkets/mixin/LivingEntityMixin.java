@@ -98,6 +98,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
         }
     }
 
+    @Inject(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/EntityEquipment;tick(Lnet/minecraft/world/entity/Entity;)V"))
+    private void tickTrinkets(CallbackInfo ci) {
+        this.trinketAttachment.tick();
+    }
+
     @Inject(at = @At("TAIL"), method = "dropEquipment")
     private void dropInventory(ServerLevel world, CallbackInfo info) {
         LivingEntity entity = (LivingEntity) (Object) this;

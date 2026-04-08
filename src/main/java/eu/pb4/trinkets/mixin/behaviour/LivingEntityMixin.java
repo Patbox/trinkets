@@ -1,7 +1,6 @@
 package eu.pb4.trinkets.mixin.behaviour;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
@@ -19,6 +18,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +29,12 @@ public abstract class LivingEntityMixin extends Entity {
     public LivingEntityMixin(EntityType<?> type, Level level) {
         super(type, level);
     }
-    /*
-    @ModifyReturnValue(method = "canGlide", at = @At(value = "RETURN", ordinal = 2))
-    private boolean handleGliderForTrinkets(boolean original) {
-        if (!original) {
-            TrinketsApi.getAttachment((LivingEntity) (Object) this).isEquipped(stack -> stack.has(DataComponents.GLIDER) && !stack.nextDamageWillBreak());
+
+    @Inject(method = "canGlide", at = @At(value = "INVOKE", target = "Ljava/util/List;iterator()Ljava/util/Iterator;"), cancellable = true)
+    private void handleGliderForTrinkets(CallbackInfoReturnable<Boolean> cir) {
+        if (TrinketsApi.getAttachment((LivingEntity) (Object) this).isEquipped(stack -> stack.has(DataComponents.GLIDER) && !stack.nextDamageWillBreak())) {
+            cir.setReturnValue(true);
         }
-        return true;
     }
 
     @ModifyExpressionValue(method = "updateFallFlying", at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream;toList()Ljava/util/List;"))
@@ -64,5 +64,5 @@ public abstract class LivingEntityMixin extends Entity {
         }
 
         return true;
-    }*/
+    }
 }
