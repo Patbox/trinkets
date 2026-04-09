@@ -47,7 +47,7 @@ import java.util.*;
  * @author Emi
  */
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityMixin extends Entity implements LivingEntityTrinketAttachment.Provider {
+public abstract class LivingEntityMixin extends Entity implements LivingEntityTrinketAttachment.Provider, LivingEntityTrinketAttachment.StackHistory {
     @Unique
     private final Map<String, ItemStack> lastEquippedTrinkets = new HashMap<>();
 
@@ -168,7 +168,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
         //noinspection unchecked
 
         trinkets.forEach((ref, stack) -> {
-            ItemStack previous = getOldStack(ref);
+            ItemStack previous = trinkets$getOldStack(ref);
             ItemStack newStack = ref.get();
 
             if (this.equipmentHasChanged(previous, newStack)) {
@@ -229,7 +229,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
     }
 
     @Unique
-    private ItemStack getOldStack(TrinketSlotAccess access) {
+    public ItemStack trinkets$getOldStack(TrinketSlotAccess access) {
         return lastEquippedTrinkets.getOrDefault(access.getSerializedName(), ItemStack.EMPTY);
     }
 }

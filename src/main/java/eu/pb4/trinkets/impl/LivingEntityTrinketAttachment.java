@@ -107,8 +107,13 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                             if (i < inv.getContainerSize()) {
                                 inv.setItem(i, stack);
                             } else {
+                                TrinketSlotAccess ref = new TrinketSlotAccess(oldInv, i);
+                                ItemStack oldStack = stack;
+                                if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory && !stackHistory.trinkets$getOldStack(ref).isEmpty()) {
+                                    oldStack = stackHistory.trinkets$getOldStack(ref);
+                                }
                                 if (this.entity.level() instanceof ServerLevel serverWorld) {
-                                    this.stopTrinketLocationBasedEffects(stack, new TrinketSlotAccess(oldInv, i), entity.getAttributes());
+                                    this.stopTrinketLocationBasedEffects(oldStack, ref, entity.getAttributes());
                                 }
                                 if (this.entity instanceof Player player) {
                                     player.getInventory().placeItemBackInInventory(stack);
@@ -381,5 +386,11 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
 
     public interface Provider {
         LivingEntityTrinketAttachment trinkets$getAttachment();
+    }
+
+    public interface StackHistory {
+        default ItemStack trinkets$getOldStack(TrinketSlotAccess ref) {
+            return ItemStack.EMPTY;
+        }
     }
 }
