@@ -230,8 +230,9 @@ public final class TrinketInventoryImpl implements TrinketInventory {
                         if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory) {
                             oldStack = stackHistory.trinkets$getOldStack(ref);
                         }
+                        TrinketUtilities.callTrinketEquipmentChange(oldStack, ItemStack.EMPTY, ref, entity);
                         if (this.getComponent() instanceof LivingEntityTrinketAttachment livingEntityTrinketAttachment) {
-                            livingEntityTrinketAttachment.stopTrinketLocationBasedEffects(oldStack, new TrinketSlotAccess(this, i), entity.getAttributes());
+                            livingEntityTrinketAttachment.stopTrinketLocationBasedEffects(oldStack, ref, entity.getAttributes());
                         }
                         if (entity.level() instanceof ServerLevel serverWorld) {
                             entity.spawnAtLocation(serverWorld, stack);

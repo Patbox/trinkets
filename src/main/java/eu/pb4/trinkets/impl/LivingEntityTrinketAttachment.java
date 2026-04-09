@@ -112,6 +112,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                                 if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory && !stackHistory.trinkets$getOldStack(ref).isEmpty()) {
                                     oldStack = stackHistory.trinkets$getOldStack(ref);
                                 }
+                                TrinketUtilities.callTrinketEquipmentChange(oldStack, ItemStack.EMPTY, ref, entity);
                                 if (this.entity.level() instanceof ServerLevel serverWorld) {
                                     this.stopTrinketLocationBasedEffects(oldStack, ref, entity.getAttributes());
                                 }
