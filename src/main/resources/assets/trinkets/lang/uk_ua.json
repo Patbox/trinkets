@@ -17,5 +17,6 @@
 	"trinkets.slot.offhand.glove": "Рукавиця",
 	"trinkets.slot.hand.ring": "Кільце",
 	"trinkets.slot.offhand.ring": "Кільце",
-	"modmenu.descriptionTranslation.trinkets": "Додає керовану даними систему аксесуарів для Minecraft."
+	"modmenu.descriptionTranslation.trinkets": "Додає керовану даними систему аксесуарів для Minecraft.",
+	"fml.menu.mods.info.description.trinkets": "Додає керовану даними систему аксесуарів для Minecraft."
 }
