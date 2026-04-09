@@ -69,12 +69,4 @@ public abstract class RecipeBookScreenMixin extends AbstractContainerScreen<Reci
             context.pose().popMatrix();
         }
     }
-
-    @WrapOperation(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/recipebook/RecipeBookComponent;mouseClicked(Lnet/minecraft/client/input/MouseButtonEvent;Z)Z"), method = "mouseClicked")
-    private boolean overrideRecipeBookClick(RecipeBookComponent<?> instance, MouseButtonEvent event, final boolean doubleClick, Operation<Boolean> original) {
-        if (TrinketScreenManager.isClickInsideTrinketBounds(event.x(), event.y())) {
-            return false;
-        }
-        return original.call(instance, event, doubleClick);
-    }
 }
