@@ -83,4 +83,9 @@ public abstract class InventoryScreenMixin extends AbstractRecipeBookScreen<Inve
 	public boolean trinkets$isRecipeBookOpen() {
 		return ((RecipeBookScreenAccessor) this).getRecipeBookComponent().isVisible();
 	}
+
+	@Override
+	public boolean trinkets$isNarrow() {
+		return ((RecipeBookScreenAccessor) this).getWidthTooNarrow();
+	}
 }
