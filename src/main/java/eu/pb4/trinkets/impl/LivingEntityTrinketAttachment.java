@@ -121,6 +121,9 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                                 } else if (this.entity.level() instanceof ServerLevel serverWorld) {
                                     this.entity.spawnAtLocation(serverWorld, stack);
                                 }
+                                if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory && !stackHistory.trinkets$getOldStack(ref).isEmpty()) {
+                                    stackHistory.trinkets$resolveOldStack(ref);
+                                }
                             }
                         }
                     }
@@ -392,6 +395,9 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     public interface StackHistory {
         default ItemStack trinkets$getOldStack(TrinketSlotAccess ref) {
             return ItemStack.EMPTY;
+        }
+
+        default void trinkets$resolveOldStack(TrinketSlotAccess ref) {
         }
     }
 }

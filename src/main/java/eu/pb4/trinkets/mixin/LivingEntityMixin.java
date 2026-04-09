@@ -189,6 +189,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
             if (slot.index() < slot.inventory().getContainerSize()) {
                 var current = slot.get();
                 this.lastEquippedTrinkets.put(slot.getSerializedName(), current.copy());
+            } else {
+                trinkets$resolveOldStack(slot);
             }
         }
 
@@ -231,5 +233,10 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
     @Unique
     public ItemStack trinkets$getOldStack(TrinketSlotAccess access) {
         return lastEquippedTrinkets.getOrDefault(access.getSerializedName(), ItemStack.EMPTY);
+    }
+
+    @Unique
+    public void trinkets$resolveOldStack(TrinketSlotAccess access) {
+        lastEquippedTrinkets.remove(access.getSerializedName());
     }
 }

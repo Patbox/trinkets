@@ -237,6 +237,9 @@ public final class TrinketInventoryImpl implements TrinketInventory {
                         if (entity.level() instanceof ServerLevel serverWorld) {
                             entity.spawnAtLocation(serverWorld, stack);
                         }
+                        if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory && !stackHistory.trinkets$getOldStack(ref).isEmpty()) {
+                            stackHistory.trinkets$resolveOldStack(ref);
+                        }
                     }
                 }
 
