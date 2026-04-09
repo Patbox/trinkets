@@ -312,7 +312,9 @@ public class TrinketScreenManager {
 		if (currentScreen instanceof AbstractContainerScreen<?> screen) {
 			for (var slot : screen.getMenu().slots) {
 				if (slot instanceof TrinketSlot trinketSlot && !trinketSlot.renderAfterRegularSlots()) {
-					context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_TEXTURE, slot.x + x - 1, slot.y + y - 1, 18, 18);
+					if (!currentScreen.trinkets$isRecipeBookOpen() || slot.x > 0) {
+						context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_TEXTURE, slot.x + x - 1, slot.y + y - 1, 18, 18);
+					}
 				}
 			}
 		}
