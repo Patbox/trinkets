@@ -127,7 +127,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 			Identifier finalIcon = icon == null || icon.isEmpty() ? null : Identifier.parse(icon);
 			SlotTypeImpl.Condition finalValidatorPredicates = validatorPredicates;
 			SlotTypeImpl.Condition finalQuickMovePredicates = quickMovePredicates;
-			SlotTypeImpl.Condition finalTooltipPredicates = finalValidatorPredicates;
+			SlotTypeImpl.Condition finalTooltipPredicates = tooltipPredicates;
 
 			if (finalValidatorPredicates == null) {
 				finalValidatorPredicates = new SlotTypeImpl.DirectCondition(DEFAULT_VALIDATOR_PREDICATES);
