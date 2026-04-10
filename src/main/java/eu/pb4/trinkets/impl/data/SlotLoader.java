@@ -84,11 +84,11 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 		this.slots = loader;
 	}
 
-	public Map<String, GroupData> getSlots() {
+	Map<String, GroupData> getSlots() {
 		return ImmutableMap.copyOf(this.slots);
 	}
 
-	static class GroupData {
+	public static class GroupData {
 
 		private int slotId = -1;
 		private int order = 0;

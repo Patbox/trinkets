@@ -17,6 +17,7 @@ import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -74,6 +75,12 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     public Map<String, Map<String, TrinketInventory>> getInventory() {
         //noinspection unchecked
         return (Map<String, Map<String, TrinketInventory>>) (Object) Collections.unmodifiableMap(inventory);
+    }
+
+    @Override
+    public @Nullable TrinketInventory getInventory(String slotId) {
+        var split = slotId.split("/", 2);
+        return this.inventory.getOrDefault(split[2], Map.of()).get(split[1]);
     }
 
     public Map<String, Map<String, TrinketInventoryImpl>> getInventoryImpl() {
