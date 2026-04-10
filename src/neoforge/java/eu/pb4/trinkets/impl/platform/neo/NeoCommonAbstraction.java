@@ -1,8 +1,8 @@
-package eu.pb4.trinkets.impl.platform;
+package eu.pb4.trinkets.impl.platform.neo;
 
 
 import com.mojang.brigadier.CommandDispatcher;
-import eu.pb4.trinkets.impl.TrinketsMain;
+import eu.pb4.trinkets.impl.platform.CommonAbstraction;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -13,7 +13,6 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.ConversionType;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -26,9 +25,9 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public record NeoServerAbstraction(List<Consumer<IEventBus>> lateActions) implements CommonAbstraction {
-    public static MutableObject<IEventBus> EVENT_BUS = new MutableObject<>();
-    public static NeoServerAbstraction INSTANCE = new NeoServerAbstraction(new ArrayList<>());
+public record NeoCommonAbstraction(List<Consumer<IEventBus>> lateActions) implements CommonAbstraction {
+    public static IEventBus EVENT_BUS = null;
+    public static final NeoCommonAbstraction INSTANCE = new NeoCommonAbstraction(new ArrayList<>());
 
     @Override
     public void registerServerReloadListener(Identifier identifier, PreparableReloadListener instance, Identifier... requires) {
@@ -63,8 +62,8 @@ public record NeoServerAbstraction(List<Consumer<IEventBus>> lateActions) implem
     }
 
     public void addLateAction(Consumer<IEventBus> consumer) {
-        if (EVENT_BUS.get() != null) {
-            consumer.accept(EVENT_BUS.get());
+        if (EVENT_BUS != null) {
+            consumer.accept(EVENT_BUS);
         } else {
             this.lateActions.add(consumer);
         }

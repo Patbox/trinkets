@@ -75,7 +75,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
 
         if (trinkets.isPresent()) {
             this.trinketAttachment.readData(trinkets.get());
-        } else if (CommonAbstraction.IS_FABRIC && input.contains("cardinal_components")) { // Old data location
+        } else if (input.child("cardinal_components").isPresent()) { // Old data location
             var cardinalComponents = input.childOrEmpty("cardinal_components").child("trinkets:trinkets");
             if (cardinalComponents.isPresent()) {
                 this.trinketAttachment.readData(cardinalComponents.get());
