@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketAttachment;
 import eu.pb4.trinkets.api.TrinketInventory;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -13,6 +14,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -32,6 +34,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
     private int size;
     private boolean update = false;
     private int forcedSlotCount;
+    boolean isValid = true;
 
     public TrinketInventoryImpl(SlotType slotType, TrinketAttachment comp, Consumer<TrinketInventoryImpl> markDirty, InventorySizeChangedCallback updateSizeCallback, boolean clientSide) {
         this.component = comp;
@@ -65,6 +68,16 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 
     public SlotType slotType() {
         return this.slotType;
+    }
+
+    @Override
+    public @Nullable TrinketSlotAccess getSlotAccess(int slot) {
+        return this.isValidSlot(slot) ? new TrinketSlotAccess(this, slot) : null;
+    }
+
+    @Override
+    public boolean isValidSlot(int index) {
+        return index < this.getContainerSize() && this.isValid;
     }
 
     public TrinketAttachment getComponent() {
@@ -132,7 +145,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 
     @Override
     public boolean stillValid(Player player) {
-        return true;
+        return this.isValid;
     }
 
     public Map<Identifier, AttributeModifier> getModifiers() {

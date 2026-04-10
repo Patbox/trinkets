@@ -51,6 +51,7 @@ dependencies {
 	// Base Fabric dependencies
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	api include("dev.yumi.mc.core:yumi-mc-foundation:${project.yumi_version}")
+	implementation("dev.yumi.mc.core:yumi-mc-foundation:${project.yumi_version}")
 
 	compileOnly localRuntime("net.fabricmc:fabric-loader:${project.loader_version}")
 
@@ -144,15 +145,9 @@ var env = System.getenv()
 
 publishing {
 	publications {
-		mavenJava(MavenPublication) {
-			//artifactId = base.archivesName.get()
-			// add all the jars that should be included when publishing to maven
-			artifact(jar) {
-				builtBy jar
-			}
-			artifact(sourcesJar) {
-				builtBy sourcesJar
-			}
+		create("mavenJava", MavenPublication) {
+			artifactId = project.archives_base_name
+			from components.java
 		}
 	}
 

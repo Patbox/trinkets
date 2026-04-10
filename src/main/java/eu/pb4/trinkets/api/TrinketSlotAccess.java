@@ -6,7 +6,11 @@ import net.minecraft.world.item.ItemStack;
 
 public record TrinketSlotAccess(TrinketInventory inventory, int index) implements SlotAccess, StringRepresentable {
     public String getSerializedName() {
-        return this.inventory.slotType().getId() + "/" + index;
+        return this.slotType().getId() + "@" + index;
+    }
+
+    public String getAsIdentifierPath() {
+        return this.slotType().getId() + "/" + index;
     }
 
     public SlotType slotType() {
@@ -26,5 +30,9 @@ public record TrinketSlotAccess(TrinketInventory inventory, int index) implement
 
     public TrinketSlotReference reference() {
         return new TrinketSlotReference(this.slotType(), index);
+    }
+
+    public boolean isValid() {
+        return inventory.isValidSlot(index);
     }
 }

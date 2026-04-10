@@ -113,28 +113,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
                 return;
             }
 
-            TrinketDropRule dropRule = TrinketCallback.getCallback(stack).getDropRule(stack, ref, entity);
-
-            dropRule = TrinketDropCallback.EVENT.invoker().drop(dropRule, stack, ref, entity);
+            TrinketDropRule dropRule = TrinketsApi.getDropRule(stack, ref, entity, keepInv);
 
             var inventory = ref.inventory();
-
-            if (dropRule == TrinketDropRule.DEFAULT) {
-                dropRule = inventory.slotType().dropRule();
-            }
-
-            if (dropRule == TrinketDropRule.DEFAULT) {
-                if (keepInv && entity.getType() == EntityType.PLAYER) {
-                    dropRule = TrinketDropRule.KEEP;
-                } else {
-                    if (EnchantmentHelper.has(stack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
-                        dropRule = TrinketDropRule.DESTROY;
-                    } else {
-                        dropRule = TrinketDropRule.DROP;
-                    }
-                }
-            }
-
             switch (dropRule) {
                 case DROP:
                     dropFromEntity(stack);

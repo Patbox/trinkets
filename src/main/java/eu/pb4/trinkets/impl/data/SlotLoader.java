@@ -52,7 +52,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 
 						if (jsonObject != null) {
 							String path = identifier.getPath();
-							String[] parsed = path.substring(dataType.length() + 1, path.length() - FILE_SUFFIX_LENGTH).split("/");
+							String[] parsed = path.substring(dataType.length() + 1, path.length() - FILE_SUFFIX_LENGTH).split("/", 2);
 							String groupName = parsed[0];
 							String fileName = parsed[parsed.length - 1];
 							GroupData group = map.computeIfAbsent(groupName, (k) -> new GroupData());

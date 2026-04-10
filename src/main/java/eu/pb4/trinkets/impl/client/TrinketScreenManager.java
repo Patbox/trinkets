@@ -131,7 +131,7 @@ public class TrinketScreenManager {
 
 			if (group != null) {
 				int slotsWidth = handler.trinkets$getSlotWidth(group) + 1;
-				if (group.slotId() == -1) slotsWidth -= 1;
+				if (!group.hasSlotAttachment()) slotsWidth -= 1;
 				Rect2i r = currentScreen.trinkets$getGroupRect(group);
 				currentBounds = new Rect2i(0, 0, 0, 0);
 
@@ -167,7 +167,7 @@ public class TrinketScreenManager {
 			if (quickMoveGroup != null) {
 				int slotsWidth = handler.trinkets$getSlotWidth(quickMoveGroup) + 1;
 
-				if (quickMoveGroup.slotId() == -1) slotsWidth -= 1;
+				if (!quickMoveGroup.hasSlotAttachment()) slotsWidth -= 1;
 				Rect2i r = currentScreen.trinkets$getGroupRect(quickMoveGroup);
 				quickMoveBounds = new Rect2i(0, 0, 0, 0);
 
@@ -211,7 +211,7 @@ public class TrinketScreenManager {
 		int slotsWidth = handler.trinkets$getSlotWidth(group) + 1;
 		List<Point> slotHeights = handler.trinkets$getSlotHeights(group);
 		List<SlotType> slotTypes = handler.trinkets$getSlotTypes(group);
-		if (group.slotId() == -1) slotsWidth -= 1;
+		if (!group.hasSlotAttachment()) slotsWidth -= 1;
 		int x = r.getX() - 4 - (slotsWidth - 1) / 2 * 18;
 		int y = r.getY() - 4;
 		if (slotsWidth > 1 || type != null) {
@@ -265,7 +265,7 @@ public class TrinketScreenManager {
 			}
 
 			// Because pre-existing slots are not part of the slotHeights list
-			if (group.slotId() != -1) {
+			if (group.hasSlotAttachment()) {
 				drawTexture(context, MORE_SLOTS, r.getX() + 1, y + 1, 4, 1, 16, 3);
 				drawTexture(context, MORE_SLOTS, r.getX() + 1, y + 22, 4, 22, 16, 3);
 			}

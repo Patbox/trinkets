@@ -80,7 +80,13 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     @Override
     public @Nullable TrinketInventory getInventory(String slotId) {
         var split = slotId.split("/", 2);
-        return this.inventory.getOrDefault(split[2], Map.of()).get(split[1]);
+        return this.inventory.getOrDefault(split[0], Map.of()).get(split[1]);
+    }
+
+    @Override
+    public @Nullable TrinketSlotAccess getSlotAccess(String slotId, int slot) {
+        var inv = getInventory(slotId);
+        return inv != null ? inv.getSlotAccess(slot) : null;
     }
 
     public Map<String, Map<String, TrinketInventoryImpl>> getInventoryImpl() {
@@ -103,6 +109,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                 if (oldGroup != null) {
                     TrinketInventoryImpl oldInv = oldGroup.get(slot.getKey());
                     if (oldInv != null) {
+                        oldInv.isValid = false;
                         inv.copyFrom(oldInv);
                         for (int i = 0; i < oldInv.getContainerSize(); i++) {
                             ItemStack stack = oldInv.getItem(i).copy();
@@ -144,7 +151,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     }
 
     public void addModifiers(String slotId, List<AttributeModifier> modifiers) {
-        String[] keys = slotId.split("/");
+        String[] keys = slotId.split("/", 2);
         String group = keys[0];
         String slot = keys[1];
         for (AttributeModifier modifier : modifiers) {
@@ -159,7 +166,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     }
 
     public void removeModifiers(String slotId, List<AttributeModifier> modifiers) {
-        String[] keys = slotId.split("/");
+        String[] keys = slotId.split("/", 2);
         String group = keys[0];
         String slot = keys[1];
         for (AttributeModifier modifier : modifiers) {

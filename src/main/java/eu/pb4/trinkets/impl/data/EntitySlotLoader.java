@@ -73,7 +73,7 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 
 									for (JsonElement assignedSlot : assignedSlots) {
 										String slot = assignedSlot.getAsString();
-										String[] parsedSlot = slot.split("/");
+										String[] parsedSlot = slot.split("/", 2);
 
 										if (parsedSlot.length != 2) {
 											TrinketsMain.LOGGER.error("Detected malformed slot assignment " + slot

@@ -60,10 +60,10 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 				}
 			} else {
 				if (slot instanceof SlotWrapper cs) {
-					if (((CreativeSlotAccessor) cs).getSlot().index != TrinketsClient.activeGroup.slotId()) {
+					if (!TrinketsClient.activeGroup.isAttachedToSlot(((CreativeSlotAccessor) cs).getSlot())) {
 						info.setReturnValue(false);
 					}
-				} else if (slot.index != TrinketsClient.activeGroup.slotId()) {
+				} else if (!TrinketsClient.activeGroup.isAttachedToSlot(slot)) {
 					info.setReturnValue(false);
 				}
 			}

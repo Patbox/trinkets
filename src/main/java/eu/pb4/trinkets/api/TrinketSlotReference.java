@@ -8,6 +8,10 @@ public record TrinketSlotReference(String slot, int index) implements StringRepr
     }
 
     public String getSerializedName() {
+        return this.slot + "@" + index;
+    }
+
+    public String getAsIdentifierPath() {
         return this.slot + "/" + index;
     }
 }

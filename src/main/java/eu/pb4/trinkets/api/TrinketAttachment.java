@@ -38,6 +38,20 @@ public interface TrinketAttachment {
 	TrinketInventory getInventory(String slotId);
 
 	/**
+	 * @return A instance of TrinketSlotAccess. It might get invalidated in the future!
+	 */
+	@Nullable
+	TrinketSlotAccess getSlotAccess(String slotId, int slot);
+
+	/**
+	 * @return A instance of TrinketSlotAccess. It might get invalidated in the future!
+	 */
+	@Nullable
+	default TrinketSlotAccess getSlotAccess(TrinketSlotReference slotReference) {
+		return getSlotAccess(slotReference.slot(), slotReference.index());
+	}
+
+	/**
 	 * @return Whether the predicate matches any slots available to the entity
 	 */
 	boolean isEquipped(Predicate<ItemStack> predicate);

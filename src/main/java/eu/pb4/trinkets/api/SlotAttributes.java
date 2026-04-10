@@ -39,7 +39,7 @@ public final class SlotAttributes {
 
 
     public static Identifier getIdentifier(TrinketSlotAccess ref) {
-        String key = ref.getSerializedName();
+        String key = ref.getAsIdentifierPath();
         return CACHED_IDS.computeIfAbsent(key, Identifier::parse);
     }
 
