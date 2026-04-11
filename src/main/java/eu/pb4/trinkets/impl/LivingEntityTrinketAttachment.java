@@ -115,7 +115,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                                 }
                                 droppedItems.put(ref, oldStack);
                                 if (this.entity instanceof Player player) {
-                                    player.getInventory().placeItemBackInInventory(stack);
+                                    player.getInventory().placeItemBackInInventory(stack.copy());
                                 } else if (this.entity.level() instanceof ServerLevel serverWorld) {
                                     this.entity.spawnAtLocation(serverWorld, stack);
                                 }
@@ -127,17 +127,35 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                 count += inv.getContainerSize();
             }
         }
+
+        // Handle dropping newly slotless items.
+        forEach((ref, itemStack) -> {
+            if (!groups.containsKey(ref.slotType().group()) || !groups.get(ref.slotType().group()).slots().containsKey(ref.slotType().name())) {
+                droppedItems.put(ref, itemStack);
+                if (this.entity instanceof Player player && !this.entity.level().isClientSide()) {
+                    player.getInventory().placeItemBackInInventory(itemStack.copy());
+                } else if (this.entity.level() instanceof ServerLevel serverWorld) {
+                    this.entity.spawnAtLocation(serverWorld, itemStack);
+                }
+            }
+        });
+
         size = count;
         this.inventory = inventory;
+
         for (Map.Entry<TrinketSlotAccess, ItemStack> dropped : droppedItems.entrySet()) {
-            TrinketUtilities.callTrinketEquipmentChange(dropped.getValue(), ItemStack.EMPTY, dropped.getKey(), entity);
-            if (this.entity.level() instanceof ServerLevel) {
-                this.stopTrinketLocationBasedEffects(dropped.getValue(), dropped.getKey(), entity.getAttributes());
+            try {
+                TrinketUtilities.callTrinketEquipmentChange(dropped.getValue(), ItemStack.EMPTY, dropped.getKey(), entity);
+                if (this.entity.level() instanceof ServerLevel) {
+                    this.stopTrinketLocationBasedEffects(dropped.getValue(), dropped.getKey(), entity.getAttributes());
+                }
+                if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory) {
+                    stackHistory.trinkets$resolveOldStack(dropped.getKey());
+                }
+                dropped.getKey().set(ItemStack.EMPTY);
+            } catch (Exception e) {
+                TrinketsMain.LOGGER.warn("Caught exception when dropping {} from removed slot {}.", dropped.getValue(), dropped.getKey().getSerializedName());
             }
-            if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory) {
-                stackHistory.trinkets$resolveOldStack(dropped.getKey());
-            }
-            dropped.getKey().set(ItemStack.EMPTY);
         }
     }
 
