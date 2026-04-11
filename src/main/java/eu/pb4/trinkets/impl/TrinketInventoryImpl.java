@@ -266,6 +266,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
         for (AttributeModifier persistentModifier : other.persistentModifiers) {
             this.addModifiers(persistentModifier);
         }
+        this.forcedSlotCount = other.forcedSlotCount;
         this.update = true;
         this.update();
     }

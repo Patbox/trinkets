@@ -195,11 +195,15 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     public void stopTrinketLocationBasedEffects(final ItemStack oldStack, final TrinketSlotAccess inSlot, final AttributeMap attributes) {
         // MC-272769 Mitigation.
         Multimap<Holder<Attribute>, AttributeModifier> existsElsewhere = HashMultimap.create();
-        this.forEach(((slotReference, itemStack) -> {
-            if (!slotReference.equals(inSlot) && !itemStack.isEmpty()) {
-                TrinketUtilities.forEachModifier(entity, itemStack, slotReference, existsElsewhere::put);
-            }
-        }));
+
+        if (!oldStack.isEmpty()) {
+            this.forEach(((slotReference, itemStack) -> {
+                // We check type and index separately, as equals would depend on the inventory being the same as well.
+                if (!(slotReference.slotType().equals(inSlot.slotType()) && slotReference.index() == inSlot.index()) && !itemStack.isEmpty()) {
+                    TrinketUtilities.forEachModifier(entity, itemStack, slotReference, existsElsewhere::put);
+                }
+            }));
+        }
 
         TrinketUtilities.forEachModifier(entity, oldStack, inSlot, (attribute, modifier) -> {
             if (existsElsewhere.containsEntry(attribute, modifier)) {
