@@ -2,6 +2,7 @@ plugins {
 	id 'net.fabricmc.fabric-loom' version '1.15-SNAPSHOT'
 	id "com.modrinth.minotaur" version "2.+"
 	id 'maven-publish'
+	id 'com.matthewprenger.cursegradle' version '1.4.0'
 }
 
 version = project.mod_version
@@ -144,6 +145,8 @@ sourcesJar {
 	from(sourceSets.fabric.resources.sourceDirectories)
 }
 
+var env = System.getenv()
+
 if (System.getenv("MODRINTH")) {
 	modrinth {
 		token = System.getenv("MODRINTH")
@@ -151,7 +154,17 @@ if (System.getenv("MODRINTH")) {
 		versionNumber = "" + version // The version of the mod to upload.
 		versionType = "beta"
 		uploadFile = jar // This links to a task that builds your mod jar and sets "uploadFile" to the mod jar.
-		gameVersions = [((String) project.minecraft_version)]
+
+		List<String> supportedVersions = new ArrayList<>();
+		supportedVersions.add(project.minecraft_version);
+		for (String a : project.mc_extra_supported.split(",")) {
+			if (!a.strip().isEmpty()) {
+				supportedVersions.add(a.strip())
+			}
+		}
+
+		gameVersions = supportedVersions
+
 		changelog = System.getenv("CHANGELOG")
 		loaders = ["fabric", "neoforge"]
 
@@ -164,7 +177,41 @@ if (System.getenv("MODRINTH")) {
 	}
 }
 
-var env = System.getenv()
+
+curseforge {
+	if (System.getenv("CURSEFORGE")) {
+		apiKey = System.getenv("CURSEFORGE")
+
+		project {
+			id = "1509777"
+			releaseType = "release"
+			changelog = System.getenv("CHANGELOG")
+			changelogType = "markdown"
+			addGameVersion((project.minecraft_version.contains("-") ? ((String) project.minecraft_version.split("-")[0] + "-snapshot") : project.minecraft_version))
+			addGameVersion "Fabric"
+			addGameVersion "NeoForge"
+
+			for (String a : project.mc_extra_supported.split(",")) {
+				if (!a.strip().isEmpty()) {
+					addGameVersion(a.strip())
+				}
+			}
+
+			mainArtifact(jar.archiveFile)
+
+			afterEvaluate {
+				uploadTask.dependsOn("jar")
+			}
+		}
+	}
+
+	options {
+		forgeGradleIntegration = false
+	}
+	jar {
+		finalizedBy project.tasks.curseforge
+	}
+}
 
 publishing {
 	publications {

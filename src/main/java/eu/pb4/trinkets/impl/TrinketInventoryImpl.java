@@ -22,14 +22,14 @@ import java.util.function.Consumer;
 public final class TrinketInventoryImpl implements TrinketInventory {
     private final SlotType slotType;
     private final int baseSize;
-    private final TrinketAttachment component;
+    private final TrinketAttachment attachment;
     private final Map<Identifier, AttributeModifier> modifiers = new HashMap<>();
     private final Set<AttributeModifier> persistentModifiers = new HashSet<>();
     private final Set<AttributeModifier> cachedModifiers = new HashSet<>();
     private final Multimap<AttributeModifier.Operation, AttributeModifier> modifiersByOperation = HashMultimap.create();
     private final InventorySizeChangedCallback updateSizeCallback;
     private final Consumer<TrinketInventoryImpl> markDirty;
-
+    private TrinketSlotAccess[] accesses;
     private NonNullList<ItemStack> stacks;
     private int size;
     private boolean update = false;
@@ -37,14 +37,30 @@ public final class TrinketInventoryImpl implements TrinketInventory {
     boolean isValid = true;
 
     public TrinketInventoryImpl(SlotType slotType, TrinketAttachment comp, Consumer<TrinketInventoryImpl> markDirty, InventorySizeChangedCallback updateSizeCallback, boolean clientSide) {
-        this.component = comp;
+        this.attachment = comp;
         this.slotType = slotType;
         this.baseSize = slotType.amount();
         this.stacks = NonNullList.withSize(this.baseSize, ItemStack.EMPTY);
+        this.updateSlotAccess();
         this.size = this.baseSize;
         this.forcedSlotCount = clientSide ? this.baseSize : -1;
         this.updateSizeCallback = updateSizeCallback;
         this.markDirty = markDirty;
+    }
+
+    private void updateSlotAccess() {
+        int index;
+        if (this.accesses == null) {
+            this.accesses = new TrinketSlotAccess[this.stacks.size()];
+            index = 0;
+        } else {
+            index = this.accesses.length;
+            this.accesses = Arrays.copyOf(this.accesses, this.stacks.size());
+        }
+
+        for (; index < this.accesses.length; index++) {
+            this.accesses[index] = new TrinketSlotAccess(this, index);
+        }
     }
 
     public static void copyFrom(LivingEntity previous, LivingEntity current) {
@@ -72,21 +88,23 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 
     @Override
     public @Nullable TrinketSlotAccess getSlotAccess(int slot) {
-        return this.isValidSlot(slot) ? new TrinketSlotAccess(this, slot) : null;
+        return this.isValidSlot(slot) ? this.accesses[slot] : null;
     }
 
     @Override
     public boolean isValidSlot(int index) {
-        return index < this.getContainerSize() && this.isValid;
+        return index < this.accesses.length && this.isValid;
     }
 
-    public TrinketAttachment getComponent() {
-        return this.component;
+
+    @Override
+    public TrinketAttachment getAttachment() {
+        return this.attachment;
     }
 
     @Override
     public void clearContent() {
-        for (int i = 0; i < this.getContainerSize(); i++) {
+        for (int i = 0; i < this.stacks.size(); i++) {
             stacks.set(i, ItemStack.EMPTY);
         }
     }
@@ -224,7 +242,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
                 this.size = this.forcedSlotCount;
             }
 
-            LivingEntity entity = this.component.getEntity();
+            LivingEntity entity = this.attachment.getEntity();
 
             if (this.size != this.stacks.size()) {
                 var oldSize = this.stacks.size();
@@ -241,6 +259,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
                 }
 
                 this.stacks = newStacks;
+                this.updateSlotAccess();
                 this.updateSizeCallback.callSizeChanged(this, oldSize, this.size);
             }
         }
@@ -288,20 +307,6 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 
             this.update();
         }
-    }
-
-    public TrinketSaveData.Metadata getSyncMetadata() {
-        return new TrinketSaveData.Metadata(List.copyOf(this.modifiers.values()), List.of());
-    }
-
-    public void applySyncMetadata(TrinketSaveData.Metadata metadata) {
-        this.modifiers.clear();
-        this.persistentModifiers.clear();
-        this.modifiersByOperation.clear();
-
-        metadata.persistentModifiers().forEach(this::addModifier);
-        this.markUpdate();
-        this.update();
     }
 
     @Override

@@ -87,7 +87,7 @@ public abstract class ItemStackMixin {
 					slotCount++;
 					boolean anywhereButHidden = false;
 					for (int i = 0; i < trinketInventory.getContainerSize(); i++) {
-						TrinketSlotAccess ref = new TrinketSlotAccess(trinketInventory, i);
+						TrinketSlotAccess ref = trinketInventory.getSlotAccess(i);
 						boolean res = slotType.tooltipCheck(self, ref, player);
 						boolean canInsert = TrinketSlot.canInsert(self, ref, player);
 						if (res && canInsert) {

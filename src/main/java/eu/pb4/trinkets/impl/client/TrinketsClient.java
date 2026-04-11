@@ -94,7 +94,7 @@ public class TrinketsClient implements ClientModInitializer {
                     var inv = groupMap.get(payload.slot());
                     if (payload.index() < inv.getContainerSize()) {
                         ItemStack stack = inv.getItem(payload.index());
-                        TrinketSlotAccess ref = new TrinketSlotAccess(inv, payload.index());
+                        TrinketSlotAccess ref = inv.getSlotAccess(payload.index());
                         var trinket = TrinketCallback.getCallback(stack);
                         trinket.onBreak(stack, ref, livingEntity);
                     }

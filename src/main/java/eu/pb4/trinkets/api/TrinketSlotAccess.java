@@ -19,13 +19,19 @@ public record TrinketSlotAccess(TrinketInventory inventory, int index) implement
 
     @Override
     public ItemStack get() {
-        return inventory.getItem(index);
+        if (this.isValid()) {
+            return inventory.getItem(index);
+        }
+        return ItemStack.EMPTY;
     }
 
     @Override
     public boolean set(ItemStack itemStack) {
-        inventory.setItem(index, itemStack);
-        return true;
+        if (this.isValid()) {
+            inventory.setItem(index, itemStack);
+            return true;
+        }
+        return false;
     }
 
     public TrinketSlotReference reference() {

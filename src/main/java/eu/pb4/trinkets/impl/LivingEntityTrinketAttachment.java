@@ -18,7 +18,6 @@ import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
-import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -301,10 +300,10 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
 
     @Override
     public void forEach(BiConsumer<TrinketSlotAccess, ItemStack> consumer) {
-        for (var group : this.getInventoryImpl().values()) {
+        for (var group : this.inventory.values()) {
             for (var inv : group.values()) {
                 for (int i = 0; i < inv.getContainerSize(); i++) {
-                    consumer.accept(new TrinketSlotAccess(inv, i), inv.getItem(i));
+                    consumer.accept(inv.getSlotAccess(i), inv.getItem(i));
                 }
             }
         }
@@ -312,10 +311,10 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
 
     @Override
     public void forEachWhileTrue(BiPredicate<TrinketSlotAccess, ItemStack> consumer) {
-        for (var group : this.getInventoryImpl().values()) {
+        for (var group : this.inventory.values()) {
             for (var inv : group.values()) {
                 for (int i = 0; i < inv.getContainerSize(); i++) {
-                    if (!consumer.test(new TrinketSlotAccess(inv, i), inv.getItem(i))) {
+                    if (!consumer.test(inv.getSlotAccess(i), inv.getItem(i))) {
                         return;
                     }
                 }
@@ -330,8 +329,16 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                     var stack = inv.getItem(i);
                     if (stack.isEmpty()) continue;
 
-                    TrinketCallback.getCallback(stack).tick(stack, new TrinketSlotAccess(inv, i), this.entity);
+                    TrinketCallback.getCallback(stack).tick(stack, inv.getSlotAccess(i), this.entity);
                 }
+            }
+        }
+    }
+
+    public void clearContents() {
+        for (var x : this.inventory.values()) {
+            for (var y : x.values()) {
+                y.clearContent();
             }
         }
     }

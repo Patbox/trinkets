@@ -13,4 +13,6 @@ public interface TrinketInventory extends Container {
     TrinketSlotAccess getSlotAccess(int slot);
 
     boolean isValidSlot(int index);
+
+    TrinketAttachment getAttachment();
 }

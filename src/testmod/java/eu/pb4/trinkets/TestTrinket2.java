@@ -45,7 +45,7 @@ public class TestTrinket2 extends Item implements TrinketCallback, TrinketRender
 
 	@Override
 	@Environment(EnvType.CLIENT)
-	public void extractStates(ItemStack stack, TrinketSlotAccess slotReference, EntityModel<? extends LivingEntityRenderState> contextModel, PoseStack matrices, SubmitNodeCollector queue, int light, LivingEntityRenderState state, float limbAngle, float limbDistance) {
+	public void submit(ItemStack stack, TrinketSlotAccess slotReference, EntityModel<? extends LivingEntityRenderState> contextModel, PoseStack matrices, SubmitNodeCollector submit, int light, LivingEntityRenderState state, float limbAngle, float limbDistance) {
 		if (state instanceof HumanoidRenderState humanoidState && contextModel instanceof HumanoidModel<?> model) {
 			var group = slotReference.slotType().group();
 			switch (group) {
@@ -60,7 +60,7 @@ public class TestTrinket2 extends Item implements TrinketCallback, TrinketRender
 			matrices.scale(0.5f, 0.5f, 0.5f);
 			var r = new ItemStackRenderState();
 			Minecraft.getInstance().getItemModelResolver().appendItemLayers(r, stack, ItemDisplayContext.FIXED, null, null, 0);
-			r.submit(matrices, queue, light, 0, 0);
+			r.submit(matrices, submit, light, 0, 0);
 		}
 	}
 }
