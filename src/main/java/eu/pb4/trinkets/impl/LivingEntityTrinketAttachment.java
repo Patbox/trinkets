@@ -89,6 +89,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         Map<String, SlotGroup> entitySlots = TrinketsApi.getEntitySlots(this.entity);
         int count = 0;
         groups.clear();
+        Map<TrinketSlotAccess, ItemStack> droppedItems = new HashMap<>();
         Map<String, Map<String, TrinketInventoryImpl>> inventory = new HashMap<>();
         for (Map.Entry<String, SlotGroup> group : entitySlots.entrySet()) {
             String groupKey = group.getKey();
@@ -112,18 +113,11 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                                 if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory && !stackHistory.trinkets$getOldStack(ref).isEmpty()) {
                                     oldStack = stackHistory.trinkets$getOldStack(ref);
                                 }
-                                TrinketUtilities.callTrinketEquipmentChange(oldStack, ItemStack.EMPTY, ref, entity);
-                                if (this.entity.level() instanceof ServerLevel serverWorld) {
-                                    this.stopTrinketLocationBasedEffects(oldStack, ref, entity.getAttributes());
-                                }
+                                droppedItems.put(ref, oldStack);
                                 if (this.entity instanceof Player player) {
                                     player.getInventory().placeItemBackInInventory(stack);
                                 } else if (this.entity.level() instanceof ServerLevel serverWorld) {
                                     this.entity.spawnAtLocation(serverWorld, stack);
-                                }
-                                oldInv.setItem(i, ItemStack.EMPTY);
-                                if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory) {
-                                    stackHistory.trinkets$resolveOldStack(ref);
                                 }
                             }
                         }
@@ -135,6 +129,16 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         }
         size = count;
         this.inventory = inventory;
+        for (Map.Entry<TrinketSlotAccess, ItemStack> dropped : droppedItems.entrySet()) {
+            TrinketUtilities.callTrinketEquipmentChange(dropped.getValue(), ItemStack.EMPTY, dropped.getKey(), entity);
+            if (this.entity.level() instanceof ServerLevel) {
+                this.stopTrinketLocationBasedEffects(dropped.getValue(), dropped.getKey(), entity.getAttributes());
+            }
+            if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory) {
+                stackHistory.trinkets$resolveOldStack(dropped.getKey());
+            }
+            dropped.getKey().set(ItemStack.EMPTY);
+        }
     }
 
     private void onSingleInventorySizeChanged(TrinketInventoryImpl inventory, int oldSize, int newSize) {
