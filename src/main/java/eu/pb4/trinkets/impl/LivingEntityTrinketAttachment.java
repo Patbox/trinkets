@@ -21,8 +21,7 @@ import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import org.jspecify.annotations.NonNull;
-import org.spongepowered.asm.mixin.Unique;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -81,6 +80,18 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         return (Map<String, Map<String, TrinketInventory>>) (Object) Collections.unmodifiableMap(inventory);
     }
 
+    @Override
+    public @Nullable TrinketInventory getInventory(String slotId) {
+        var split = slotId.split("/", 2);
+        return this.inventory.getOrDefault(split[0], Map.of()).get(split[1]);
+    }
+
+    @Override
+    public @Nullable TrinketSlotAccess getSlotAccess(String slotId, int slot) {
+        var inv = getInventory(slotId);
+        return inv != null ? inv.getSlotAccess(slot) : null;
+    }
+
     public Map<String, Map<String, TrinketInventoryImpl>> getInventoryImpl() {
         return inventory;
     }
@@ -102,6 +113,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                 if (oldGroup != null) {
                     TrinketInventoryImpl oldInv = oldGroup.get(slot.getKey());
                     if (oldInv != null) {
+                        oldInv.isValid = false;
                         inv.copyFrom(oldInv);
                         for (int i = 0; i < oldInv.getContainerSize(); i++) {
                             ItemStack stack = oldInv.getItem(i).copy();
@@ -177,7 +189,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     }
 
     public void addModifiers(String slotId, List<AttributeModifier> modifiers) {
-        String[] keys = slotId.split("/");
+        String[] keys = slotId.split("/", 2);
         String group = keys[0];
         String slot = keys[1];
         for (AttributeModifier modifier : modifiers) {
@@ -192,7 +204,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     }
 
     public void removeModifiers(String slotId, List<AttributeModifier> modifiers) {
-        String[] keys = slotId.split("/");
+        String[] keys = slotId.split("/", 2);
         String group = keys[0];
         String slot = keys[1];
         for (AttributeModifier modifier : modifiers) {
@@ -380,10 +392,10 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
 
     @Override
     public void forEach(BiConsumer<TrinketSlotAccess, ItemStack> consumer) {
-        for (var group : this.getInventoryImpl().values()) {
+        for (var group : this.inventory.values()) {
             for (var inv : group.values()) {
                 for (int i = 0; i < inv.getContainerSize(); i++) {
-                    consumer.accept(new TrinketSlotAccess(inv, i), inv.getItem(i));
+                    consumer.accept(inv.getSlotAccess(i), inv.getItem(i));
                 }
             }
         }
@@ -391,10 +403,10 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
 
     @Override
     public void forEachWhileTrue(BiPredicate<TrinketSlotAccess, ItemStack> consumer) {
-        for (var group : this.getInventoryImpl().values()) {
+        for (var group : this.inventory.values()) {
             for (var inv : group.values()) {
                 for (int i = 0; i < inv.getContainerSize(); i++) {
-                    if (!consumer.test(new TrinketSlotAccess(inv, i), inv.getItem(i))) {
+                    if (!consumer.test(inv.getSlotAccess(i), inv.getItem(i))) {
                         return;
                     }
                 }
@@ -409,8 +421,16 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                     var stack = inv.getItem(i);
                     if (stack.isEmpty()) continue;
 
-                    TrinketCallback.getCallback(stack).tick(stack, new TrinketSlotAccess(inv, i), this.entity);
+                    TrinketCallback.getCallback(stack).tick(stack, inv.getSlotAccess(i), this.entity);
                 }
+            }
+        }
+    }
+
+    public void clearContents() {
+        for (var x : this.inventory.values()) {
+            for (var y : x.values()) {
+                y.clearContent();
             }
         }
     }

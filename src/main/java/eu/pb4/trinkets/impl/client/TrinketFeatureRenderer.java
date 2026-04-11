@@ -36,7 +36,7 @@ public class TrinketFeatureRenderer<T extends LivingEntityRenderState, M extends
             if (renderer.isPresent()) {
                 matrices.pushPose();
                 renderer.get()
-                        .extractStates(pair.getA(), pair.getB(), this.getParentModel(), matrices, queue,
+                        .submit(pair.getA(), pair.getB(), this.getParentModel(), matrices, queue,
                                 light, state, limbAngle, limbDistance);
                 matrices.popPose();
             } else {

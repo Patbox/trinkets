@@ -6,6 +6,7 @@ import eu.pb4.trinkets.api.SlotType;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.inventory.Slot;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +21,16 @@ public record SlotGroupImpl(String name, int slotId, int order,
             ByteBufCodecs.map(HashMap::new, ByteBufCodecs.STRING_UTF8, SlotTypeImpl.STREAM_CODEC), SlotGroupImpl::slotsImpl,
             SlotGroupImpl::new
     );
+
+    @Override
+    public boolean isAttachedToSlot(Slot slot) {
+        return slot.index == this.slotId;
+    }
+
+    @Override
+    public boolean hasSlotAttachment() {
+        return this.slotId != -1;
+    }
 
     @Override
     public Map<String, SlotType> slots() {

@@ -8,19 +8,28 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.LivingEntity;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public interface CommonAbstraction {
     boolean IS_FABRIC = YumiMods.get().isModLoaded("fabricloader") && !YumiMods.get().isModLoaded("connector");
 
+    CommonAbstraction INSTANCE = Util.make(() -> {
+        try {
+            return (CommonAbstraction) Class.forName(
+                    "eu.pb4.trinkets.impl.platform." +
+                            (CommonAbstraction.IS_FABRIC ? "fabric.FabricCommonAbstraction" : "neo.NeoCommonAbstraction")).getField("INSTANCE").get(null);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    });
+
     static CommonAbstraction get() {
-        return IS_FABRIC ? new FabricServerAbstraction() : NeoServerAbstraction.INSTANCE;
+        return INSTANCE;
     }
 
     void registerServerReloadListener(Identifier identifier, PreparableReloadListener instance, Identifier... requires);

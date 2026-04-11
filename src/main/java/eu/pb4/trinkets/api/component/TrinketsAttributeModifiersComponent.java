@@ -42,7 +42,7 @@ public record TrinketsAttributeModifiersComponent(List<Entry> modifiers) {
 
     public void forEach(TrinketSlotAccess slot, BiConsumer<Holder<Attribute>, AttributeModifier> consumer) {
         for (Entry entry : this.modifiers) {
-            if (entry.slot.isEmpty() || entry.slot.get().equals(slot.getSerializedName())) {
+            if (entry.slot.isEmpty() || entry.slot.get().equals(slot.slotType().getId())) {
                 consumer.accept(entry.attribute, entry.modifier);
             }
         }

@@ -55,7 +55,7 @@ public class TrinketsClient implements ClientModInitializer {
                 }
 
                 for (Map.Entry<String, ItemStack> entry : payload.contentUpdates().entrySet()) {
-                    String[] split = entry.getKey().split("/");
+                    String[] split = entry.getKey().split("/", 2);
                     String group = split[0];
                     String slot = split[1];
                     int index = Integer.parseInt(split[2]);
@@ -94,7 +94,7 @@ public class TrinketsClient implements ClientModInitializer {
                     var inv = groupMap.get(payload.slot());
                     if (payload.index() < inv.getContainerSize()) {
                         ItemStack stack = inv.getItem(payload.index());
-                        TrinketSlotAccess ref = new TrinketSlotAccess(inv, payload.index());
+                        TrinketSlotAccess ref = inv.getSlotAccess(payload.index());
                         var trinket = TrinketCallback.getCallback(stack);
                         trinket.onBreak(stack, ref, livingEntity);
                     }

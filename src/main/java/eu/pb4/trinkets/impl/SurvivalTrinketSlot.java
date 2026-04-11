@@ -36,7 +36,7 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 		this.slotOffset = slotOffset;
 		this.alwaysVisible = alwaysVisible;
 		this.trinketInventory = inventory;
-		this.ref = new TrinketSlotAccess(trinketInventory, slotOffset);
+		this.ref = trinketInventory.getSlotAccess(slotOffset);
 		this.owner = owner;
 	}
 
@@ -48,7 +48,7 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 
 	@Override
 	public boolean mayPlace(ItemStack stack) {
-		return TrinketSlot.canInsert(stack, this.ref, trinketInventory.getComponent().getEntity());
+		return TrinketSlot.canInsert(stack, this.ref, trinketInventory.getAttachment().getEntity());
 	}
 
 	@Override
@@ -60,7 +60,7 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 	public boolean isActive() {
 		if (alwaysVisible) {
 			if (x < 0) {
-				Level world = trinketInventory.getComponent().getEntity().level();
+				Level world = trinketInventory.getAttachment().getEntity().level();
 				if (world.isClientSide()) {
 					Minecraft client = Minecraft.getInstance();
 					Screen s = client.screen;

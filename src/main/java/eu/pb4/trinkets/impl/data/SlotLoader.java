@@ -52,7 +52,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 
 						if (jsonObject != null) {
 							String path = identifier.getPath();
-							String[] parsed = path.substring(dataType.length() + 1, path.length() - FILE_SUFFIX_LENGTH).split("/");
+							String[] parsed = path.substring(dataType.length() + 1, path.length() - FILE_SUFFIX_LENGTH).split("/", 2);
 							String groupName = parsed[0];
 							String fileName = parsed[parsed.length - 1];
 							GroupData group = map.computeIfAbsent(groupName, (k) -> new GroupData());
@@ -84,11 +84,11 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 		this.slots = loader;
 	}
 
-	public Map<String, GroupData> getSlots() {
+	Map<String, GroupData> getSlots() {
 		return ImmutableMap.copyOf(this.slots);
 	}
 
-	static class GroupData {
+	public static class GroupData {
 
 		private int slotId = -1;
 		private int order = 0;
@@ -127,7 +127,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 			Identifier finalIcon = icon == null || icon.isEmpty() ? null : Identifier.parse(icon);
 			SlotTypeImpl.Condition finalValidatorPredicates = validatorPredicates;
 			SlotTypeImpl.Condition finalQuickMovePredicates = quickMovePredicates;
-			SlotTypeImpl.Condition finalTooltipPredicates = finalValidatorPredicates;
+			SlotTypeImpl.Condition finalTooltipPredicates = tooltipPredicates;
 
 			if (finalValidatorPredicates == null) {
 				finalValidatorPredicates = new SlotTypeImpl.DirectCondition(DEFAULT_VALIDATOR_PREDICATES);

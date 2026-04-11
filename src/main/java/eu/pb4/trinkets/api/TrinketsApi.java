@@ -1,6 +1,8 @@
 package eu.pb4.trinkets.api;
 
 import com.google.common.collect.ImmutableMap;
+import eu.pb4.trinkets.api.callback.TrinketCallback;
+import eu.pb4.trinkets.api.event.TrinketDropCallback;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.TrinketSlotTarget;
 import eu.pb4.trinkets.impl.TrinketsMain;
@@ -17,6 +19,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 
 import java.util.Map;
@@ -26,10 +30,36 @@ import java.util.function.Consumer;
 
 public class TrinketsApi {
     /**
-     * @return The trinket component for this entity
+     * @return The trinket attachment for this entity
      */
     public static TrinketAttachment getAttachment(LivingEntity livingEntity) {
         return ((LivingEntityTrinketAttachment.Provider) livingEntity).trinkets$getAttachment();
+    }
+
+    /**
+     * @return The active/final drop rule for select stack in a slot.
+     */
+    public static TrinketDropRule getDropRule(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity, boolean keepInventory) {
+        var dropRule = TrinketCallback.getCallback(stack).getDropRule(stack, slot, entity);
+        dropRule = TrinketDropCallback.EVENT.invoker().drop(dropRule, stack, slot, entity);
+
+        if (dropRule == TrinketDropRule.DEFAULT) {
+            dropRule = slot.slotType().dropRule();
+        }
+
+        if (dropRule == TrinketDropRule.DEFAULT) {
+            if (keepInventory && entity.getType() == EntityType.PLAYER) {
+                dropRule = TrinketDropRule.KEEP;
+            } else {
+                if (EnchantmentHelper.has(stack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
+                    dropRule = TrinketDropRule.DESTROY;
+                } else {
+                    dropRule = TrinketDropRule.DROP;
+                }
+            }
+        }
+
+        return dropRule;
     }
 
     /**
@@ -104,6 +134,9 @@ public class TrinketsApi {
         boolean test(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity);
     }
 
+    /**
+     * Modifies the EnchantmentDefinition to include trinkets slot support.
+     */
     public static Enchantment.EnchantmentDefinition withTrinketSlots(Enchantment.EnchantmentDefinition definition, Set<String> slots) {
         Enchantment.EnchantmentDefinition def = new Enchantment.EnchantmentDefinition(definition.supportedItems(), definition.primaryItems(), definition.weight(), definition.maxLevel(),
                 definition.minCost(), definition.maxCost(), definition.anvilCost(), definition.slots());

@@ -1,4 +1,4 @@
-package eu.pb4.trinkets.mixin;
+package eu.pb4.trinkets.mixin.client;
 
 import eu.pb4.trinkets.impl.client.TrinketEntityRenderState;
 import eu.pb4.trinkets.api.TrinketSlotAccess;

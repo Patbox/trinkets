@@ -94,7 +94,7 @@ public class TrinketUtilities {
                 for (var inv : group.values()) {
                     for (int i = 0; i < inv.getContainerSize(); i++) {
                         if (inv.getItem(i).isEmpty()) {
-                            var ref = new TrinketSlotAccess(inv, i);
+                            var ref = inv.getSlotAccess(i);
                             if (TrinketSlot.canInsert(inHand, ref, user)) {
                                 ItemStack newStack = inHand.copy();
                                 inv.setItem(i, newStack);
@@ -111,7 +111,7 @@ public class TrinketUtilities {
                     for (var inv : group.values()) {
                         for (int i = 0; i < inv.getContainerSize(); i++) {
                             var current = inv.getItem(i);
-                            var ref = new TrinketSlotAccess(inv, i);
+                            var ref = inv.getSlotAccess(i);
                             if (TrinketSlot.mayPickup(current, ref, user) && TrinketSlot.canInsert(inHand, ref, user)) {
                                 TrinketUtilities.playEquipmentSound(inHand, ref, user);
                                 if (inHand.getCount() <= 1) {

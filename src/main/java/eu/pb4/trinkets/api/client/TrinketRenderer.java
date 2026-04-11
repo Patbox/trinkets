@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.item.ItemStack;
 
@@ -25,9 +26,9 @@ public interface TrinketRenderer {
 	 * @param slotReference The exact slot for the item being rendered
 	 * @param contextModel The model this Trinket is being rendered on
 	 */
-	void extractStates(ItemStack stack, TrinketSlotAccess slotReference, EntityModel<? extends LivingEntityRenderState> contextModel,
-					   PoseStack matrices, SubmitNodeCollector vertexConsumers, int light, LivingEntityRenderState state,
-					   float limbAngle, float limbDistance);
+	void submit(ItemStack stack, TrinketSlotAccess slotReference, EntityModel<? extends LivingEntityRenderState> contextModel,
+				PoseStack matrices, SubmitNodeCollector submit, int light, LivingEntityRenderState state,
+				float limbAngle, float limbDistance);
 
 	/**
 	 * Rotates the rendering for the models based on the entity's poses and movements. This will do
@@ -100,6 +101,36 @@ public interface TrinketRenderer {
 		matrices.mulPose(Axis.YP.rotation(model.rightArm.yRot));
 		matrices.mulPose(Axis.XP.rotation(model.rightArm.xRot));
 		matrices.translate(-0.0625F, 0.625F, 0.0F);
+	}
+
+	/**
+	 * Translates the rendering context to the center of the bottom of the player's main arm
+	 * @return True if main hand is right, false otherwise
+	 */
+	static boolean translateToMainHand(PoseStack matrices, HumanoidModel<?> model,
+									   HumanoidRenderState state) {
+		if (state.mainArm == HumanoidArm.LEFT) {
+			translateToLeftArm(matrices, model, state);
+			return false;
+		} else {
+			translateToRightArm(matrices, model, state);
+			return true;
+		}
+	}
+
+	/**
+	 * Translates the rendering context to the center of the bottom of the player's offhand
+	 * @return True if main hand is right, false otherwise
+	 */
+	static boolean translateToOffHand(PoseStack matrices, HumanoidModel<?> model,
+									  HumanoidRenderState state) {
+		if (state.mainArm == HumanoidArm.LEFT) {
+			translateToRightArm(matrices, model, state);
+			return false;
+		} else {
+			translateToLeftArm(matrices, model, state);
+			return true;
+		}
 	}
 
 	/**

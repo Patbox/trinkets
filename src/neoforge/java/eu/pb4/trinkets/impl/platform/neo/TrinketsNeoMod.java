@@ -1,4 +1,4 @@
-package eu.pb4.trinkets.impl.platform;
+package eu.pb4.trinkets.impl.platform.neo;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -6,10 +6,10 @@ import net.neoforged.fml.common.Mod;
 @Mod("trinkets_updated")
 public class TrinketsNeoMod {
     public TrinketsNeoMod(IEventBus modBus) {
-        NeoServerAbstraction.EVENT_BUS.setValue(modBus);
-        for (var a: NeoServerAbstraction.INSTANCE.lateActions()) {
+        NeoCommonAbstraction.EVENT_BUS = modBus;
+        for (var a : NeoCommonAbstraction.INSTANCE.lateActions()) {
             a.accept(modBus);
         }
-        NeoServerAbstraction.INSTANCE.lateActions().clear();
+        NeoCommonAbstraction.INSTANCE.lateActions().clear();
     }
 }

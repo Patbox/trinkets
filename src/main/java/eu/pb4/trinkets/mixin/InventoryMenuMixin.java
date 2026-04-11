@@ -86,8 +86,10 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
             if (!hasSlots(trinkets, group)) {
                 continue;
             }
-            int id = group.slotId();
-            if (id != -1) {
+
+            if (group.hasSlotAttachment()) {
+                int id = group.slotId();
+
                 if (this.slots.size() > id) {
                     Slot slot = this.slots.get(id);
                     if (!(slot instanceof SurvivalTrinketSlot)) {
@@ -114,12 +116,12 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
         slotWidths.clear();
         slotHeights.clear();
         slotTypes.clear();
-        for (var entry : trinkets.getInventoryImpl().entrySet()) {
+        for (var entry : trinkets.getInventoryImpl().entrySet().stream().sorted(Map.Entry.comparingByKey()).toList()) {
             String groupId = entry.getKey();
             SlotGroup group = groups.get(groupId);
             int groupOffset = 1;
 
-            if (group.slotId() != -1) {
+            if (group.hasSlotAttachment()) {
                 groupOffset++;
             }
             int width = 0;
