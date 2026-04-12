@@ -256,6 +256,9 @@ public final class TrinketInventoryImpl implements TrinketInventory {
                         newStacks.set(i, stack);
                     } else {
                         TrinketSlotAccess ref = this.getSlotAccess(i);
+                        if (ref == null) {
+                            continue;
+                        }
                         ItemStack oldStack = stack;
                         if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory) {
                             oldStack = stackHistory.trinkets$getOldStack(ref);

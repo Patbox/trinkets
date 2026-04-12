@@ -120,6 +120,9 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                                 inv.setItem(i, stack);
                             } else {
                                 TrinketSlotAccess ref = oldInv.getSlotAccess(i);
+                                if (ref == null) {
+                                    continue;
+                                }
                                 ItemStack oldStack = stack;
                                 if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory && !stackHistory.trinkets$getOldStack(ref).isEmpty()) {
                                     oldStack = stackHistory.trinkets$getOldStack(ref);
@@ -150,7 +153,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                     this.entity.spawnAtLocation(serverWorld, itemStack);
                 }
             }
-            if (ref.inventory() instanceof TrinketInventoryImpl implemented) {
+            if (ref != null && ref.inventory() instanceof TrinketInventoryImpl implemented) {
                 implemented.isValid = false;
             }
         });
@@ -233,10 +236,14 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         // MC-272769 Mitigation.
         Multimap<Holder<Attribute>, AttributeModifier> existsElsewhere = HashMultimap.create();
 
+        if (inSlot == null) {
+            return;
+        }
+
         if (!oldStack.isEmpty()) {
             this.forEach(((slotReference, itemStack) -> {
                 // We check type and index separately, as equals would depend on the inventory being the same as well.
-                if (!(slotReference.slotType().equals(inSlot.slotType()) && slotReference.index() == inSlot.index()) && !itemStack.isEmpty()) {
+                if (slotReference != null && !(slotReference.slotType().equals(inSlot.slotType()) && slotReference.index() == inSlot.index()) && !itemStack.isEmpty()) {
                     TrinketUtilities.forEachModifier(entity, itemStack, slotReference, existsElsewhere::put);
                 }
             }));
