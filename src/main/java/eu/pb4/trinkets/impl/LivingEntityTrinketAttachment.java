@@ -113,14 +113,13 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                 if (oldGroup != null) {
                     TrinketInventoryImpl oldInv = oldGroup.get(slot.getKey());
                     if (oldInv != null) {
-                        oldInv.isValid = false;
                         inv.copyFrom(oldInv);
                         for (int i = 0; i < oldInv.getContainerSize(); i++) {
                             ItemStack stack = oldInv.getItem(i).copy();
                             if (i < inv.getContainerSize()) {
                                 inv.setItem(i, stack);
                             } else {
-                                TrinketSlotAccess ref = new TrinketSlotAccess(oldInv, i);
+                                TrinketSlotAccess ref = oldInv.getSlotAccess(i);
                                 ItemStack oldStack = stack;
                                 if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory && !stackHistory.trinkets$getOldStack(ref).isEmpty()) {
                                     oldStack = stackHistory.trinkets$getOldStack(ref);
@@ -133,6 +132,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                                 }
                             }
                         }
+                        oldInv.isValid = false;
                     }
                 }
                 inventory.computeIfAbsent(group.getKey(), (k) -> new HashMap<>()).put(slot.getKey(), inv);
@@ -142,13 +142,16 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
 
         // Handle dropping newly slotless items.
         forEach((ref, itemStack) -> {
-            if (!groups.containsKey(ref.slotType().group()) || !groups.get(ref.slotType().group()).slots().containsKey(ref.slotType().name())) {
+            if (ref != null && (!groups.containsKey(ref.slotType().group()) || !groups.get(ref.slotType().group()).slots().containsKey(ref.slotType().name()))) {
                 droppedItems.put(ref, itemStack);
                 if (this.entity instanceof Player player && !this.entity.level().isClientSide()) {
                     player.getInventory().placeItemBackInInventory(itemStack.copy());
                 } else if (this.entity.level() instanceof ServerLevel serverWorld) {
                     this.entity.spawnAtLocation(serverWorld, itemStack);
                 }
+            }
+            if (ref.inventory() instanceof TrinketInventoryImpl implemented) {
+                implemented.isValid = false;
             }
         });
 
