@@ -10,4 +10,6 @@ public interface RecipeBookScreenAccessor {
 
 	@Accessor
 	RecipeBookComponent<?> getRecipeBookComponent();
+	@Accessor
+	boolean getWidthTooNarrow();
 }

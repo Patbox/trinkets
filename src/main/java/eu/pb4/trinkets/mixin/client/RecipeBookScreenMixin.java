@@ -1,11 +1,16 @@
 package eu.pb4.trinkets.mixin.client;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import eu.pb4.trinkets.impl.TrinketsMain;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
 import eu.pb4.trinkets.impl.TrinketSlot;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractRecipeBookScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -34,7 +39,7 @@ public abstract class RecipeBookScreenMixin extends AbstractContainerScreen<Reci
 
 
     @Inject(at = @At("HEAD"), method = "hasClickedOutside", cancellable = true)
-    private void isClickOutsideBounds(double mouseX, double mouseY, int left, int top, CallbackInfoReturnable<Boolean> info) {
+    private void isClickOutsideBounds(final double mouseX, final double mouseY, final int left, final int top, CallbackInfoReturnable<Boolean> info) {
         if (TrinketScreenManager.isClickInsideTrinketBounds(mouseX, mouseY)) {
             info.setReturnValue(false);
         }

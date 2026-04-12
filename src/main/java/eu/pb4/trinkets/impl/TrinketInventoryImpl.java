@@ -33,6 +33,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
     private NonNullList<ItemStack> stacks;
     private int size;
     private boolean update = false;
+    private boolean suppressUpdates = false;
     private int forcedSlotCount;
     boolean isValid = true;
 
@@ -180,6 +181,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
         this.markUpdate();
     }
 
+    // Persistent
     public void addModifiers(AttributeModifier modifier) {
         this.addModifier(modifier);
         this.persistentModifiers.add(modifier);
@@ -220,8 +222,9 @@ public final class TrinketInventoryImpl implements TrinketInventory {
     }
 
     public void update() {
-        if (this.update) {
+        if (this.update && !suppressUpdates) {
             this.update = false;
+            this.suppressUpdates = true;
             if (this.forcedSlotCount < 0) {
                 double baseSize = this.baseSize;
                 for (AttributeModifier mod : this.getModifiersByOperation(AttributeModifier.Operation.ADD_VALUE)) {
@@ -252,8 +255,24 @@ public final class TrinketInventoryImpl implements TrinketInventory {
                     if (i < newStacks.size()) {
                         newStacks.set(i, stack);
                     } else {
+                        TrinketSlotAccess ref = this.getSlotAccess(i);
+                        if (ref == null) {
+                            continue;
+                        }
+                        ItemStack oldStack = stack;
+                        if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory) {
+                            oldStack = stackHistory.trinkets$getOldStack(ref);
+                        }
+                        TrinketUtilities.callTrinketEquipmentChange(oldStack, ItemStack.EMPTY, ref, entity);
+                        if (this.getAttachment() instanceof LivingEntityTrinketAttachment livingEntityTrinketAttachment) {
+                            livingEntityTrinketAttachment.stopTrinketLocationBasedEffects(oldStack, ref, entity.getAttributes());
+                        }
                         if (entity.level() instanceof ServerLevel serverWorld) {
                             entity.spawnAtLocation(serverWorld, stack);
+                        }
+                        this.stacks.set(i, ItemStack.EMPTY);
+                        if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory && !stackHistory.trinkets$getOldStack(ref).isEmpty()) {
+                            stackHistory.trinkets$resolveOldStack(ref);
                         }
                     }
                 }
@@ -262,6 +281,9 @@ public final class TrinketInventoryImpl implements TrinketInventory {
                 this.updateSlotAccess();
                 this.updateSizeCallback.callSizeChanged(this, oldSize, this.size);
             }
+            // Process updates sequentially, instead of in the middle of an incomplete update.
+            this.suppressUpdates = false;
+            this.update();
         }
     }
 
@@ -278,6 +300,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
         for (AttributeModifier persistentModifier : other.persistentModifiers) {
             this.addModifiers(persistentModifier);
         }
+        this.forcedSlotCount = other.forcedSlotCount;
         this.update = true;
         this.update();
     }

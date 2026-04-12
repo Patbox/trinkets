@@ -24,6 +24,10 @@ public interface TrinketScreen {
 		return false;
 	}
 
+	public default boolean trinkets$isNarrow() {
+		return false;
+	}
+
 	public default void trinkets$updateTrinketSlots() {
 	}
 }

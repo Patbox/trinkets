@@ -18,12 +18,15 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
+import eu.pb4.trinkets.api.TrinketsApi;
+import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.SlotGroupImpl;
 import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
 import eu.pb4.trinkets.impl.TrinketsMain;
 import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.impl.data.SlotLoader.GroupData;
 import eu.pb4.trinkets.impl.data.SlotLoader.SlotData;
+import eu.pb4.trinkets.impl.payload.SyncInventoryPayload;
 import eu.pb4.trinkets.impl.payload.SyncSlotsPayload;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
@@ -202,7 +205,16 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 	public void sync(List<? extends ServerPlayer> players) {
 		var packet = new ClientboundCustomPayloadPacket(new SyncSlotsPayload(Map.copyOf(this.slots)));
 
-		players.forEach(player -> player.connection.send(packet));
-		players.forEach(player -> ((TrinketPlayerScreenHandler) player.inventoryMenu).trinkets$updateTrinketSlots(true));
+		for(ServerPlayer player : players) {
+
+			((TrinketPlayerScreenHandler) player.inventoryMenu).trinkets$updateTrinketSlots(true);
+			var trinkets = TrinketsApi.getAttachment(player);
+			Map<String, Integer> tag = new HashMap<>();
+			((LivingEntityTrinketAttachment) trinkets).inventory.forEach((_, a) -> a.forEach((_, v) -> {
+				tag.put(v.slotType().getId(), v.getContainerSize());
+			}));
+			player.connection.send(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(player.getId(), Map.of(), tag)));
+			player.connection.send(packet);
+		}
 	}
 }

@@ -3,6 +3,7 @@ package eu.pb4.trinkets.impl;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import eu.pb4.trinkets.api.*;
+import net.minecraft.core.Holder;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerLevel;
@@ -10,6 +11,9 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -96,6 +100,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         Map<String, SlotGroup> entitySlots = TrinketsApi.getEntitySlots(this.entity);
         int count = 0;
         groups.clear();
+        Map<TrinketSlotAccess, ItemStack> droppedItems = new HashMap<>();
         Map<String, Map<String, TrinketInventoryImpl>> inventory = new HashMap<>();
         for (Map.Entry<String, SlotGroup> group : entitySlots.entrySet()) {
             String groupKey = group.getKey();
@@ -108,28 +113,68 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                 if (oldGroup != null) {
                     TrinketInventoryImpl oldInv = oldGroup.get(slot.getKey());
                     if (oldInv != null) {
-                        oldInv.isValid = false;
                         inv.copyFrom(oldInv);
                         for (int i = 0; i < oldInv.getContainerSize(); i++) {
                             ItemStack stack = oldInv.getItem(i).copy();
                             if (i < inv.getContainerSize()) {
                                 inv.setItem(i, stack);
                             } else {
+                                TrinketSlotAccess ref = oldInv.getSlotAccess(i);
+                                if (ref == null) {
+                                    continue;
+                                }
+                                ItemStack oldStack = stack;
+                                if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory && !stackHistory.trinkets$getOldStack(ref).isEmpty()) {
+                                    oldStack = stackHistory.trinkets$getOldStack(ref);
+                                }
+                                droppedItems.put(ref, oldStack);
                                 if (this.entity instanceof Player player) {
-                                    player.getInventory().placeItemBackInInventory(stack);
+                                    player.getInventory().placeItemBackInInventory(stack.copy());
                                 } else if (this.entity.level() instanceof ServerLevel serverWorld) {
                                     this.entity.spawnAtLocation(serverWorld, stack);
                                 }
                             }
                         }
+                        oldInv.isValid = false;
                     }
                 }
                 inventory.computeIfAbsent(group.getKey(), (k) -> new HashMap<>()).put(slot.getKey(), inv);
                 count += inv.getContainerSize();
             }
         }
+
+        // Handle dropping newly slotless items.
+        forEach((ref, itemStack) -> {
+            if (ref != null && (!groups.containsKey(ref.slotType().group()) || !groups.get(ref.slotType().group()).slots().containsKey(ref.slotType().name()))) {
+                droppedItems.put(ref, itemStack);
+                if (this.entity instanceof Player player && !this.entity.level().isClientSide()) {
+                    player.getInventory().placeItemBackInInventory(itemStack.copy());
+                } else if (this.entity.level() instanceof ServerLevel serverWorld) {
+                    this.entity.spawnAtLocation(serverWorld, itemStack);
+                }
+            }
+            if (ref != null && ref.inventory() instanceof TrinketInventoryImpl implemented) {
+                implemented.isValid = false;
+            }
+        });
+
         size = count;
         this.inventory = inventory;
+
+        for (Map.Entry<TrinketSlotAccess, ItemStack> dropped : droppedItems.entrySet()) {
+            try {
+                TrinketUtilities.callTrinketEquipmentChange(dropped.getValue(), ItemStack.EMPTY, dropped.getKey(), entity);
+                if (this.entity.level() instanceof ServerLevel) {
+                    this.stopTrinketLocationBasedEffects(dropped.getValue(), dropped.getKey(), entity.getAttributes());
+                }
+                if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory) {
+                    stackHistory.trinkets$resolveOldStack(dropped.getKey());
+                }
+                dropped.getKey().set(ItemStack.EMPTY);
+            } catch (Exception e) {
+                TrinketsMain.LOGGER.warn("Caught exception when dropping {} from removed slot {}.", dropped.getValue(), dropped.getKey().getSerializedName());
+            }
+        }
     }
 
     private void onSingleInventorySizeChanged(TrinketInventoryImpl inventory, int oldSize, int newSize) {
@@ -183,6 +228,63 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         for (Map.Entry<String, Map<String, TrinketInventoryImpl>> group : this.getInventoryImpl().entrySet()) {
             for (Map.Entry<String, TrinketInventoryImpl> slotType : group.getValue().entrySet()) {
                 slotType.getValue().clearModifiers();
+            }
+        }
+    }
+
+    public void stopTrinketLocationBasedEffects(final ItemStack oldStack, final TrinketSlotAccess inSlot, final AttributeMap attributes) {
+        // MC-272769 Mitigation.
+        Multimap<Holder<Attribute>, AttributeModifier> existsElsewhere = HashMultimap.create();
+
+        if (inSlot == null) {
+            return;
+        }
+
+        if (!oldStack.isEmpty()) {
+            this.forEach(((slotReference, itemStack) -> {
+                // We check type and index separately, as equals would depend on the inventory being the same as well.
+                if (slotReference != null && !(slotReference.slotType().equals(inSlot.slotType()) && slotReference.index() == inSlot.index()) && !itemStack.isEmpty()) {
+                    TrinketUtilities.forEachModifier(entity, itemStack, slotReference, existsElsewhere::put);
+                }
+            }));
+        }
+
+        TrinketUtilities.forEachModifier(entity, oldStack, inSlot, (attribute, modifier) -> {
+            if (existsElsewhere.containsEntry(attribute, modifier)) {
+                return;
+            }
+
+            if (attribute.value() instanceof SlotAttributes.SlotModifyingAttribute x) {
+                this.removeModifiers(x.slot, List.of(modifier));
+                return;
+            }
+
+            AttributeInstance instance = attributes.getInstance(attribute);
+            if (instance != null) {
+                instance.removeModifier(modifier);
+            }
+        });
+
+        TrinketUtilities.runIterationOnItem(oldStack, inSlot, entity, (enchantment, level, item) -> enchantment.value().stopLocationBasedEffects(level, item, entity));
+    }
+
+    public void addSlotModifiers(final ItemStack newStack, final TrinketSlotAccess inSlot, final AttributeMap attributes) {
+        TrinketUtilities.forEachModifier(entity, newStack, inSlot, (attribute, modifier) -> {
+            if (attribute.value() instanceof SlotAttributes.SlotModifyingAttribute x) {
+                this.addModifiers(x.slot, List.of(modifier));
+                return;
+            }
+
+            AttributeInstance instance = attributes.getInstance(attribute);
+            if (instance != null) {
+                instance.removeModifier(modifier.id());
+                instance.addTransientModifier(modifier);
+            }
+
+        });
+        if (!newStack.isEmpty() && !newStack.isBroken()) {
+            if (entity.level() instanceof ServerLevel serverLevel) {
+                TrinketUtilities.runIterationOnItem(newStack, inSlot, entity, (enchantment, level, item) -> enchantment.value().runLocationChangedEffects(serverLevel, level, item, entity));
             }
         }
     }
@@ -345,5 +447,14 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
 
     public interface Provider {
         LivingEntityTrinketAttachment trinkets$getAttachment();
+    }
+
+    public interface StackHistory {
+        default ItemStack trinkets$getOldStack(TrinketSlotAccess ref) {
+            return ItemStack.EMPTY;
+        }
+
+        default void trinkets$resolveOldStack(TrinketSlotAccess ref) {
+        }
     }
 }

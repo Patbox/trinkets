@@ -59,7 +59,17 @@ public class TrinketScreenManager {
 		if (group != null) {
 			if (TrinketsClient.activeType != null) {
 				if (!typeBounds.contains(Math.round(mouseX) - x, Math.round(mouseY) - y)) {
-					TrinketsClient.activeType = null;
+					// Attempt to refresh the typeBounds, in case the slot count has changed.
+					int i = handler.trinkets$getSlotTypes(group).indexOf(TrinketsClient.activeType);
+					if (i >= 0) {
+						Rect2i r = currentScreen.trinkets$getGroupRect(group);
+						Point slotHeight = handler.trinkets$getSlotHeight(group, i);
+						int height = slotHeight.y();
+						typeBounds = new Rect2i(r.getX() + slotHeight.x() - 2, r.getY() - (height - 1) / 2 * 18 - 3, 23, height * 18 + 5);
+					}
+					if (!typeBounds.contains(Math.round(mouseX) - x, Math.round(mouseY) - y)) {
+						TrinketsClient.activeType = null;
+					}
 				} else if (focusedSlot != null) {
 					if (!(focusedSlot instanceof TrinketSlot ts && ts.getType() == TrinketsClient.activeType)) {
 						TrinketsClient.activeType = null;
@@ -119,9 +129,11 @@ public class TrinketScreenManager {
 					continue;
 				}
 				if (r.contains(Math.round(mouseX) - x, Math.round(mouseY) - y)) {
-					TrinketsClient.activeGroup = g;
-					TrinketsClient.quickMoveGroup = null;
-					break;
+					if (!(currentScreen.trinkets$isNarrow() && currentScreen.trinkets$isRecipeBookOpen())) {
+						TrinketsClient.activeGroup = g;
+						TrinketsClient.quickMoveGroup = null;
+						break;
+					}
 				}
 			}
 		}
@@ -300,7 +312,9 @@ public class TrinketScreenManager {
 		if (currentScreen instanceof AbstractContainerScreen<?> screen) {
 			for (var slot : screen.getMenu().slots) {
 				if (slot instanceof TrinketSlot trinketSlot && !trinketSlot.renderAfterRegularSlots()) {
-					context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_TEXTURE, slot.x + x - 1, slot.y + y - 1, 18, 18);
+					if (!currentScreen.trinkets$isRecipeBookOpen() || slot.x > 0) {
+						context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_TEXTURE, slot.x + x - 1, slot.y + y - 1, 18, 18);
+					}
 				}
 			}
 		}
@@ -359,6 +373,10 @@ public class TrinketScreenManager {
 		}
 
 		TrinketPlayerScreenHandler handler = currentScreen.trinkets$getHandler();
+		if (currentScreen.trinkets$getFocusedSlot() instanceof TrinketSlot) {
+			return true;
+		}
+
 		int x = currentScreen.trinkets$getX();
 		int y = currentScreen.trinkets$getY();
 		int mx = (int) (Math.round(mouseX) - x);
@@ -389,6 +407,8 @@ public class TrinketScreenManager {
 		TrinketScreen currentScreen = getCurrentScreen();
 
 		if (currentScreen != null) {
+			// Refresh the type bounds of the currently open Trinket Group on slot change.
+			typeBounds = new Rect2i(0, 0, 0, 0);
 			currentScreen.trinkets$updateTrinketSlots();
 		}
 	}
