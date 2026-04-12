@@ -10,24 +10,24 @@ import net.minecraft.world.inventory.Slot;
 @Environment(EnvType.CLIENT)
 public interface TrinketScreen {
 
-	public TrinketPlayerScreenHandler trinkets$getHandler();
+    TrinketPlayerScreenHandler trinkets$getHandler();
 
-	public Rect2i trinkets$getGroupRect(SlotGroup group);
+    Rect2i trinkets$getGroupRect(SlotGroup group);
 
-	public Slot trinkets$getFocusedSlot();
-	
-	public int trinkets$getX();
-	
-	public int trinkets$getY();
+    Slot trinkets$getFocusedSlot();
 
-	public default boolean trinkets$isRecipeBookOpen() {
-		return false;
-	}
+    int trinkets$getX();
 
-	public default boolean trinkets$isNarrow() {
-		return false;
-	}
+    int trinkets$getY();
 
-	public default void trinkets$updateTrinketSlots() {
-	}
+    default boolean trinkets$isRecipeBookOpen() {
+        return false;
+    }
+
+    default boolean trinkets$isNarrow() {
+        return false;
+    }
+
+    default void trinkets$updateTrinketSlots() {
+    }
 }

@@ -26,6 +26,10 @@ Already done:
 - Added support for NeoForge Mod Loader
 - minecraft:piglin_safe_armor tag now works on trinkets.
 - Glider component now works correctly in trinkets slots (no visual change for things like wings yet!).
+- Fixed tags in trinkets entity slot definition.
+- A bunch of logic fixes for slot resizing and item removal.
+- Trinkets now has a config file (no ui yet), to toggle some features:
+  - Extra slot indicator (disabled by default).
 
 Planned:
 - Refactor rendering to be more modern / flexible / data driven.

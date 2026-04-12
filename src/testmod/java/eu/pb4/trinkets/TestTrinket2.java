@@ -43,6 +43,8 @@ public class TestTrinket2 extends Item implements TrinketCallback, TrinketRender
 		consumer.accept(Attributes.MOVEMENT_SPEED, speedModifier);
 	}
 
+
+	// Do note, these should be put in their own files to make sure it won't get loaded on server by accidient!
 	@Override
 	@Environment(EnvType.CLIENT)
 	public void submit(ItemStack stack, TrinketSlotAccess slotReference, EntityModel<? extends LivingEntityRenderState> contextModel, PoseStack matrices, SubmitNodeCollector submit, int light, LivingEntityRenderState state, float limbAngle, float limbDistance) {

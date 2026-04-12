@@ -100,4 +100,9 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 	public SlotType getType() {
 		return type;
 	}
+
+	@Override
+	public TrinketSlotAccess getAccess() {
+		return this.ref;
+	}
 }

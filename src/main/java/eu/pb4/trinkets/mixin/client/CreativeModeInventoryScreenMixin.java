@@ -1,5 +1,6 @@
 package eu.pb4.trinkets.mixin.client;
 
+import eu.pb4.trinkets.impl.TrinketsConfig;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -40,9 +41,9 @@ import net.minecraft.world.item.ItemStack;
 @Mixin(CreativeModeInventoryScreen.class)
 public abstract class CreativeModeInventoryScreenMixin extends AbstractContainerScreen<ItemPickerMenu> implements TrinketScreen, CreativeTrinketScreen {
 	@Unique
-	private static final Identifier SLOT_HIGHLIGHT_FRONT_TEXTURE = Identifier.withDefaultNamespace("container/slot_highlight_front");
+    private static final Identifier SLOT_HIGHLIGHT_FRONT_TEXTURE = Identifier.withDefaultNamespace("container/slot_highlight_front");
 	@Unique
-	private static final Identifier SLOT_HIGHLIGHT_BACK_TEXTURE = Identifier.withDefaultNamespace("container/slot_highlight_back");
+    private static final Identifier SLOT_HIGHLIGHT_BACK_TEXTURE = Identifier.withDefaultNamespace("container/slot_highlight_back");
 	@Unique
 	private static final Identifier SLOT_TEXTURE = Identifier.withDefaultNamespace("container/slot");
 	@Shadow
@@ -131,6 +132,9 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 					this.extractSlot(context, slot, mouseX, mouseY);
 					if (slot == this.hoveredSlot && slot.isHighlightable()) {
 						context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_FRONT_TEXTURE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
+					}
+					if (TrinketsConfig.instance.showSlotsIndicator && trinketSlot.getAccess().inventory().getContainerSize() > 1 && trinketSlot.getAccess().index() == 0) {
+						context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR, slot.x - 1, slot.y - 1, 18, 18);
 					}
 				}
 			}

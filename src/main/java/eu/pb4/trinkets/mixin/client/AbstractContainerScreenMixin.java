@@ -5,15 +5,17 @@ import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import eu.pb4.trinkets.api.TrinketInventory;
+import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
 import eu.pb4.trinkets.impl.client.CreativeTrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
+import eu.pb4.trinkets.impl.TrinketsConfig;
 import net.minecraft.client.gui.components.ImageButton;
-import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.screens.inventory.MenuAccess;
-import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -46,6 +48,10 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 	}
 
 	@Shadow protected abstract void onStopHovering(Slot slot);
+
+	@Shadow
+	@Final
+	protected AbstractContainerMenu menu;
 
 	@Inject(at = @At("HEAD"), method = "removed")
 	private void removed(CallbackInfo info) {
@@ -107,5 +113,25 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 			}
 		}
 		return original.call(instance, event, doubleClick);
+	}
+
+	@Inject(method = "extractSlotHighlightFront", at = @At("TAIL"))
+	private void drawMoreSlotsIndicator(GuiGraphicsExtractor context, CallbackInfo ci) {
+		if ((this.menu instanceof ItemPickerMenuAccessor accessor ? accessor.getInventoryMenu() : this.menu) instanceof TrinketPlayerScreenHandler trinketMenu
+				&& TrinketsConfig.instance.showSlotsIndicator) {
+			for (int i = 0; i < this.menu.slots.size(); i++) {
+				Slot slot = this.menu.slots.get(i);
+				if (slot instanceof TrinketSlot trinketSlot) {
+					if (!trinketSlot.renderAfterRegularSlots() && slot.isActive() && trinketSlot.getAccess().inventory().getContainerSize() > 1 && trinketSlot.getAccess().index() == 0) {
+						context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR, slot.x - 1, slot.y - 1, 18, 18);
+					}
+				} else {
+					var g = trinketMenu.trinkets$getGroupAtSlot(i);
+					if (g != null) {
+						context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR, slot.x - 1, slot.y - 1, 18, 18);
+					}
+				}
+			}
+		}
 	}
 }

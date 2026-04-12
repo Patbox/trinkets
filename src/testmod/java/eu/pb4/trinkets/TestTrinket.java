@@ -62,6 +62,8 @@ public class TestTrinket extends Item implements TrinketRenderer, TrinketCallbac
 		consumer.accept(this.handGloveAttribute, new AttributeModifier(id.withSuffix("trinkets-testmod/glove_slot"), 1, AttributeModifier.Operation.ADD_VALUE));
 	}
 
+
+	// Do note, these should be put in their own files to make sure it won't get loaded on server by accidient!
 	@Override
 	@Environment(EnvType.CLIENT)
 	public void submit(ItemStack stack, TrinketSlotAccess slotReference, EntityModel<? extends LivingEntityRenderState> contextModel, PoseStack matrices, SubmitNodeCollector submit, int light, LivingEntityRenderState state, float limbAngle, float limbDistance) {

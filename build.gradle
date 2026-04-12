@@ -184,7 +184,7 @@ curseforge {
 
 		project {
 			id = "1509777"
-			releaseType = "release"
+			releaseType = "beta"
 			changelog = System.getenv("CHANGELOG")
 			changelogType = "markdown"
 			addGameVersion((project.minecraft_version.contains("-") ? ((String) project.minecraft_version.split("-")[0] + "-snapshot") : project.minecraft_version))

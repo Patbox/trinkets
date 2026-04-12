@@ -93,6 +93,11 @@ public final class TrinketInventoryImpl implements TrinketInventory {
     }
 
     @Override
+    public TrinketSlotAccess getOrCreateSlotAccess(int slot) {
+        return slot < this.accesses.length ? this.accesses[slot] : new TrinketSlotAccess(this, slot);
+    }
+
+    @Override
     public boolean isValidSlot(int index) {
         return index < this.accesses.length && this.isValid;
     }

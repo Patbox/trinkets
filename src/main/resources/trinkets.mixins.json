@@ -8,29 +8,30 @@
     "InventoryMenuMixin",
     "InventoryMixin",
     "ItemMixin",
-    "LivingEntityMixin",
     "ItemStackMixin",
+    "LivingEntityMixin",
     "PlayerListMixin",
     "ServerGamePacketListenerImplMixin",
     "ServerPlayerMixin",
     "behaviour.LivingEntityMixin",
     "behaviour.PiglinAiMixin",
+    "client.ItemPickerMenuAccessor",
     "datafixer.V1460Mixin"
   ],
   "client": [
-    "client.LivingEntityRendererMixin",
-    "client.LivingEntityStateRenderMixin",
-    "client.abi.TrinketRendererMixin",
-    "client.accessor.ScreenHandlerAccessor",
     "client.AbstractContainerScreenMixin",
     "client.AbstractWidgetMixin",
     "client.ClientPacketListenerMixin",
     "client.CreativeModeInventoryScreenMixin",
     "client.InventoryScreenMixin",
+    "client.LivingEntityRendererMixin",
+    "client.LivingEntityStateRenderMixin",
     "client.RecipeBookScreenMixin",
+    "client.abi.TrinketRendererMixin",
     "client.accessor.CreativeSlotAccessor",
     "client.accessor.LivingEntityAccessor",
-    "client.accessor.RecipeBookScreenAccessor"
+    "client.accessor.RecipeBookScreenAccessor",
+    "client.accessor.ScreenHandlerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,16 +1,13 @@
 package eu.pb4.trinkets.mixin.client;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import eu.pb4.trinkets.impl.TrinketsMain;
+import eu.pb4.trinkets.impl.client.TrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
 import eu.pb4.trinkets.impl.TrinketSlot;
+import eu.pb4.trinkets.impl.TrinketsConfig;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractRecipeBookScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -63,6 +60,10 @@ public abstract class RecipeBookScreenMixin extends AbstractContainerScreen<Reci
                     this.extractSlot(context, slot, mouseX, mouseY);
                     if (slot == this.hoveredSlot && slot.isHighlightable()) {
                         context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_FRONT_TEXTURE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
+                    }
+
+                    if (TrinketsConfig.instance.showSlotsIndicator && trinketSlot.getAccess().inventory().getContainerSize() > 1 && trinketSlot.getAccess().index() == 0) {
+                        context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR, slot.x - 1, slot.y - 1, 18, 18);
                     }
                 }
             }

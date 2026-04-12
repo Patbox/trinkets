@@ -29,6 +29,7 @@ import eu.pb4.trinkets.impl.data.SlotLoader.SlotData;
 import eu.pb4.trinkets.impl.payload.SyncInventoryPayload;
 import eu.pb4.trinkets.impl.payload.SyncSlotsPayload;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
@@ -36,6 +37,7 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.EntityType;
@@ -136,22 +138,15 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 
 			try {
 				if (entityName.startsWith("#")) {
-					// TODO rewrite this to work with the new tag system
 					TrinketsMain.LOGGER.error("[trinkets] Attempted to assign entity entry to tag");
-					/*
-					TagKey<EntityType<?>> tag = TagKey.of(Registry.ENTITY_TYPE_KEY, Identifier.of(entityName.substring(1)));
-					List<? extends EntityType<?>> entityTypes = Registry.ENTITY_TYPE.getEntryList(tag)
-							.orElseThrow(() -> new IllegalArgumentException("Unknown entity tag '" + entityName + "'"))
-							.stream()
-							.map(RegistryEntry::value)
-							.toList();
 
-					types.addAll(entityTypes);*/
+					var tag = TagKey.create(Registries.ENTITY_TYPE, Identifier.parse(entityName.substring(1)));
+					BuiltInRegistries.ENTITY_TYPE.get(tag).ifPresent(x -> x.forEach(y -> types.add(y.value())));
 				} else {
 					types.add(BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.parse(entityName))
 							.orElseThrow(() -> new IllegalArgumentException("Unknown entity '" + entityName + "'")));
 				}
-			} catch (IllegalArgumentException e) {
+			} catch (Throwable e) {
 				TrinketsMain.LOGGER.error("[trinkets] Attempted to assign unknown entity entry " + entityName);
 			}
 

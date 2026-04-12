@@ -23,17 +23,6 @@ public record TrinketSaveData(Map<String, Map<String, InventoryData>> data) {
                 AttributeModifier.CODEC.listOf().optionalFieldOf("PersistentModifiers", List.of()).forGetter(Metadata::persistentModifiers),
                 AttributeModifier.CODEC.listOf().optionalFieldOf("CachedModifiers", List.of()).forGetter(Metadata::cachedModifiers)
         ).apply(instance, Metadata::new));
-
-        public static final StreamCodec<RegistryFriendlyByteBuf, Metadata> PACKET_CODEC = StreamCodec.composite(
-                ByteBufCodecs.collection(ArrayList::new, AttributeModifier.STREAM_CODEC), Metadata::persistentModifiers,
-                ByteBufCodecs.collection(ArrayList::new, AttributeModifier.STREAM_CODEC), Metadata::cachedModifiers,
-                Metadata::new
-        );
-
-        public static final StreamCodec<RegistryFriendlyByteBuf, Metadata> PACKET_CODEC_PERSISTENT_ONLY = StreamCodec.composite(
-                ByteBufCodecs.collection(ArrayList::new, AttributeModifier.STREAM_CODEC), Metadata::persistentModifiers,
-                list -> new Metadata(list, List.of())
-        );
     }
     public record InventoryData(Metadata metadata, List<ItemStack> items, int inventorySize) {
         public static final Codec<InventoryData> CODEC = RecordCodecBuilder.create(instance -> instance.group(

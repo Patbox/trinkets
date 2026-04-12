@@ -1,6 +1,7 @@
 package eu.pb4.trinkets.impl.client;
 
 import eu.pb4.trinkets.api.SlotType;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.impl.SurvivalTrinketSlot;
 import eu.pb4.trinkets.impl.TrinketSlot;
 import net.fabricmc.api.EnvType;
@@ -34,6 +35,11 @@ public class CreativeTrinketSlot extends SlotWrapper implements TrinketSlot {
 	@Override
 	public SlotType getType() {
 		return original.getType();
+	}
+
+	@Override
+	public TrinketSlotAccess getAccess() {
+		return this.original.getAccess();
 	}
 
 	@Override

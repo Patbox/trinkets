@@ -5,6 +5,8 @@ import eu.pb4.trinkets.api.*;
 import eu.pb4.trinkets.impl.*;
 import eu.pb4.trinkets.impl.client.TrinketsClient;
 import eu.pb4.trinkets.mixin.client.accessor.ScreenHandlerAccessor;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -36,6 +38,8 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
     private final Map<SlotGroup, Integer> groupNums = new HashMap<>();
     @Unique
     private final Map<SlotGroup, Point> groupPos = new HashMap<>();
+    @Unique
+    private final Int2ObjectMap<SlotGroup> slotToGroup = new Int2ObjectOpenHashMap<>();
     @Unique
     private final Map<SlotGroup, List<Point>> slotHeights = new HashMap<>();
     @Unique
@@ -73,6 +77,7 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
         }
         Map<String, SlotGroup> groups = trinkets.getGroups();
         groupPos.clear();
+        slotToGroup.clear();
         while (trinketSlotStart < trinketSlotEnd) {
             slots.remove(trinketSlotStart);
             ((ScreenHandlerAccessor) (this)).getLastSlots().remove(trinketSlotStart);
@@ -94,6 +99,7 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
                     Slot slot = this.slots.get(id);
                     if (!(slot instanceof SurvivalTrinketSlot)) {
                         groupPos.put(group, new Point(slot.x, slot.y));
+                        slotToGroup.put(id, group);
                         groupNums.put(group, -id);
                     }
                 }
@@ -176,6 +182,12 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
         return groupPos.get(group);
     }
 
+    @Nullable
+    @Override
+    public SlotGroup trinkets$getGroupAtSlot(int slotIndex) {
+        return slotToGroup.get(slotIndex);
+    }
+
     @NotNull
     @Override
     public List<Point> trinkets$getSlotHeights(SlotGroup group) {
@@ -238,7 +250,6 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
                     info.setReturnValue(stack);
                 }
             } else if (index >= 9 && index < 45) {
-                var trinkets = LivingEntityTrinketAttachment.get(owner);
                 for (int i = trinketSlotStart; i < trinketSlotEnd; i++) {
                     Slot s = slots.get(i);
                     if (!(s instanceof SurvivalTrinketSlot ts) || !s.mayPlace(stack)) {

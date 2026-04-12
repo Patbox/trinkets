@@ -1,5 +1,5 @@
 {
-  "entities": ["player", "zombie", "armor_stand"],
+  "entities": ["player", "zombie", "armor_stand", "#illager"],
   "slots": [
     "hand/glove",
     "hand/ring",

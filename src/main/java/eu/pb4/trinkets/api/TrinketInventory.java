@@ -12,6 +12,8 @@ public interface TrinketInventory extends Container {
     @Nullable
     TrinketSlotAccess getSlotAccess(int slot);
 
+    TrinketSlotAccess getOrCreateSlotAccess(int slot);
+
     boolean isValidSlot(int index);
 
     TrinketAttachment getAttachment();

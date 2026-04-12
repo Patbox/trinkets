@@ -22,6 +22,9 @@ public interface TrinketPlayerScreenHandler {
 	@Nullable
 	Point trinkets$getGroupPos(SlotGroup group);
 
+	@Nullable
+	SlotGroup trinkets$getGroupAtSlot(int slotIndex);
+
 	@NotNull
 	List<Point> trinkets$getSlotHeights(SlotGroup group);
 

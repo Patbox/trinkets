@@ -50,6 +50,7 @@ public class TrinketsMain implements ModInitializer {
 
 	@Override
 	public void onInitialize(ModContainer modContainer) {
+		TrinketsConfig.load();
 		CommonAbstraction.get().registerServerReloadListener(SlotLoader.ID, SlotLoader.INSTANCE);
 		CommonAbstraction.get().registerServerReloadListener(EntitySlotLoader.ID ,EntitySlotLoader.SERVER, SlotLoader.ID);
 
