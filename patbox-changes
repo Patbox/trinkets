@@ -30,6 +30,8 @@ Already done:
 - A bunch of logic fixes for slot resizing and item removal.
 - Trinkets now has a config file (no ui yet), to toggle some features:
   - Extra slot indicator (disabled by default).
+- Slot name now displays even if callback prevents equipment.
+  - It will however change the color from blue to dark gray.
 
 Planned:
 - Refactor rendering to be more modern / flexible / data driven.
