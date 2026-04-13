@@ -1,4 +1,4 @@
-package eu.pb4.trinkets.mixin.client.accessor;
+package eu.pb4.trinkets.mixin.accessor;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.inventory.AbstractContainerMenu;
