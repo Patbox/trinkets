@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class LivingEntityTrinketAttachment implements TrinketAttachment {
@@ -401,6 +402,20 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     }
 
     @Override
+    public Optional<TrinketSlotAccess> findFirst(Predicate<ItemStack> predicate) {
+        for (var group : this.inventory.values()) {
+            for (var inv : group.values()) {
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    if (predicate.test(inv.getItem(i))) {
+                        return Optional.ofNullable(inv.getSlotAccess(i));
+                    }
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
     public void forEach(BiConsumer<TrinketSlotAccess, ItemStack> consumer) {
         for (var group : this.inventory.values()) {
             for (var inv : group.values()) {
@@ -417,6 +432,30 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
             for (var inv : group.values()) {
                 for (int i = 0; i < inv.getContainerSize(); i++) {
                     if (!consumer.test(inv.getSlotAccess(i), inv.getItem(i))) {
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void forEach(Consumer<TrinketSlotAccess> consumer) {
+        for (var group : this.inventory.values()) {
+            for (var inv : group.values()) {
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    consumer.accept(inv.getSlotAccess(i));
+                }
+            }
+        }
+    }
+
+    @Override
+    public void forEachWhileTrue(Predicate<TrinketSlotAccess> consumer) {
+        for (var group : this.inventory.values()) {
+            for (var inv : group.values()) {
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    if (!consumer.test(inv.getSlotAccess(i))) {
                         return;
                     }
                 }

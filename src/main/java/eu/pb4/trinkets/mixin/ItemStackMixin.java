@@ -3,20 +3,18 @@ package eu.pb4.trinkets.mixin;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
+import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
-import eu.pb4.trinkets.impl.TrinketSlot;
 import eu.pb4.trinkets.api.SlotAttributes;
-import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.impl.TrinketUtilities;
+import net.minecraft.util.Tuple;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.At.Shift;
-import org.spongepowered.asm.mixin.injection.Desc;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -73,7 +71,7 @@ public abstract class ItemStackMixin {
 			}
 
 			boolean canEquipAnywhere = true;
-			Set<SlotType> slots = Sets.newHashSet();
+			List<Tuple<SlotType, Boolean>> slots = new ArrayList<>();
 			Map<SlotType, Multimap<Holder<Attribute>, AttributeModifier>> modifiers = Maps.newHashMap();
 			Multimap<Holder<Attribute>, AttributeModifier> defaultModifier = null;
 			boolean allModifiersSame = true;
@@ -87,19 +85,27 @@ public abstract class ItemStackMixin {
 					slotCount++;
 					boolean anywhereButHidden = false;
 					for (int i = 0; i < trinketInventory.getContainerSize(); i++) {
-						TrinketSlotAccess ref = trinketInventory.getSlotAccess(i);
-						boolean res = slotType.tooltipCheck(self, ref, player);
-						boolean canInsert = TrinketSlot.canInsert(self, ref, player);
-						if (res && canInsert) {
+						var callback = TrinketCallback.getCallback(self);
+						var ref = trinketInventory.getOrCreateSlotAccess(i);
+
+						var res = slotType.tooltipCheck(self, ref, player);
+						var isValidForSlot = ref.slotType().validatorCheck(self, ref, player);
+						var canInsert = isValidForSlot && callback.canEquip(self, ref, player);
+
+						if (res && isValidForSlot) {
 							boolean sameTranslationExists = false;
-							for (SlotType t : slots) {
-								if (t.getTranslation().getString().equals(slotType.getTranslation().getString())) {
+							for (var t : slots) {
+								if (t.getA().getTranslation().getString().equals(slotType.getTranslation().getString())) {
 									sameTranslationExists = true;
+									if (canInsert && !t.getB()) {
+										t.setB(true);
+									}
 									break;
 								}
 							}
+
 							if (!sameTranslationExists) {
-								slots.add(slotType);
+								slots.add(new Tuple<>(slotType, canInsert));
 							}
 							Multimap<Holder<Attribute>, AttributeModifier> map = Multimaps.newMultimap(Maps.newLinkedHashMap(), ArrayList::new);
 							TrinketUtilities.forEachModifier(player, self, ref, map::put);
@@ -138,14 +144,15 @@ public abstract class ItemStackMixin {
 				textConsumer.accept(Component.translatable("trinkets.tooltip.slots.any").withStyle(ChatFormatting.GRAY));
 			} else if (slots.size() > 1) {
 				textConsumer.accept(Component.translatable("trinkets.tooltip.slots.list").withStyle(ChatFormatting.GRAY));
-				for (SlotType slotType : slots) {
-					textConsumer.accept(slotType.getTranslation().withStyle(ChatFormatting.BLUE));
+				for (var slotType : slots) {
+					textConsumer.accept(slotType.getA().getTranslation().withStyle(slotType.getB() ? ChatFormatting.BLUE : ChatFormatting.DARK_GRAY));
 				}
 			} else if (slots.size() == 1) {
 				// Should only run once
-				for (SlotType slotType : slots) {
+				for (var slotType : slots) {
 					textConsumer.accept(Component.translatable("trinkets.tooltip.slots.single",
-								slotType.getTranslation().withStyle(ChatFormatting.BLUE)).withStyle(ChatFormatting.GRAY));
+							slotType.getA().getTranslation().withStyle(slotType.getB() ? ChatFormatting.BLUE : ChatFormatting.DARK_GRAY)
+					).withStyle(ChatFormatting.GRAY));
 				}
 			}
 

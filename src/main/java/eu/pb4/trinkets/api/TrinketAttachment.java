@@ -2,8 +2,10 @@ package eu.pb4.trinkets.api;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import net.minecraft.tags.TagKey;
@@ -83,6 +85,25 @@ public interface TrinketAttachment {
 	}
 
 	/**
+	 * @return All slots that match the provided predicate
+	 */
+	Optional<TrinketSlotAccess> findFirst(Predicate<ItemStack> predicate);
+
+	/**
+	 * @return All slots that contain the provided item
+	 */
+	default Optional<TrinketSlotAccess> findFirst(Item item) {
+		return findFirst(stack -> stack.is(item));
+	}
+
+	/**
+	 * @return All slots that contain the provided item
+	 */
+	default Optional<TrinketSlotAccess> findFirst(TagKey<Item> tag) {
+		return findFirst(stack -> stack.is(tag));
+	}
+
+	/**
 	 * @return All non-empty slots
 	 */
 	default List<Tuple<TrinketSlotAccess, ItemStack>> getAllEquipped() {
@@ -98,4 +119,14 @@ public interface TrinketAttachment {
 	 * Iterates over every slot available of the entity as long as it returns true.
 	 */
 	void forEachWhileTrue(BiPredicate<TrinketSlotAccess, ItemStack> consumer);
+
+	/**
+	 * Iterates over every slot available to the entity
+	 */
+	void forEach(Consumer<TrinketSlotAccess> consumer);
+
+	/**
+	 * Iterates over every slot available of the entity as long as it returns true.
+	 */
+	void forEachWhileTrue(Predicate<TrinketSlotAccess> consumer);
 }

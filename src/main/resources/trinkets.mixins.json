@@ -13,7 +13,7 @@
     "PlayerListMixin",
     "ServerGamePacketListenerImplMixin",
     "ServerPlayerMixin",
-    "accessor.ScreenHandlerAccessor",
+    "accessor.AbstractedContainerMenuAccessor",
     "behaviour.LivingEntityMixin",
     "behaviour.PiglinAiMixin",
     "client.ItemPickerMenuAccessor",

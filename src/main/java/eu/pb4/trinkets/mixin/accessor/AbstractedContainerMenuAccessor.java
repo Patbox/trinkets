@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(AbstractContainerMenu.class)
-public interface ScreenHandlerAccessor {
+public interface AbstractedContainerMenuAccessor {
 
     @Accessor
     NonNullList<ItemStack> getLastSlots();

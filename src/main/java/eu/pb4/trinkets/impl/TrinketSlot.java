@@ -1,32 +1,32 @@
 package eu.pb4.trinkets.impl;
 
-import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.SlotType;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 public interface TrinketSlot {
 
-	public boolean isTrinketFocused();
+    static boolean canInsert(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
+        boolean res = slotRef.inventory().slotType().validatorCheck(stack, slotRef, entity);
 
-	public boolean renderAfterRegularSlots();
+        if (res) {
+            return TrinketCallback.getCallback(stack).canEquip(stack, slotRef, entity);
+        }
 
-	public SlotType getType();
+        return false;
+    }
 
-	TrinketSlotAccess getAccess();
+    static boolean mayPickup(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
+        return TrinketCallback.getCallback(stack).canUnequip(stack, slotRef, entity);
+    }
 
-	public static boolean canInsert(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
-		boolean res = slotRef.inventory().slotType().validatorCheck(stack, slotRef, entity);
+    boolean isTrinketFocused();
 
-		if (res) {
-			return TrinketCallback.getCallback(stack).canEquip(stack, slotRef, entity);
-		}
+    boolean renderAfterRegularSlots();
 
-		return false;
-	}
+    SlotType getType();
 
-	static boolean mayPickup(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
-		return TrinketCallback.getCallback(stack).canUnequip(stack, slotRef, entity);
-	}
+    TrinketSlotAccess getAccess();
 }
