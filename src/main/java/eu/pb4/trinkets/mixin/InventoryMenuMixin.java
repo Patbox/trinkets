@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import eu.pb4.trinkets.api.*;
 import eu.pb4.trinkets.impl.*;
 import eu.pb4.trinkets.impl.client.TrinketsClient;
-import eu.pb4.trinkets.mixin.client.accessor.ScreenHandlerAccessor;
+import eu.pb4.trinkets.mixin.accessor.ScreenHandlerAccessor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.world.entity.player.Inventory;

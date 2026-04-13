@@ -13,6 +13,7 @@
     "PlayerListMixin",
     "ServerGamePacketListenerImplMixin",
     "ServerPlayerMixin",
+    "accessor.ScreenHandlerAccessor",
     "behaviour.LivingEntityMixin",
     "behaviour.PiglinAiMixin",
     "client.ItemPickerMenuAccessor",
@@ -30,8 +31,7 @@
     "client.abi.TrinketRendererMixin",
     "client.accessor.CreativeSlotAccessor",
     "client.accessor.LivingEntityAccessor",
-    "client.accessor.RecipeBookScreenAccessor",
-    "client.accessor.ScreenHandlerAccessor"
+    "client.accessor.RecipeBookScreenAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
