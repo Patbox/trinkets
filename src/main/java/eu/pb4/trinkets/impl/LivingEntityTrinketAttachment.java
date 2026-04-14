@@ -82,7 +82,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     }
 
     @Override
-    public @Nullable TrinketInventory getInventory(String slotId) {
+    public @Nullable TrinketInventoryImpl getInventory(String slotId) {
         var split = slotId.split("/", 2);
         return this.inventory.getOrDefault(split[0], Map.of()).get(split[1]);
     }

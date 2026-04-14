@@ -78,7 +78,7 @@ public class TrinketsApi {
     public static void onTrinketBroken(ItemStack stack, TrinketSlotAccess ref, LivingEntity entity) {
         Level world = entity.level();
         if (!world.isClientSide()) {
-            var packet = new ClientboundCustomPayloadPacket(new BreakPayload(entity.getId(), ref.inventory().slotType().group(), ref.inventory().slotType().name(), ref.index()));
+            var packet = new ClientboundCustomPayloadPacket(new BreakPayload(entity.getId(), ref.reference()));
             if (entity instanceof ServerPlayer player) {
                 player.connection.send(packet);
             }

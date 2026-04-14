@@ -32,7 +32,7 @@ import java.util.*;
  *
  * @author Emi
  */
-@Mixin(InventoryMenu.class)
+@Mixin(value = InventoryMenu.class, priority = 500)
 public abstract class InventoryMenuMixin extends AbstractContainerMenu implements TrinketPlayerScreenHandler {
     @Unique
     private final Map<SlotGroup, Integer> groupNums = new HashMap<>();
@@ -55,8 +55,6 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
     private int trinketSlotEnd = 0;
     @Unique
     private int groupCount = 0;
-    @Unique
-    private Inventory inventory;
 
     private InventoryMenuMixin() {
         super(null, 0);
@@ -64,7 +62,6 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
 
     @Inject(at = @At("RETURN"), method = "<init>")
     private void init(Inventory playerInv, boolean onServer, Player owner, CallbackInfo info) {
-        this.inventory = playerInv;
         trinkets$updateTrinketSlots(true);
     }
 

@@ -17,6 +17,7 @@ import eu.pb4.trinkets.impl.payload.SyncSlotsPayload;
 import eu.pb4.trinkets.impl.platform.CommonAbstraction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 
 import com.mojang.brigadier.Command;
@@ -174,9 +175,9 @@ public class TrinketsMain implements ModInitializer {
 			String slot = context.getArgument("slot", String.class);
 			int offset = context.getArgument("offset", Integer.class);
 			ItemInput stack = context.getArgument("stack", ItemInput.class);
-			ServerPlayer player = context.getSource().getPlayer();
-			if (player != null) {
-				TrinketAttachment comp = TrinketsApi.getAttachment(player);
+			var entity = context.getSource().getEntity();
+			if (entity instanceof LivingEntity livingEntity) {
+				TrinketAttachment comp = TrinketsApi.getAttachment(livingEntity);
 				SlotGroup slotGroup = comp.getGroups().getOrDefault(group, null);
 				if (slotGroup != null) {
 					SlotType slotType = slotGroup.slots().getOrDefault(slot, null);

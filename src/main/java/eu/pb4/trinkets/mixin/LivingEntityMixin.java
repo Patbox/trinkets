@@ -1,17 +1,11 @@
 package eu.pb4.trinkets.mixin;
 
-import eu.pb4.trinkets.api.SlotAttributes;
-import eu.pb4.trinkets.api.TrinketDropRule;
-import eu.pb4.trinkets.api.TrinketSlotAccess;
-import eu.pb4.trinkets.api.TrinketsApi;
-import eu.pb4.trinkets.api.callback.TrinketCallback;
-import eu.pb4.trinkets.api.event.TrinketDropCallback;
+import eu.pb4.trinkets.api.*;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.TrinketInventoryImpl;
 import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
 import eu.pb4.trinkets.impl.TrinketUtilities;
 import eu.pb4.trinkets.impl.payload.SyncInventoryPayload;
-import eu.pb4.trinkets.impl.platform.CommonAbstraction;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
@@ -19,9 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -185,11 +177,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
 
         if (!changedItems.isEmpty() || !inventoriesToSend.isEmpty()) {
             Map<String, Integer> map = new HashMap<>();
-            Map<String, ItemStack> items = new HashMap<>();
+            Map<TrinketSlotReference, ItemStack> items = new HashMap<>();
 
             for (var slot : changedItems) {
                 if (slot.index() < slot.inventory().getContainerSize()) {
-                    items.put(slot.getSerializedName(), slot.get().copy());
+                    items.put(slot.reference(), slot.get().copy());
                 }
             }
 

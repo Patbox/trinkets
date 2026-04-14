@@ -36,7 +36,7 @@ public abstract class PlayerListMixin {
     @Shadow
     public abstract List<ServerPlayer> getPlayers();
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/bossevents/CustomBossEvents;onPlayerConnect(Lnet/minecraft/server/level/ServerPlayer;)V"), method = "placeNewPlayer")
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/players/PlayerList;sendLevelInfo(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/server/level/ServerLevel;)V"), method = "placeNewPlayer")
     private void onPlayerConnect(Connection connection, ServerPlayer player, CommonListenerCookie clientData, CallbackInfo ci) {
         EntitySlotLoader.SERVER.sync(player);
         this.syncSlots(player);

@@ -4,10 +4,8 @@ import dev.yumi.mc.core.api.ModContainer;
 import dev.yumi.mc.core.api.entrypoint.client.ClientModInitializer;
 import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.api.SlotType;
-import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
-import eu.pb4.trinkets.impl.TrinketInventoryImpl;
 import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
 import eu.pb4.trinkets.impl.TrinketsNetwork;
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
@@ -17,7 +15,6 @@ import net.fabricmc.api.Environment;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 
 import java.util.Map;
 
@@ -37,15 +34,9 @@ public class TrinketsClient implements ClientModInitializer {
                 var trinkets = LivingEntityTrinketAttachment.get(livingEntity);
 
                 for (var entry : payload.inventorySize().entrySet()) {
-                    String[] split = entry.getKey().split("/", 2);
-                    String group = split[0];
-                    String slot = split[1];
-                    Map<String, TrinketInventoryImpl> slots = trinkets.getInventoryImpl().get(group);
-                    if (slots != null) {
-                        TrinketInventoryImpl inv = slots.get(slot);
-                        if (inv != null) {
-                            inv.setSlotCount(entry.getValue());
-                        }
+                    var inv = trinkets.getInventory(entry.getKey());
+                    if (inv != null) {
+                        inv.setSlotCount(entry.getValue());
                     }
                 }
 
@@ -54,17 +45,10 @@ public class TrinketsClient implements ClientModInitializer {
                     TrinketScreenManager.tryUpdateTrinketsSlot();
                 }
 
-                for (Map.Entry<String, ItemStack> entry : payload.contentUpdates().entrySet()) {
-                    String[] split = entry.getKey().split("/", 2);
-                    String group = split[0];
-                    String slot = split[1];
-                    int index = Integer.parseInt(split[2]);
-                    Map<String, TrinketInventoryImpl> slots = trinkets.getInventoryImpl().get(group);
-                    if (slots != null) {
-                        TrinketInventoryImpl inv = slots.get(slot);
-                        if (inv != null && index < inv.getContainerSize()) {
-                            inv.setItem(index, entry.getValue());
-                        }
+                for (var entry : payload.contentUpdates().entrySet()) {
+                    var access = trinkets.getSlotAccess(entry.getKey());
+                    if (access != null) {
+                        access.set(entry.getValue());
                     }
                 }
             }
@@ -89,15 +73,11 @@ public class TrinketsClient implements ClientModInitializer {
             Entity e = client.level.getEntity(payload.entityId());
             if (e instanceof LivingEntity livingEntity) {
                 var comp = LivingEntityTrinketAttachment.get(livingEntity);
-                var groupMap = comp.getInventory().get(payload.group());
-                if (groupMap != null) {
-                    var inv = groupMap.get(payload.slot());
-                    if (payload.index() < inv.getContainerSize()) {
-                        ItemStack stack = inv.getItem(payload.index());
-                        TrinketSlotAccess ref = inv.getSlotAccess(payload.index());
-                        var trinket = TrinketCallback.getCallback(stack);
-                        trinket.onBreak(stack, ref, livingEntity);
-                    }
+                var ref = comp.getSlotAccess(payload.reference());
+                if (ref != null) {
+                    var stack = ref.get();
+                    var trinket = TrinketCallback.getCallback(stack);
+                    trinket.onBreak(stack, ref, livingEntity);
                 }
             }
         });
