@@ -56,7 +56,6 @@ public interface TrinketRenderer {
 	 */
 	static void translateToFace(PoseStack matrices, HeadedModel model,
 			HumanoidRenderState state, float headYaw, float headPitch) {
-
 		if (state.isVisuallySwimming || state.isFallFlying) {
 			matrices.mulPose(Axis.ZP.rotationDegrees(model.getHead().zRot));
 			matrices.mulPose(Axis.YP.rotationDegrees(headYaw));
