@@ -16,6 +16,7 @@
     "accessor.AbstractedContainerMenuAccessor",
     "behaviour.LivingEntityMixin",
     "behaviour.PiglinAiMixin",
+    "client.EquipmentLayerRendererAccessor",
     "client.ItemPickerMenuAccessor",
     "datafixer.V1460Mixin"
   ],
@@ -25,13 +26,15 @@
     "client.ClientPacketListenerMixin",
     "client.CreativeModeInventoryScreenMixin",
     "client.InventoryScreenMixin",
-    "client.LivingEntityRendererMixin",
-    "client.LivingEntityStateRenderMixin",
     "client.RecipeBookScreenMixin",
     "client.abi.TrinketRendererMixin",
     "client.accessor.CreativeSlotAccessor",
     "client.accessor.LivingEntityAccessor",
-    "client.accessor.RecipeBookScreenAccessor"
+    "client.accessor.RecipeBookScreenAccessor",
+    "client.render.CapeLayerMixin",
+    "client.render.LivingEntityRendererMixin",
+    "client.render.LivingEntityStateRenderMixin",
+    "client.render.WingsLayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

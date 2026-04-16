@@ -7,11 +7,16 @@ import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
+import eu.pb4.trinkets.impl.TrinketsMain;
 import eu.pb4.trinkets.impl.TrinketsNetwork;
+import eu.pb4.trinkets.impl.client.render.ClientTrinketsManager;
+import eu.pb4.trinkets.impl.client.render.types.TrinketRenderElements;
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
 import eu.pb4.trinkets.impl.platform.ClientAbstraction;
+import eu.pb4.trinkets.impl.platform.CommonAbstraction;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -28,6 +33,8 @@ public class TrinketsClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient(ModContainer modContainer) {
+        TrinketRenderElements.bootstrap();
+
         ClientAbstraction.get().registerGlobalReceiverPlay(TrinketsNetwork.SYNC_INVENTORY, (client, player, payload) -> {
             Entity entity = client.level.getEntity(payload.entityId());
             if (entity instanceof LivingEntity livingEntity) {
@@ -81,5 +88,8 @@ public class TrinketsClient implements ClientModInitializer {
                 }
             }
         });
+
+        ClientAbstraction.INSTANCE.registerClientReloadListener(Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "client_trinkets"), ClientTrinketsManager.INSTANCE);
+        ClientAbstraction.INSTANCE.registerClientTagsLoadedEvent(ClientTrinketsManager.INSTANCE::updateItemMap);
     }
 }

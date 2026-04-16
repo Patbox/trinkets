@@ -3,6 +3,8 @@ package eu.pb4.trinkets.impl.platform;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.util.Util;
 
 public interface ClientAbstraction {
@@ -21,6 +23,10 @@ public interface ClientAbstraction {
     }
 
     <T extends CustomPacketPayload> void registerGlobalReceiverPlay(CustomPacketPayload.Type<T> type, PlayPacketReceiver<T> receiver);
+
+    void registerClientReloadListener(Identifier identifier, PreparableReloadListener instance, Identifier... requires);
+
+    void registerClientTagsLoadedEvent(Runnable afterTagsLoaded);
 
     interface PlayPacketReceiver<T> {
         void receive(Minecraft minecraft, LocalPlayer player, T payload);

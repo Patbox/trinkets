@@ -1,4 +1,4 @@
-package eu.pb4.trinkets.mixin.client;
+package eu.pb4.trinkets.mixin.client.render;
 
 import eu.pb4.trinkets.impl.client.TrinketEntityRenderState;
 import eu.pb4.trinkets.impl.client.TrinketFeatureRenderer;
@@ -38,6 +38,6 @@ public abstract class LivingEntityRendererMixin {
     @Inject(method = "extractRenderState(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;F)V", at = @At("TAIL"))
     private void updateTrinketsRenderState(LivingEntity livingEntity, LivingEntityRenderState livingEntityRenderState, float f, CallbackInfo ci) {
         var state = (TrinketEntityRenderState) livingEntityRenderState;
-        TrinketFeatureRenderer.update(livingEntity, livingEntityRenderState, f, state);
+        TrinketFeatureRenderer.extract(livingEntity, livingEntityRenderState, f, state);
     }
 }

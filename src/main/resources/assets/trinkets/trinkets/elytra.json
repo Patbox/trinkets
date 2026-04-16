@@ -1,0 +1,8 @@
+{
+  "target": ["minecraft:elytra", "c:elytra"],
+  "render": [
+    {
+      "type": "wings"
+    }
+  ]
+}
