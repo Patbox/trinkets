@@ -17,10 +17,6 @@
     "accessor.AbstractedContainerMenuAccessor",
     "behaviour.LivingEntityMixin",
     "behaviour.PiglinAiMixin",
-    "client.EquipmentClientInfoAccessor",
-    "client.EquipmentLayerRendererAccessor",
-    "client.ItemPickerMenuAccessor",
-    "client.ModelPartAccessor",
     "datafixer.V1460Mixin"
   ],
   "client": [
@@ -28,7 +24,11 @@
     "client.AbstractWidgetMixin",
     "client.ClientPacketListenerMixin",
     "client.CreativeModeInventoryScreenMixin",
+    "client.EquipmentClientInfoAccessor",
+    "client.EquipmentLayerRendererAccessor",
     "client.InventoryScreenMixin",
+    "client.ItemPickerMenuAccessor",
+    "client.ModelPartAccessor",
     "client.RecipeBookScreenMixin",
     "client.abi.TrinketRendererMixin",
     "client.accessor.CreativeSlotAccessor",
