@@ -2,7 +2,6 @@ package eu.pb4.trinkets.impl.data;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -21,7 +19,7 @@ import com.google.gson.JsonSyntaxException;
 import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.SlotGroupImpl;
-import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
+import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.TrinketsMain;
 import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.impl.data.SlotLoader.GroupData;
@@ -138,8 +136,6 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 
 			try {
 				if (entityName.startsWith("#")) {
-					TrinketsMain.LOGGER.error("[trinkets] Attempted to assign entity entry to tag");
-
 					var tag = TagKey.create(Registries.ENTITY_TYPE, Identifier.parse(entityName.substring(1)));
 					BuiltInRegistries.ENTITY_TYPE.get(tag).ifPresent(x -> x.forEach(y -> types.add(y.value())));
 				} else {
@@ -202,7 +198,7 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 
 		for(ServerPlayer player : players) {
 
-			((TrinketPlayerScreenHandler) player.inventoryMenu).trinkets$updateTrinketSlots(true);
+			((TrinketInventoryMenu) player.inventoryMenu).trinkets$updateTrinketSlots(true);
 			var trinkets = TrinketsApi.getAttachment(player);
 			Map<String, Integer> tag = new HashMap<>();
 			((LivingEntityTrinketAttachment) trinkets).inventory.forEach((_, a) -> a.forEach((_, v) -> {

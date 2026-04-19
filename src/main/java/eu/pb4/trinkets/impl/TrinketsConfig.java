@@ -35,7 +35,7 @@ public class TrinketsConfig {
     public static void save() {
         try {
             var gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
-            Files.writeString(CONFIG_PATH, gson.toJson(instance), StandardOpenOption.CREATE);
+            Files.writeString(CONFIG_PATH, gson.toJson(instance), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (Throwable e) {
             TrinketsMain.LOGGER.warn("Failed to save Trinkets config!", e);
         }

@@ -1,0 +1,8 @@
+{
+  "target": ["#c:armors"],
+  "render": [
+    {
+      "type": "equipment_replace"
+    }
+  ]
+}

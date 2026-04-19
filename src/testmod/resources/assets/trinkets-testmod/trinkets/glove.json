@@ -1,0 +1,25 @@
+{
+  "target": ["white_wool"],
+  "render": [
+    {
+      "type": "if_group",
+      "group": "hand",
+      "then": {
+        "type": "model",
+        "model_part": ":main_hand",
+        "offset": [0, -1, 0],
+        "model": "trinkets-testmod:item/glove"
+      }
+    },
+    {
+      "type": "if_group",
+      "group": "offhand",
+      "then": {
+        "type": "model",
+        "model_part": ":off_hand",
+        "offset": [0, -1, 0],
+        "model": "trinkets-testmod:item/glove"
+      }
+    }
+  ]
+}

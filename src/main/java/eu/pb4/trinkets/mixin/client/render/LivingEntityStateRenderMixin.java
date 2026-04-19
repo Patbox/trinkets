@@ -1,6 +1,6 @@
 package eu.pb4.trinkets.mixin.client.render;
 
-import eu.pb4.trinkets.impl.client.TrinketEntityRenderState;
+import eu.pb4.trinkets.impl.client.render.TrinketEntityRenderState;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -20,6 +20,8 @@ import java.util.List;
 public class LivingEntityStateRenderMixin implements TrinketEntityRenderState {
     @Unique
     private List<Tuple<ItemStack, TrinketSlotAccess>> trinketsState = List.of();
+    @Unique
+    private List<TrinketEntityRenderState.PartAttachedRenderer> partAttachedRenderers = List.of();
 
     @Unique
     private final EnumMap<EquipmentSlot, EquipmentOverride> equipmentOverride = new EnumMap<>(EquipmentSlot.class);
@@ -31,8 +33,18 @@ public class LivingEntityStateRenderMixin implements TrinketEntityRenderState {
     }
 
     @Override
+    public void trinkets$setPartAttachedRenderers(List<PartAttachedRenderer> items) {
+        this.partAttachedRenderers = items;
+    }
+
+    @Override
     public List<Tuple<ItemStack, TrinketSlotAccess>> trinkets$getItems() {
         return this.trinketsState;
+    }
+
+    @Override
+    public List<PartAttachedRenderer> trinkets$getPartAttachedRenderers() {
+        return this.partAttachedRenderers;
     }
 
     @Override

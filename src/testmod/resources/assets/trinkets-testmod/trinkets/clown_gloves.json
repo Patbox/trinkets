@@ -1,0 +1,39 @@
+{
+  "target": ["orange_wool"],
+  "render": [
+    {
+      "type": "item",
+      "model_part": "left_arm",
+      "offset": [0, -1, 0],
+      "transformation": {
+        "translation": [0, 0.125, 0],
+        "left_rotation": {
+          "axis": [0, 1, 0],
+          "angle": 0
+        },
+        "scale": [0.3, 0.3, 0.3],
+        "right_rotation": {
+          "axis": [0, 1, 0],
+          "angle": 0
+        }
+      }
+    },
+    {
+      "type": "item",
+      "model_part": "right_arm",
+      "offset": [0, -1, 0],
+      "transformation": {
+        "translation": [0, 0.125, 0],
+        "left_rotation": {
+          "axis": [0, 1, 0],
+          "angle": 0
+        },
+        "scale": [0.3, 0.3, 0.3],
+        "right_rotation": {
+          "axis": [0, 1, 0],
+          "angle": 0
+        }
+      }
+    }
+  ]
+}

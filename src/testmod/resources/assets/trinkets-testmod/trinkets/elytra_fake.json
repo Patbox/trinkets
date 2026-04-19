@@ -1,0 +1,13 @@
+{
+  "target": ["tnt"],
+  "render": [
+    {
+      "type": "wings",
+      "asset": [
+        {
+          "texture": "trinkets-testmod:elytra"
+        }
+      ]
+    }
+  ]
+}

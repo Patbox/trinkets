@@ -4,10 +4,13 @@ import eu.pb4.trinkets.impl.platform.ClientAbstraction;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
+import net.fabricmc.fabric.api.resource.v1.reloader.ResourceReloaderKeys;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
+
+import java.util.List;
 
 public record FabricClientAbstraction() implements ClientAbstraction {
     public static final ClientAbstraction INSTANCE = new FabricClientAbstraction();
@@ -18,12 +21,16 @@ public record FabricClientAbstraction() implements ClientAbstraction {
     }
 
     @Override
-    public void registerClientReloadListener(Identifier identifier, PreparableReloadListener instance, Identifier... requires) {
+    public void registerClientReloadListener(Identifier identifier, PreparableReloadListener instance, List<Identifier> requires, List<Identifier> requiredBy) {
         var loader = ResourceLoader.get(PackType.CLIENT_RESOURCES);
         loader.registerReloadListener(identifier, instance);
 
         for (var r : requires) {
             loader.addListenerOrdering(r, identifier);
+        }
+
+        for (var r : requiredBy) {
+            loader.addListenerOrdering(identifier, r);
         }
     }
 
@@ -34,5 +41,10 @@ public record FabricClientAbstraction() implements ClientAbstraction {
                 afterTagsLoaded.run();
             }
         }));
+    }
+
+    @Override
+    public Identifier getClientModelResourceReloaderId() {
+        return ResourceReloaderKeys.Client.MODELS;
     }
 }

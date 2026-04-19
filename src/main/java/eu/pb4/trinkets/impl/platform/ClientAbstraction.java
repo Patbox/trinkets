@@ -7,6 +7,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.util.Util;
 
+import java.util.List;
+
 public interface ClientAbstraction {
     ClientAbstraction INSTANCE = Util.make(() -> {
         try {
@@ -24,9 +26,11 @@ public interface ClientAbstraction {
 
     <T extends CustomPacketPayload> void registerGlobalReceiverPlay(CustomPacketPayload.Type<T> type, PlayPacketReceiver<T> receiver);
 
-    void registerClientReloadListener(Identifier identifier, PreparableReloadListener instance, Identifier... requires);
+    void registerClientReloadListener(Identifier identifier, PreparableReloadListener instance, List<Identifier> requires, List<Identifier> requiredBy);
 
     void registerClientTagsLoadedEvent(Runnable afterTagsLoaded);
+
+    Identifier getClientModelResourceReloaderId();
 
     interface PlayPacketReceiver<T> {
         void receive(Minecraft minecraft, LocalPlayer player, T payload);

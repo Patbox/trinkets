@@ -4,7 +4,7 @@ package eu.pb4.trinkets.mixin;
 import com.llamalad7.mixinextras.sugar.Local;
 import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
-import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
+import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
 import eu.pb4.trinkets.impl.payload.SyncInventoryPayload;
 import net.minecraft.network.Connection;
@@ -54,7 +54,7 @@ public abstract class PlayerListMixin {
 
     @Unique
     private void syncSlots(ServerPlayer player) {
-        ((TrinketPlayerScreenHandler) player.inventoryMenu).trinkets$updateTrinketSlots(false);
+        ((TrinketInventoryMenu) player.inventoryMenu).trinkets$updateTrinketSlots(false);
         var trinkets = TrinketsApi.getAttachment(player);
         Map<String, Integer> tag = new HashMap<>();
         ((LivingEntityTrinketAttachment) trinkets).inventory.forEach((_, a) -> a.forEach((_, v) -> {

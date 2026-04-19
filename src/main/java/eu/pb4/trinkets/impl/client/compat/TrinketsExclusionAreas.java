@@ -1,6 +1,6 @@
 package eu.pb4.trinkets.impl.client.compat;
 
-import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
+import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.client.TrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
 import eu.pb4.trinkets.impl.client.TrinketsClient;
@@ -25,7 +25,7 @@ public class TrinketsExclusionAreas {
 			List<Rect2i> rects = new ArrayList<>();
 			int x = trinketScreen.trinkets$getX();
 			int y = trinketScreen.trinkets$getY();
-			TrinketPlayerScreenHandler handler = trinketScreen.trinkets$getHandler();
+			TrinketInventoryMenu handler = trinketScreen.trinkets$getHandler();
 			int groupCount = handler.trinkets$getGroupCount();
 			if (groupCount <= 0 || trinketScreen.trinkets$isRecipeBookOpen()) {
 				return List.of();

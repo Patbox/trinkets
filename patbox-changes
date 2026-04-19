@@ -32,6 +32,9 @@ Already done:
   - Extra slot indicator (disabled by default).
 - Slot name now displays even if callback prevents equipment.
   - It will however change the color from blue to dark gray.
+- Data Driven Trinket Rendering:
+  - Todo: Describe it
+- Improved default trinket rendering compatibility with mods that change player's animations
 
 Planned:
 - Refactor rendering to be more modern / flexible / data driven.

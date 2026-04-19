@@ -2,6 +2,7 @@ package eu.pb4.trinkets.impl.client.render;
 
 import com.mojang.serialization.Codec;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
@@ -11,21 +12,43 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 public class ClientTrinketsManager extends SimpleJsonResourceReloadListener<ClientTrinket> {
     public static final ClientTrinketsManager INSTANCE = new ClientTrinketsManager(ClientTrinket.CODEC, FileToIdConverter.json("trinkets"));
     private Map<Identifier, ClientTrinket> idMap = Map.of();
     private Map<Item, ClientTrinket> defaultMap = Map.of();
+    private Map<Identifier, ClientTrinket> futureIdMap = Map.of();
+
+    public CompletableFuture<Map<Identifier, ClientTrinket>> completableFuture = new CompletableFuture<>();
 
     protected ClientTrinketsManager(Codec<ClientTrinket> codec, FileToIdConverter lister) {
         super(codec, lister);
     }
 
+    protected Map<Identifier, ClientTrinket> prepare(ResourceManager manager, ProfilerFiller profiler) {
+        var futureValues = super.prepare(manager, profiler);
+        this.futureIdMap = futureValues;
+        completableFuture.complete(this.futureIdMap);
+        return futureValues;
+    }
+
     @Override
     protected void apply(Map<Identifier, ClientTrinket> preparations, ResourceManager manager, ProfilerFiller profiler) {
         this.idMap = preparations;
+        this.updateItemMap();
+    }
+
+    public Map<Identifier, ClientTrinket> getIdMap() {
+        return this.idMap;
+    }
+
+    public Map<Identifier, ClientTrinket> getFutureIdMap() {
+        return this.futureIdMap;
     }
 
     public void updateItemMap() {

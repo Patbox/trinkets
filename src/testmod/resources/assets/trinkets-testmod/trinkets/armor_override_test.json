@@ -1,0 +1,18 @@
+{
+  "target": ["stick"],
+  "render": [
+    {
+      "type": "equipment_replace",
+      "equipment_slot": "feet",
+      "asset": {
+        "layers": {
+          "humanoid": [
+            {
+              "texture": "minecraft:leather"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

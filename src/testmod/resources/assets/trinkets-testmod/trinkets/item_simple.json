@@ -1,0 +1,9 @@
+{
+  "target": ["stone"],
+  "render": [
+    {
+      "type": "item",
+      "model_part": "head"
+    }
+  ]
+}

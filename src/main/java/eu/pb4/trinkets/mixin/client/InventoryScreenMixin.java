@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import eu.pb4.trinkets.impl.Point;
-import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
+import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.client.TrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
 import eu.pb4.trinkets.api.SlotGroup;
@@ -51,13 +51,13 @@ public abstract class InventoryScreenMixin extends AbstractRecipeBookScreen<Inve
 	}
 
 	@Override
-	public TrinketPlayerScreenHandler trinkets$getHandler() {
-		return (TrinketPlayerScreenHandler) this.menu;
+	public TrinketInventoryMenu trinkets$getHandler() {
+		return (TrinketInventoryMenu) this.menu;
 	}
 	
 	@Override
 	public Rect2i trinkets$getGroupRect(SlotGroup group) {
-		Point pos = ((TrinketPlayerScreenHandler) menu).trinkets$getGroupPos(group);
+		Point pos = ((TrinketInventoryMenu) menu).trinkets$getGroupPos(group);
 		if (pos != null) {
 			return new Rect2i(pos.x() - 1, pos.y() - 1, 17, 17);
 		}

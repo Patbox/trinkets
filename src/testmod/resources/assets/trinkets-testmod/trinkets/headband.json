@@ -1,0 +1,18 @@
+{
+  "target": [
+    "purple_wool"
+  ],
+  "render": [
+    {
+      "type": "model",
+      "model_part": "head",
+      "scale_target": "xz_stretch",
+      "offset": [
+        0,
+        0.5,
+        0
+      ],
+      "model": "trinkets-testmod:item/headband"
+    }
+  ]
+}

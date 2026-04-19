@@ -1,0 +1,32 @@
+{
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "block/purple_wool",
+		"particle": "block/purple_wool"
+	},
+	"elements": [
+		{
+			"from": [-0.4, 7.35, -0.4],
+			"to": [16.4, 9.45, 16.4],
+			"rotation": {"angle": 0, "axis": "y", "origin": [-0.4, 7.35, -0.4]},
+			"faces": {
+				"north": {"uv": [3, 6, 11, 8], "texture": "#0"},
+				"east": {"uv": [3, 4, 11, 6], "texture": "#0"},
+				"south": {"uv": [3, 10, 11, 12], "texture": "#0"},
+				"west": {"uv": [3, 8, 11, 10], "texture": "#0"}
+			}
+		},
+		{
+			"from": [-0.4, 9.45, -0.4],
+			"to": [16.4, 7.35, 16.4],
+			"rotation": {"angle": 0, "axis": "y", "origin": [-0.4, 9.45, -0.4]},
+			"faces": {
+				"north": {"uv": [3, 6, 11, 8], "texture": "#0"},
+				"east": {"uv": [3, 4, 11, 6], "texture": "#0"},
+				"south": {"uv": [3, 10, 11, 12], "texture": "#0"},
+				"west": {"uv": [3, 8, 11, 10], "texture": "#0"}
+			}
+		}
+	]
+}

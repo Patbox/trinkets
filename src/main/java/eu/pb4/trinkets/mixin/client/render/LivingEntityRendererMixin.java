@@ -1,7 +1,7 @@
 package eu.pb4.trinkets.mixin.client.render;
 
-import eu.pb4.trinkets.impl.client.TrinketEntityRenderState;
-import eu.pb4.trinkets.impl.client.TrinketFeatureRenderer;
+import eu.pb4.trinkets.impl.client.render.TrinketEntityRenderState;
+import eu.pb4.trinkets.impl.client.render.TrinketRenderLayer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.model.EntityModel;
@@ -32,12 +32,12 @@ public abstract class LivingEntityRendererMixin {
     @Inject(at = @At("RETURN"), method = "<init>")
     public void init(EntityRendererProvider.Context ctx, EntityModel<?> model, float shadowRadius, CallbackInfo info) {
         //noinspection rawtypes
-        this.addLayer(new TrinketFeatureRenderer<>((LivingEntityRenderer) (Object) this));
+        this.addLayer(new TrinketRenderLayer<>((LivingEntityRenderer) (Object) this));
     }
 
     @Inject(method = "extractRenderState(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;F)V", at = @At("TAIL"))
     private void updateTrinketsRenderState(LivingEntity livingEntity, LivingEntityRenderState livingEntityRenderState, float f, CallbackInfo ci) {
         var state = (TrinketEntityRenderState) livingEntityRenderState;
-        TrinketFeatureRenderer.extract(livingEntity, livingEntityRenderState, f, state);
+        TrinketRenderLayer.extract(livingEntity, livingEntityRenderState, f, state);
     }
 }

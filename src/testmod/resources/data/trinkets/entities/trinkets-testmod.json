@@ -1,5 +1,6 @@
 {
-  "entities": ["player", "zombie", "armor_stand", "#illager", "mannequin"],
+  "entities": ["player", "zombie", "armor_stand", "#illager", "mannequin", "vindicator", "villager", "pufferfish", "silverfish", "blaze",
+  "creeper", "snow_golem", "cow", "copper_golem", "slime", "zoglin", "zombified_piglin", "zombie_villager"],
   "slots": [
     "hand/glove",
     "hand/ring",

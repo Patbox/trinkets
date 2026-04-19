@@ -11,13 +11,16 @@
     "ItemStackMixin",
     "LivingEntityMixin",
     "PlayerListMixin",
+    "ServerEntityMixin",
     "ServerGamePacketListenerImplMixin",
     "ServerPlayerMixin",
     "accessor.AbstractedContainerMenuAccessor",
     "behaviour.LivingEntityMixin",
     "behaviour.PiglinAiMixin",
+    "client.EquipmentClientInfoAccessor",
     "client.EquipmentLayerRendererAccessor",
     "client.ItemPickerMenuAccessor",
+    "client.ModelPartAccessor",
     "datafixer.V1460Mixin"
   ],
   "client": [
@@ -32,8 +35,12 @@
     "client.accessor.LivingEntityAccessor",
     "client.accessor.RecipeBookScreenAccessor",
     "client.render.CapeLayerMixin",
+    "client.render.EquipmentLayerRendererMixin",
+    "client.render.HumanoidArmorLayerMixin",
     "client.render.LivingEntityRendererMixin",
     "client.render.LivingEntityStateRenderMixin",
+    "client.render.ModelBakeryMixin",
+    "client.render.ModelManagerMixin",
     "client.render.WingsLayerMixin"
   ],
   "injectors": {

@@ -14,7 +14,7 @@ import eu.pb4.trinkets.impl.client.CreativeTrinketScreen;
 import eu.pb4.trinkets.impl.client.CreativeTrinketSlot;
 import eu.pb4.trinkets.impl.Point;
 import eu.pb4.trinkets.impl.SurvivalTrinketSlot;
-import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
+import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.client.TrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
 import eu.pb4.trinkets.impl.TrinketSlot;
@@ -69,7 +69,7 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/Slot;<init>(Lnet/minecraft/world/Container;III)V"), method = "selectTab")
 	private void addCreativeTrinketSlots(CreativeModeTab g, CallbackInfo info) {
-		TrinketPlayerScreenHandler handler = trinkets$getHandler();
+		TrinketInventoryMenu handler = trinkets$getHandler();
 		for (int i = handler.trinkets$getTrinketSlotStart(); i < handler.trinkets$getTrinketSlotEnd(); i++) {
 			Slot slot = this.minecraft.player.inventoryMenu.slots.get(i);
 			if (slot instanceof SurvivalTrinketSlot ts) {
@@ -164,8 +164,8 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 	}
 
 	@Override
-	public TrinketPlayerScreenHandler trinkets$getHandler() {
-		return (TrinketPlayerScreenHandler) this.minecraft.player.inventoryMenu;
+	public TrinketInventoryMenu trinkets$getHandler() {
+		return (TrinketInventoryMenu) this.minecraft.player.inventoryMenu;
 	}
 
 	@Override

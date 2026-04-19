@@ -6,14 +6,13 @@ import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
-import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
+import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.TrinketsMain;
 import eu.pb4.trinkets.impl.TrinketsNetwork;
 import eu.pb4.trinkets.impl.client.render.ClientTrinketsManager;
 import eu.pb4.trinkets.impl.client.render.types.TrinketRenderElements;
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
 import eu.pb4.trinkets.impl.platform.ClientAbstraction;
-import eu.pb4.trinkets.impl.platform.CommonAbstraction;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.resources.Identifier;
@@ -21,7 +20,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.Map;
+import java.util.List;
 
 @Environment(EnvType.CLIENT)
 public class TrinketsClient implements ClientModInitializer {
@@ -47,7 +46,7 @@ public class TrinketsClient implements ClientModInitializer {
                     }
                 }
 
-                if (entity instanceof Player && ((Player) entity).inventoryMenu instanceof TrinketPlayerScreenHandler screenHandler) {
+                if (entity instanceof Player && ((Player) entity).inventoryMenu instanceof TrinketInventoryMenu screenHandler) {
                     screenHandler.trinkets$updateTrinketSlots(false);
                     TrinketScreenManager.tryUpdateTrinketsSlot();
                 }
@@ -64,14 +63,14 @@ public class TrinketsClient implements ClientModInitializer {
             EntitySlotLoader.CLIENT.setSlots(payload.map());
 
             if (player != null) {
-                ((TrinketPlayerScreenHandler) player.inventoryMenu).trinkets$updateTrinketSlots(true);
+                ((TrinketInventoryMenu) player.inventoryMenu).trinkets$updateTrinketSlots(true);
 
                 if (client.screen instanceof TrinketScreen trinketScreen) {
                     trinketScreen.trinkets$updateTrinketSlots();
                 }
 
                 for (Player clientWorldPlayer : player.level().players()) {
-                    ((TrinketPlayerScreenHandler) clientWorldPlayer.inventoryMenu).trinkets$updateTrinketSlots(true);
+                    ((TrinketInventoryMenu) clientWorldPlayer.inventoryMenu).trinkets$updateTrinketSlots(true);
                 }
             }
 
@@ -89,7 +88,8 @@ public class TrinketsClient implements ClientModInitializer {
             }
         });
 
-        ClientAbstraction.INSTANCE.registerClientReloadListener(Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "client_trinkets"), ClientTrinketsManager.INSTANCE);
+        ClientAbstraction.INSTANCE.registerClientReloadListener(Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "client_trinkets"), ClientTrinketsManager.INSTANCE, List.of(),
+                List.of(ClientAbstraction.INSTANCE.getClientModelResourceReloaderId()));
         ClientAbstraction.INSTANCE.registerClientTagsLoadedEvent(ClientTrinketsManager.INSTANCE::updateItemMap);
     }
 }

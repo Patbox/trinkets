@@ -1,7 +1,7 @@
 package eu.pb4.trinkets.mixin.client;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
+import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.TrinketInventoryImpl;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
@@ -23,7 +23,7 @@ public class ClientPacketListenerMixin {
     private void onPlayerRespawn(ClientboundRespawnPacket packet, CallbackInfo info, @Local(ordinal = 0) LocalPlayer clientPlayerEntity, @Local(ordinal = 1) LocalPlayer clientPlayerEntity2)  {
         if (packet.shouldKeep(ClientboundRespawnPacket.KEEP_ATTRIBUTE_MODIFIERS)) {
             TrinketInventoryImpl.copyFrom(clientPlayerEntity, clientPlayerEntity2);
-            ((TrinketPlayerScreenHandler) clientPlayerEntity2.inventoryMenu).trinkets$updateTrinketSlots(false);
+            ((TrinketInventoryMenu) clientPlayerEntity2.inventoryMenu).trinkets$updateTrinketSlots(false);
         }
     }
 }

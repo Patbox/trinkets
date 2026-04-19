@@ -5,7 +5,7 @@ import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import eu.pb4.trinkets.api.TrinketInventory;
-import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
+import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.client.CreativeTrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
 import eu.pb4.trinkets.impl.TrinketsConfig;
@@ -117,7 +117,7 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 
 	@Inject(method = "extractSlotHighlightFront", at = @At("TAIL"))
 	private void drawMoreSlotsIndicator(GuiGraphicsExtractor context, CallbackInfo ci) {
-		if ((this.menu instanceof ItemPickerMenuAccessor accessor ? accessor.getInventoryMenu() : this.menu) instanceof TrinketPlayerScreenHandler trinketMenu
+		if ((this.menu instanceof ItemPickerMenuAccessor accessor ? accessor.getInventoryMenu() : this.menu) instanceof TrinketInventoryMenu trinketMenu
 				&& TrinketsConfig.instance.showSlotsIndicator) {
 			for (int i = 0; i < this.menu.slots.size(); i++) {
 				Slot slot = this.menu.slots.get(i);

@@ -8,8 +8,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
+import net.neoforged.neoforge.client.resources.VanillaClientListeners;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
+
+import java.util.List;
 
 public record NeoClientAbstraction() implements ClientAbstraction {
     public static final NeoClientAbstraction INSTANCE = new NeoClientAbstraction();
@@ -24,14 +27,18 @@ public record NeoClientAbstraction() implements ClientAbstraction {
     }
 
     @Override
-    public void registerClientReloadListener(Identifier identifier, PreparableReloadListener instance, Identifier... requires) {
-        NeoForge.EVENT_BUS.addListener(AddClientReloadListenersEvent.class, e -> {
+    public void registerClientReloadListener(Identifier identifier, PreparableReloadListener instance, List<Identifier> requires, List<Identifier> requiredBy) {
+        NeoCommonAbstraction.INSTANCE.addLateAction(bus -> bus.addListener(AddClientReloadListenersEvent.class, e -> {
             e.addListener(identifier, instance);
 
             for (var r : requires) {
                 e.addDependency(r, identifier);
             }
-        });
+
+            for (var r : requiredBy) {
+                e.addDependency(identifier, r);
+            }
+        }));
     }
 
     @Override
@@ -41,5 +48,10 @@ public record NeoClientAbstraction() implements ClientAbstraction {
                 afterTagsLoaded.run();
             }
         });
+    }
+
+    @Override
+    public Identifier getClientModelResourceReloaderId() {
+        return VanillaClientListeners.MODELS;
     }
 }

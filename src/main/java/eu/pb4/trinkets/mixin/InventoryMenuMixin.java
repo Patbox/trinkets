@@ -33,7 +33,7 @@ import java.util.*;
  * @author Emi
  */
 @Mixin(value = InventoryMenu.class, priority = 500)
-public abstract class InventoryMenuMixin extends AbstractContainerMenu implements TrinketPlayerScreenHandler {
+public abstract class InventoryMenuMixin extends AbstractContainerMenu implements TrinketInventoryMenu {
     @Unique
     private final Map<SlotGroup, Integer> groupNums = new HashMap<>();
     @Unique

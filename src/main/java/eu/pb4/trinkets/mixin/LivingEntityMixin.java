@@ -3,7 +3,7 @@ package eu.pb4.trinkets.mixin;
 import eu.pb4.trinkets.api.*;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.TrinketInventoryImpl;
-import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
+import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.TrinketUtilities;
 import eu.pb4.trinkets.impl.payload.SyncInventoryPayload;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
@@ -18,8 +18,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -196,7 +194,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
 
             if (entity instanceof ServerPlayer serverPlayer && !map.isEmpty()) {
                 serverPlayer.connection.send(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(this.getId(), Map.of(), map)));
-                ((TrinketPlayerScreenHandler) serverPlayer.inventoryMenu).trinkets$updateTrinketSlots(false);
+                ((TrinketInventoryMenu) serverPlayer.inventoryMenu).trinkets$updateTrinketSlots(false);
             }
 
             inventoriesToSend.clear();

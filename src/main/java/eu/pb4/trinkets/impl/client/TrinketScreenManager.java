@@ -4,7 +4,7 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 
 import eu.pb4.trinkets.impl.Point;
-import eu.pb4.trinkets.impl.TrinketPlayerScreenHandler;
+import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.TrinketSlot;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -53,7 +53,7 @@ public class TrinketScreenManager {
 			return;
 		}
 
-		TrinketPlayerScreenHandler handler = currentScreen.trinkets$getHandler();
+		TrinketInventoryMenu handler = currentScreen.trinkets$getHandler();
 		Slot focusedSlot = currentScreen.trinkets$getFocusedSlot();
 		int x = currentScreen.trinkets$getX();
 		int y = currentScreen.trinkets$getY();
@@ -218,7 +218,7 @@ public class TrinketScreenManager {
 			return;
 		}
 
-		TrinketPlayerScreenHandler handler = currentScreen.trinkets$getHandler();
+		TrinketInventoryMenu handler = currentScreen.trinkets$getHandler();
 		context.pose().pushMatrix();
 		Rect2i r = currentScreen.trinkets$getGroupRect(group);
 		int slotsWidth = handler.trinkets$getSlotWidth(group) + 1;
@@ -306,7 +306,7 @@ public class TrinketScreenManager {
 		if (currentScreen == null) {
 			return;
 		}
-		TrinketPlayerScreenHandler handler = currentScreen.trinkets$getHandler();
+		TrinketInventoryMenu handler = currentScreen.trinkets$getHandler();
 		int x = currentScreen.trinkets$getX();
 		int y = currentScreen.trinkets$getY();
 
@@ -373,7 +373,7 @@ public class TrinketScreenManager {
 			return false;
 		}
 
-		TrinketPlayerScreenHandler handler = currentScreen.trinkets$getHandler();
+		TrinketInventoryMenu handler = currentScreen.trinkets$getHandler();
 		if (currentScreen.trinkets$getFocusedSlot() instanceof TrinketSlot) {
 			return true;
 		}
