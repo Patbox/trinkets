@@ -6,6 +6,7 @@ import eu.pb4.trinkets.api.client.TrinketRendererRegistry;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.mixin.client.ModelPartAccessor;
 import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -15,16 +16,16 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends EntityModel<T>> extends RenderLayer<T, M> {
-    private final Map<String, Bounds> storedAABBs = new HashMap<>();
-    private final Map<String, List<String>> partPathCache = new HashMap<>();
-
     public TrinketRenderLayer(RenderLayerParent<T, M> context) {
         super(context);
     }
@@ -54,150 +55,95 @@ public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends Ent
     }
 
     @Override
-    public void submit(PoseStack matrices, SubmitNodeCollector queue, int light, T state, float limbAngle, float limbDistance) {
-        ((TrinketEntityRenderState) state).trinkets$getItems().forEach(pair -> {
+    public void submit(PoseStack poseStack, SubmitNodeCollector queue, int light, T state, float limbAngle, float limbDistance) {
+        for (var pair : ((TrinketEntityRenderState) state).trinkets$getItems()) {
             var renderer = TrinketRendererRegistry.getRenderer(pair.getA().getItem());
             if (renderer.isPresent()) {
-                matrices.pushPose();
+                poseStack.pushPose();
                 renderer.get()
-                        .submit(pair.getA(), pair.getB(), this.getParentModel(), matrices, queue,
+                        .submit(pair.getA(), pair.getB(), this.getParentModel(), poseStack, queue,
                                 light, state, limbAngle, limbDistance);
-                matrices.popPose();
-            } else {
-
+                poseStack.popPose();
             }
-        });
+        }
 
         var parent = this.getParentModel();
 
         for (var o : ((TrinketEntityRenderState) state).trinkets$getPartAttachedRenderers()) {
-            var parts = this.findPart(parent.root(), o.part());
+            var settings = o.settings();
+            var parts = ((ModelExt) parent).trinkets$findPart(settings.modelPart());
 
             if (parts.isEmpty()) {
                 continue;
             }
+            poseStack.pushPose();
 
-            matrices.pushPose();
-            parent.root().translateAndRotate(matrices);
-            ModelPart part = parent.root();
-            for (var p : parts) {
-                part = part.getChild(p);
-                part.translateAndRotate(matrices);
+            translateToModelPart(parent, settings.modelPart(), parts, settings.offset(), poseStack);
+
+            poseStack.scale(1, -1, -1);
+
+            var bound = ((ModelExt) parent).trinkets$getBounds(settings.modelPart());
+            poseStack.scale(settings.scaleTarget().scaleX(bound), settings.scaleTarget().scaleY(bound), settings.scaleTarget().scaleZ(bound));
+
+            if (settings.transformation().isPresent()) {
+                poseStack.mulPose(settings.transformation().get().getMatrix());
             }
 
-            var bound = this.storedAABBs.computeIfAbsent(o.part(), this::computeElementAABB);
+            o.call().submit(poseStack, queue, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
 
-            var offset = o.offset();
-
-            matrices.translate(
-                    bound.centerX + bound.lX * offset.x(),
-                    bound.centerY - bound.lY * offset.y(),
-                    bound.centerZ - bound.lZ * offset.z()
-            );
-
-            matrices.scale(1, -1, -1);
-
-            matrices.scale(o.scaleTarget().scaleX(bound), o.scaleTarget().scaleY(bound), o.scaleTarget().scaleZ(bound));
-
-            if (o.transformation().isPresent()) {
-                matrices.mulPose(o.transformation().get().getMatrix());
-            }
-
-            o.call().submit(matrices, queue, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
-
-            matrices.popPose();
+            poseStack.popPose();
         }
     }
 
-    private List<String> findPart(ModelPart root, String part) {
-        var res = this.partPathCache.get(part);
-        if (res != null) {
-            return res;
+
+    public static boolean translateToModelPart(Model<?> model, String modelPart, Vector3fc offset, PoseStack poseStack) {
+        var parts = ((ModelExt) model).trinkets$findPart(modelPart);
+
+        if (parts.isEmpty()) {
+            return false;
         }
 
-        for (var x : ((ModelPartAccessor) (Object) root).getChildren().entrySet()) {
-            var t = findAndDefineRecursive(List.of(), part, x.getKey(), x.getValue());
-            if (t != null) {
-                return t;
-            }
-        }
-        this.partPathCache.put(part, List.of());
-
-        return List.of();
+        translateToModelPart(model, modelPart, parts, offset, poseStack);
+        return true;
     }
 
-    private List<String> findAndDefineRecursive(List<String> elements, String searched, String key, ModelPart value) {
-        elements = new ArrayList<>(elements);
-        elements.add(key);
+    public static boolean translateToModelPartNoOffset(Model<?> model, String modelPart, PoseStack poseStack) {
+        var parts = ((ModelExt) model).trinkets$findPart(modelPart);
 
-        this.partPathCache.put(key, elements);
-        if (key.equals(searched)) {
-            return elements;
+        if (parts.isEmpty()) {
+            return false;
         }
 
-        if (((ModelPartAccessor) (Object) value).getChildren().isEmpty()) {
-            return null;
-        }
-
-        for (var x : ((ModelPartAccessor) (Object) value).getChildren().entrySet()) {
-            var t = findAndDefineRecursive(elements, searched, x.getKey(), x.getValue());
-            if (t != null) {
-                return t;
-            }
-        }
-
-        return null;
+        translateToModelPartNoOffset(model, modelPart, parts, poseStack);
+        return true;
     }
 
-    private Bounds computeElementAABB(String s) {
-        var l = this.findPart(this.getParentModel().root(), s);
-        if (l.isEmpty()) {
-            return new Bounds(0, 0, 0, 0, 0, 0, 1, 1, 1);
-        }
+    public static void translateToModelPart(Model<?> model, String modelPart, List<String> parts, Vector3fc offset, PoseStack poseStack) {
+        translateToModelPartNoOffset(model, modelPart, parts, poseStack);
 
-        var part = this.getParentModel().root();
-        for (var x : l) {
-            part = part.getChild(x);
-        }
+        var bound = ((ModelExt) model).trinkets$getBounds(modelPart);
 
-        if (((ModelPartAccessor) (Object) part).getCubes().isEmpty()) {
-            return new Bounds(0, 0, 0, 0, 0, 0, 1, 1, 1);
-        }
-
-        float minX = Float.POSITIVE_INFINITY;
-        float minY = Float.POSITIVE_INFINITY;
-        float minZ = Float.POSITIVE_INFINITY;
-
-        float maxX = Float.NEGATIVE_INFINITY;
-        float maxY = Float.NEGATIVE_INFINITY;
-        float maxZ = Float.NEGATIVE_INFINITY;
-
-
-        for (var cube : ((ModelPartAccessor) (Object) part).getCubes()) {
-            minX = Math.min(cube.minX, minX);
-            minY = Math.min(cube.minY, minY);
-            minZ = Math.min(cube.minZ, minZ);
-
-            maxX = Math.max(cube.maxX, maxX);
-            maxY = Math.max(cube.maxY, maxY);
-            maxZ = Math.max(cube.maxZ, maxZ);
-        }
-
-
-        return new Bounds(
-                (maxX + minX) / 2 / 16,
-                (maxY + minY) / 2 / 16,
-                (maxZ + minZ) / 2 / 16,
-                (maxX - minX) / 2 / 16,
-                (maxY - minY) / 2 / 16,
-                (maxZ - minZ) / 2 / 16,
-                (maxX - minX) / 16,
-                (maxY - minY) / 16,
-                (maxZ - minZ) / 16
+        poseStack.translate(
+                bound.centerX() + bound.lX() * offset.x(),
+                bound.centerY() - bound.lY() * offset.y(),
+                bound.centerZ() - bound.lZ() * offset.z()
         );
     }
 
-    record Bounds(float centerX, float centerY, float centerZ, float lX, float lY, float lZ, float scaleX, float scaleY,
-                  float scaleZ) {
+    public static boolean translateToModelPartNoOffset(Model<?> model, String modelPart, List<String> parts, PoseStack poseStack) {
+        ModelPart part = model.root();
+        part.translateAndRotate(poseStack);
+
+        for (var p : parts) {
+            part = part.getChild(p);
+            part.translateAndRotate(poseStack);
+        }
+
+        if (part.hasChild("EMF_" + modelPart)) {
+            part = part.getChild("EMF_" +modelPart);
+            part.translateAndRotate(poseStack);
+        }
+
+        return true;
     }
 }

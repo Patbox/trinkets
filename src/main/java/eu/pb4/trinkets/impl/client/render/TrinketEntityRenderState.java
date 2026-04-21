@@ -6,6 +6,7 @@ import eu.pb4.trinkets.api.TrinketSlotAccess;
 import java.util.List;
 import java.util.Optional;
 
+import eu.pb4.trinkets.impl.client.render.types.AttachmentSettings;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.resources.ResourceKey;
@@ -37,10 +38,7 @@ public interface TrinketEntityRenderState {
 
 	};
 
-	record PartAttachedRenderer(String part, Optional<Transformation> transformation, Vector3fc offset,
-								ScaleTarget scaleTarget, SubmitCall call) {
-
-	}
+	record PartAttachedRenderer(AttachmentSettings settings, SubmitCall call) { }
 
 	interface SubmitCall {
 		void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final int outlineColor);

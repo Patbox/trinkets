@@ -1,0 +1,6 @@
+- Improved compatibility with Entity Model Features mod:
+  - Applies both api/code and data driven trinket rendering (so won't change for mods not using Trinket's provided utility methods).
+  - Do note the compatibility isn't perfect and more heavily modified (or vanilla non-conforming) models
+    might show trinkets wrong or not render them at all.
+  - Most popular packs, such as Fresh Animations (including player addon) will look correctly now through!
+- You can now set the asset_id field in Trinkets Equipment component.

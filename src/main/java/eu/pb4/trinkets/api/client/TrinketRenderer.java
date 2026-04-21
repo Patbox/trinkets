@@ -3,12 +3,11 @@ package eu.pb4.trinkets.api.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.impl.client.render.TrinketRenderLayer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.model.ArmedModel;
-import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.HeadedModel;
-import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.*;
+import net.minecraft.client.model.geom.PartNames;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
@@ -17,6 +16,8 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 @Environment(EnvType.CLIENT)
 public interface TrinketRenderer {
@@ -44,6 +45,7 @@ public interface TrinketRenderer {
 	static void followBodyRotations(final EntityModel<? extends LivingEntityRenderState> entityModel, final HumanoidModel<?> model) {
 		if (entityModel instanceof HumanoidModel<?> bipedModel) {
 			//noinspection rawtypes
+			model.root().loadPose(bipedModel.root().storePose());
 			model.head.loadPose(bipedModel.head.storePose());
 			model.body.loadPose(bipedModel.body.storePose());
 			model.leftArm.loadPose(bipedModel.leftArm.storePose());
@@ -54,12 +56,16 @@ public interface TrinketRenderer {
 	}
 
 	/**
-	 * Translates the rendering context to the center of the player's face
+	 * Translates the rendering to select positions of the select model part, similarly to item/model data driven renderer.
+	 *
+	 * @param poseStack poseStack to translate
+	 * @param model model to align with
+	 * @param modelPart name of the model part to target, see {@link PartNames} for vanilla names.
+	 * @param offset controls the position alongside the model part, taking values from (-1, -1, -1) to (1, 1, 1)
+	 * @return true if modelPart was found and applied correctly, false otherwise
 	 */
-	@Deprecated
-	static void translateToFace(PoseStack matrices, HeadedModel model,
-			HumanoidRenderState state, float headYaw, float headPitch) {
-		translateToFace(matrices, model);
+	static boolean translateToModelPart(PoseStack poseStack, Model<?> model, String modelPart, Vector3fc offset) {
+		return TrinketRenderLayer.translateToModelPart(model, modelPart, offset, poseStack);
 	}
 
 	static void translateToFace(PoseStack matrices, HeadedModel model) {
@@ -72,12 +78,21 @@ public interface TrinketRenderer {
 		matrices.translate(0.0F, -0.25F, 0);
 	}
 
+	/**
+	 * Translates the rendering context to the center of the player's face
+	 */
+	@Deprecated
+	static void translateToFace(PoseStack matrices, HeadedModel model,
+								HumanoidRenderState state, float headYaw, float headPitch) {
+		translateToFace(matrices, model);
+	}
 
 	/**
 	 * Translates the rendering context to the center of the player's chest/torso segment
 	 */
 	static void translateToChest(PoseStack matrices, HumanoidModel<?> model,
 			HumanoidRenderState state) {
+		model.root().translateAndRotate(matrices);
 		model.body.translateAndRotate(matrices);
 		matrices.translate(0.0F, 0.4F, -0.16F);
 	}
@@ -135,7 +150,7 @@ public interface TrinketRenderer {
 	 */
 	static void translateToRightLeg(PoseStack matrices, HumanoidModel<?> model,
 			HumanoidRenderState state) {
-
+		model.root().translateAndRotate(matrices);
 		model.rightLeg.translateAndRotate(matrices);
 		matrices.translate(0.0F, 0.75F, 0.0F);
 	}
@@ -145,6 +160,7 @@ public interface TrinketRenderer {
 	 */
 	static void translateToLeftLeg(PoseStack matrices, HumanoidModel<?> model,
 			HumanoidRenderState state) {
+		model.root().translateAndRotate(matrices);
 		model.leftLeg.translateAndRotate(matrices);
 		matrices.translate(0.0F, 0.75F, 0.0F);
 	}

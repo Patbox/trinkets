@@ -1,0 +1,10 @@
+{
+  "pack": {
+    "description": "Enables Elytras to be equiped in Trinkets slots",
+    "min_format": [
+      101,
+      1
+    ],
+    "max_format": 999
+  }
+}

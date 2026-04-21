@@ -29,25 +29,21 @@ import org.joml.Vector3fc;
 import java.util.List;
 import java.util.Optional;
 
-public record ModelTrinketElement(String modelPart, Optional<Transformation> transformation, Vector3fc offset, ScaleTarget scaleTarget,
+public record ModelTrinketElement(AttachmentSettings settings,
                                   Identifier model, List<ItemTintSource> tints,
-
                                   boolean centered,
                                   MutableObject<Resolved> resolvedModel) implements TrinketRenderElement {
 
     public static final MapCodec<ModelTrinketElement> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            Codec.STRING.fieldOf("model_part").forGetter(ModelTrinketElement::modelPart),
-            Transformation.EXTENDED_CODEC.optionalFieldOf("transformation").forGetter(ModelTrinketElement::transformation),
-            ExtraCodecs.VECTOR3F.optionalFieldOf("offset", new Vector3f()).forGetter(ModelTrinketElement::offset),
-            ScaleTarget.CODEC.optionalFieldOf("scale_target", ScaleTarget.NONE).forGetter(ModelTrinketElement::scaleTarget),
+            AttachmentSettings.CODEC.forGetter(ModelTrinketElement::settings),
             Identifier.CODEC.fieldOf("model").forGetter(ModelTrinketElement::model),
             ItemTintSources.CODEC.listOf().optionalFieldOf("tints", List.of()).forGetter(ModelTrinketElement::tints),
             Codec.BOOL.optionalFieldOf("centered", true).forGetter(ModelTrinketElement::centered)
     ).apply(instance, ModelTrinketElement::new));
 
-    ModelTrinketElement(String modelPart, Optional<Transformation> transformation, Vector3fc offset, ScaleTarget scaleTarget,
+    ModelTrinketElement(AttachmentSettings settings,
                         Identifier model, List<ItemTintSource> tints, boolean centered) {
-        this(modelPart, transformation, offset, scaleTarget, model, tints, centered, new MutableObject<>());
+        this(settings, model, tints, centered, new MutableObject<>());
     }
 
     @Override
@@ -68,8 +64,7 @@ public record ModelTrinketElement(String modelPart, Optional<Transformation> tra
             tint[i] = this.tints.get(i).calculate(stack, (ClientLevel) livingEntity.level(), livingEntity);
         }
 
-        state.trinkets$getPartAttachedRenderers().add(new TrinketEntityRenderState.PartAttachedRenderer(TrinketRenderLayer.replacePartName(livingEntity, access, modelPart),
-                transformation, offset, scaleTarget,
+        state.trinkets$getPartAttachedRenderers().add(new TrinketEntityRenderState.PartAttachedRenderer(settings.withResolvedModelPart(livingEntity, access),
                 (poseStack, submitNodeCollector, lightCoords, overlayCoords, outlineColor) -> {
                     if (this.centered) {
                         poseStack.translate(-0.5f, -0.5f, -0.5f);

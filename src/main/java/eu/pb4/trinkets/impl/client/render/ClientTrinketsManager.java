@@ -81,7 +81,10 @@ public class ClientTrinketsManager extends SimpleJsonResourceReloadListener<Clie
     public ClientTrinket get(ItemStack stack) {
         var trinket = stack.get(TrinketDataComponents.EQUIPMENT);
         if (trinket != null) {
-            // Todo.
+            var id = trinket.assetId().map(this.idMap::get);
+            if (id.isPresent()) {
+                return id.get();
+            }
         }
 
         return this.defaultMap.getOrDefault(stack.getItem(), ClientTrinket.EMPTY);

@@ -4,6 +4,7 @@ import eu.pb4.trinkets.api.TrinketDropRule;
 import eu.pb4.trinkets.impl.component.TrinketEquippableImpl;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
@@ -27,7 +28,7 @@ public interface TrinketEquippable {
 
     TrinketEquippable withAllowedEntities(@Nullable HolderSet<EntityType<?>> allowedEntities);
 
-    //TrinketEquippable withAssetId(@Nullable ResourceKey<EquipmentAsset> assetId);
+    TrinketEquippable withAssetId(@Nullable Identifier assetId);
 
     TrinketEquippable withDropRule(TrinketDropRule dropRule);
 
@@ -39,7 +40,7 @@ public interface TrinketEquippable {
 
     Holder<SoundEvent> equipSound();
 
-    Optional<ResourceKey<EquipmentAsset>> assetId();
+    Optional<Identifier> assetId();
 
     Optional<HolderSet<EntityType<?>>> allowedEntities();
 

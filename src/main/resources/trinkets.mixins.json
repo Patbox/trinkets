@@ -41,6 +41,7 @@
     "client.render.LivingEntityStateRenderMixin",
     "client.render.ModelBakeryMixin",
     "client.render.ModelManagerMixin",
+    "client.render.ModelMixin",
     "client.render.WingsLayerMixin"
   ],
   "injectors": {
