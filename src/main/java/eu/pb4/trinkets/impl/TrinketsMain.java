@@ -157,14 +157,8 @@ public class TrinketsMain implements ModInitializer {
 	}
 
 	private static int clearCommand(CommandContext<CommandSourceStack> context){
-		ServerPlayer player = context.getSource().getPlayer();
-		if (player != null) {
-			TrinketAttachment comp = TrinketsApi.getAttachment(player);
-			for (var entry : comp.getInventory().entrySet()){
-				for (var inv : entry.getValue().values()){
-					inv.clearContent();
-				}
-			}
+		if (context.getSource().getEntity() instanceof LivingEntity livingEntity) {
+			LivingEntityTrinketAttachment.get(livingEntity).clearContents();
 		}
 		return 1;
 	}
@@ -183,7 +177,7 @@ public class TrinketsMain implements ModInitializer {
 					SlotType slotType = slotGroup.slots().getOrDefault(slot, null);
 					if (slotType != null) {
 						if (offset >= 0 && offset < slotType.amount()) {
-							comp.getInventory().get(group).get(slot).setItem(offset, stack.createItemStack(amount));
+							comp.getInventory(group + '/' + slot).setItem(offset, stack.createItemStack(amount));
 							return Command.SINGLE_SUCCESS;
 						} else {
 							context.getSource().sendFailure(Component.literal(offset + " offset does not exist for slot"));

@@ -68,17 +68,12 @@ public final class TrinketInventoryImpl implements TrinketInventory {
         var prevTrinkets = LivingEntityTrinketAttachment.get(previous);
         var currentTrinkets = LivingEntityTrinketAttachment.get(current);
 
-        var prevMap = prevTrinkets.getInventory();
-        var currentMap = currentTrinkets.getInventory();
+        var prevMap = prevTrinkets.inventory;
+        var currentMap = currentTrinkets.inventory;
         for (var entry : prevMap.entrySet()) {
-            var currentInvs = currentMap.get(entry.getKey());
-            if (currentInvs != null) {
-                for (var invEntry : entry.getValue().entrySet()) {
-                    var currentInv = currentInvs.get(invEntry.getKey());
-                    if (currentInv != null) {
-                        currentInv.copyFrom(invEntry.getValue());
-                    }
-                }
+            var currentInv = currentMap.get(entry.getKey());
+            if (currentInv != null) {
+                currentInv.copyFrom(entry.getValue());
             }
         }
     }

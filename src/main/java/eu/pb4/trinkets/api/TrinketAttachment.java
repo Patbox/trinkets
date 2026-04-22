@@ -1,5 +1,6 @@
 package eu.pb4.trinkets.api;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,7 +32,15 @@ public interface TrinketAttachment {
 	 * for the entity. Inventories will respect EAM slot count modifications for
 	 * the entity.
 	 */
+	@Deprecated
 	Map<String, Map<String, TrinketInventory>> getInventory();
+
+	/**
+	 * @return A map of slot ids to trinket inventories
+	 * for the entity. Inventories will respect EAM slot count modifications for
+	 * the entity.
+	 */
+	Map<String, TrinketInventory> getInventories();
 
 	/**
 	 * @return a specific inventory based on the provided slotId.

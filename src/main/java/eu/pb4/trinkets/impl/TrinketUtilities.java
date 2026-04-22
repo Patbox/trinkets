@@ -1,8 +1,6 @@
 package eu.pb4.trinkets.impl;
 
-import com.mojang.datafixers.util.Function3;
 import eu.pb4.trinkets.api.SlotAttributes;
-import eu.pb4.trinkets.api.TrinketAttachment;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
@@ -25,7 +23,6 @@ import net.minecraft.world.item.enchantment.*;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
@@ -90,44 +87,41 @@ public class TrinketUtilities {
         if (equipment == null || equipment.canBeEquippedBy(user)) {
             var comp = LivingEntityTrinketAttachment.get(user);
 
-            for (var group : comp.getInventory().values()) {
-                for (var inv : group.values()) {
-                    for (int i = 0; i < inv.getContainerSize(); i++) {
-                        if (inv.getItem(i).isEmpty()) {
-                            var ref = inv.getSlotAccess(i);
-                            if (TrinketSlot.canInsert(inHand, ref, user)) {
-                                ItemStack newStack = inHand.copy();
-                                inv.setItem(i, newStack);
-                                TrinketUtilities.playEquipmentSound(newStack, ref, user);
-                                inHand.shrink(1);
-                                return InteractionResult.SUCCESS;
-                            }
+            for (var inv : comp.inventory.values()) {
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    if (inv.getItem(i).isEmpty()) {
+                        var ref = inv.getSlotAccess(i);
+                        if (TrinketSlot.canInsert(inHand, ref, user)) {
+                            ItemStack newStack = inHand.copy();
+                            inv.setItem(i, newStack);
+                            TrinketUtilities.playEquipmentSound(newStack, ref, user);
+                            inHand.shrink(1);
+                            return InteractionResult.SUCCESS;
                         }
                     }
                 }
             }
+
             if (equipment == null || equipment.swappable()) {
-                for (var group : comp.getInventory().values()) {
-                    for (var inv : group.values()) {
-                        for (int i = 0; i < inv.getContainerSize(); i++) {
-                            var current = inv.getItem(i);
-                            var ref = inv.getSlotAccess(i);
-                            if (TrinketSlot.mayPickup(current, ref, user) && TrinketSlot.canInsert(inHand, ref, user)) {
-                                TrinketUtilities.playEquipmentSound(inHand, ref, user);
-                                if (inHand.getCount() <= 1) {
-                                    ItemStack swappedToHand = current.isEmpty() ? inHand : current.copyAndClear();
-                                    ItemStack swappedToEquipment = user.isCreative() ? inHand.copy() : inHand.copyAndClear();
-                                    inv.setItem(i, swappedToEquipment);
-                                    return InteractionResult.SUCCESS.heldItemTransformedTo(swappedToHand);
-                                } else {
-                                    ItemStack swappedToInventory = current.copyAndClear();
-                                    ItemStack swappedToEquipment = inHand.consumeAndReturn(1, user);
-                                    inv.setItem(i, swappedToEquipment);
-                                    if (!user.getInventory().add(swappedToInventory)) {
-                                        user.drop(swappedToInventory, false);
-                                    }
-                                    return InteractionResult.SUCCESS.heldItemTransformedTo(inHand);
+                for (var inv : comp.inventory.values()) {
+                    for (int i = 0; i < inv.getContainerSize(); i++) {
+                        var current = inv.getItem(i);
+                        var ref = inv.getSlotAccess(i);
+                        if (TrinketSlot.mayPickup(current, ref, user) && TrinketSlot.canInsert(inHand, ref, user)) {
+                            TrinketUtilities.playEquipmentSound(inHand, ref, user);
+                            if (inHand.getCount() <= 1) {
+                                ItemStack swappedToHand = current.isEmpty() ? inHand : current.copyAndClear();
+                                ItemStack swappedToEquipment = user.isCreative() ? inHand.copy() : inHand.copyAndClear();
+                                inv.setItem(i, swappedToEquipment);
+                                return InteractionResult.SUCCESS.heldItemTransformedTo(swappedToHand);
+                            } else {
+                                ItemStack swappedToInventory = current.copyAndClear();
+                                ItemStack swappedToEquipment = inHand.consumeAndReturn(1, user);
+                                inv.setItem(i, swappedToEquipment);
+                                if (!user.getInventory().add(swappedToInventory)) {
+                                    user.drop(swappedToInventory, false);
                                 }
+                                return InteractionResult.SUCCESS.heldItemTransformedTo(inHand);
                             }
                         }
                     }

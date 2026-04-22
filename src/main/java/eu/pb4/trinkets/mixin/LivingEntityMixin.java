@@ -165,13 +165,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
             }
         }
 
-        for (var a : trinkets.getInventoryImpl().values()) {
-            for (var b : a.values()) {
-                b.update();
-            }
+        for (var a : trinkets.inventory.values()) {
+            a.update();
         }
 
-        Set<TrinketInventoryImpl> inventoriesToSend = trinkets.getContainerSizeChanged();
+        var inventoriesToSend = trinkets.getContainerSizeChanged();
 
         if (!changedItems.isEmpty() || !inventoriesToSend.isEmpty()) {
             Map<String, Integer> map = new HashMap<>();

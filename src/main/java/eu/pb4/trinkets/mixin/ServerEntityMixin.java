@@ -5,7 +5,6 @@ import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.payload.SyncInventoryPayload;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -38,18 +37,16 @@ public class ServerEntityMixin {
         var slotCount = new HashMap<String, Integer>();
         var items = new HashMap<TrinketSlotReference, ItemStack>();
 
-        for (var x : trinket.inventory.values()) {
-            for (var y : x.values()) {
-                var id = y.slotType().getId();
-                if (y.getContainerSize() != y.slotType().amount()) {
-                    slotCount.put(id, y.getContainerSize());
-                }
+        for (var y : trinket.inventory.values()) {
+            var id = y.slotType().getId();
+            if (y.getContainerSize() != y.slotType().amount()) {
+                slotCount.put(id, y.getContainerSize());
+            }
 
-                for (int i = 0; i < y.getContainerSize(); i++) {
-                    var item = y.getItem(i);
-                    if (!item.isEmpty()) {
-                        items.put(new TrinketSlotReference(id, i), item.copy());
-                    }
+            for (int i = 0; i < y.getContainerSize(); i++) {
+                var item = y.getItem(i);
+                if (!item.isEmpty()) {
+                    items.put(new TrinketSlotReference(id, i), item.copy());
                 }
             }
         }

@@ -32,14 +32,16 @@ public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends Ent
 
     public static void extract(LivingEntity livingEntity, LivingEntityRenderState entityState, float tickDelta, TrinketEntityRenderState state) {
         var component = LivingEntityTrinketAttachment.get(livingEntity);
-        List<Tuple<ItemStack, TrinketSlotAccess>> items = new ArrayList<>();
-        component.forEach((slotReference, stack) -> items.add(new Tuple<>(stack, slotReference)));
+        var items = new ArrayList<Tuple<ItemStack, TrinketSlotAccess>>();
         state.trinkets$setItems(items);
         state.trinkets$setPartAttachedRenderers(new ArrayList<>());
-
-        for (var x : items) {
-            ClientTrinketsManager.INSTANCE.get(x.getA()).apply(livingEntity, x.getA(), x.getB(), entityState, tickDelta, state);
-        }
+        component.forEach((slotReference, stack) -> {
+            if (TrinketRendererRegistry.hasRenderer(stack.getItem())) {
+                items.add(new Tuple<>(stack, slotReference));
+            } else {
+                ClientTrinketsManager.INSTANCE.get(stack).apply(livingEntity, stack, slotReference, entityState, tickDelta, state);
+            }
+        });
     }
 
     public static String replacePartName(LivingEntity livingEntity, TrinketSlotAccess access, String modelPart) {

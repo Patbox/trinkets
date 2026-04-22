@@ -119,7 +119,7 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
         slotWidths.clear();
         slotHeights.clear();
         slotTypes.clear();
-        for (var entry : trinkets.getInventoryImpl().entrySet().stream().sorted(Map.Entry.comparingByKey()).toList()) {
+        for (var entry : trinkets.getLegacyInventoryImpl().entrySet().stream().sorted(Map.Entry.comparingByKey()).toList()) {
             String groupId = entry.getKey();
             SlotGroup group = groups.get(groupId);
             int groupOffset = 1;

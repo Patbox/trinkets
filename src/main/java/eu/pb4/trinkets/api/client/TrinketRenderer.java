@@ -56,7 +56,7 @@ public interface TrinketRenderer {
 	}
 
 	/**
-	 * Translates the rendering to select positions of the select model part, similarly to item/model data driven renderer.
+	 * Translates the rendering to select positions of the provided model part, similarly to item/model data driven renderer.
 	 *
 	 * @param poseStack poseStack to translate
 	 * @param model model to align with

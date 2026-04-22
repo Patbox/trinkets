@@ -77,64 +77,62 @@ public abstract class ItemStackMixin {
         boolean allModifiersSame = true;
         int slotCount = 0;
 
-        for (var group : comp.getInventory().entrySet()) {
-            outer:
-            for (var inventory : group.getValue().entrySet()) {
-                var trinketInventory = inventory.getValue();
-                SlotType slotType = trinketInventory.slotType();
-                slotCount++;
-                for (int i = 0; i < trinketInventory.getContainerSize(); i++) {
-                    var callback = TrinketCallback.getCallback(self);
-                    var ref = trinketInventory.getOrCreateSlotAccess(i);
 
-                    var res = slotType.tooltipCheck(self, ref, player);
-                    var isValidForSlot = ref.slotType().validatorCheck(self, ref, player);
-                    var canInsert = isValidForSlot && callback.canEquip(self, ref, player);
+        for (var trinketInventory : comp.inventory.values()) {
+            SlotType slotType = trinketInventory.slotType();
+            slotCount++;
+            for (int i = 0; i < trinketInventory.getContainerSize(); i++) {
+                var callback = TrinketCallback.getCallback(self);
+                var ref = trinketInventory.getOrCreateSlotAccess(i);
 
-                    if (res && isValidForSlot) {
-                        boolean sameTranslationExists = false;
-                        for (var t : slots) {
-                            if (t.getA().getTranslation().getString().equals(slotType.getTranslation().getString())) {
-                                sameTranslationExists = true;
-                                if (canInsert && !t.getB()) {
-                                    t.setB(true);
-                                }
+                var res = slotType.tooltipCheck(self, ref, player);
+                var isValidForSlot = ref.slotType().validatorCheck(self, ref, player);
+                var canInsert = isValidForSlot && callback.canEquip(self, ref, player);
+
+                if (res && isValidForSlot) {
+                    boolean sameTranslationExists = false;
+                    for (var t : slots) {
+                        if (t.getA().getTranslation().getString().equals(slotType.getTranslation().getString())) {
+                            sameTranslationExists = true;
+                            if (canInsert && !t.getB()) {
+                                t.setB(true);
+                            }
+                            break;
+                        }
+                    }
+
+                    if (!sameTranslationExists) {
+                        slots.add(new Tuple<>(slotType, canInsert));
+                    }
+                    Multimap<Holder<Attribute>, AttributeModifier> map = Multimaps.newMultimap(Maps.newLinkedHashMap(), ArrayList::new);
+                    TrinketUtilities.forEachModifier(player, self, ref, map::put);
+
+                    if (defaultModifier == null) {
+                        defaultModifier = map;
+                    } else if (allModifiersSame) {
+                        allModifiersSame = areMapsEqual(defaultModifier, map);
+                    }
+
+                    boolean duplicate = false;
+                    for (Map.Entry<SlotType, Multimap<Holder<Attribute>, AttributeModifier>> entry : modifiers.entrySet()) {
+                        if (entry.getKey().getTranslation().getString().equals(slotType.getTranslation().getString())) {
+                            if (areMapsEqual(entry.getValue(), map)) {
+                                duplicate = true;
                                 break;
                             }
                         }
-
-                        if (!sameTranslationExists) {
-                            slots.add(new Tuple<>(slotType, canInsert));
-                        }
-                        Multimap<Holder<Attribute>, AttributeModifier> map = Multimaps.newMultimap(Maps.newLinkedHashMap(), ArrayList::new);
-                        TrinketUtilities.forEachModifier(player, self, ref, map::put);
-
-                        if (defaultModifier == null) {
-                            defaultModifier = map;
-                        } else if (allModifiersSame) {
-                            allModifiersSame = areMapsEqual(defaultModifier, map);
-                        }
-
-                        boolean duplicate = false;
-                        for (Map.Entry<SlotType, Multimap<Holder<Attribute>, AttributeModifier>> entry : modifiers.entrySet()) {
-                            if (entry.getKey().getTranslation().getString().equals(slotType.getTranslation().getString())) {
-                                if (areMapsEqual(entry.getValue(), map)) {
-                                    duplicate = true;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!duplicate) {
-                            modifiers.put(slotType, map);
-                        }
-                        continue outer;
-                    } else {
-                        canEquipAnywhere = false;
                     }
+
+                    if (!duplicate) {
+                        modifiers.put(slotType, map);
+                    }
+                    break;
+                } else {
+                    canEquipAnywhere = false;
                 }
             }
         }
+
 
         if (canEquipAnywhere && slotCount > 1) {
             textConsumer.accept(Component.translatable("trinkets.tooltip.slots.any").withStyle(ChatFormatting.GRAY));

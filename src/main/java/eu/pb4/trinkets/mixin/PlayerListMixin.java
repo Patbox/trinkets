@@ -57,9 +57,9 @@ public abstract class PlayerListMixin {
         ((TrinketInventoryMenu) player.inventoryMenu).trinkets$updateTrinketSlots(false);
         var trinkets = TrinketsApi.getAttachment(player);
         Map<String, Integer> tag = new HashMap<>();
-        ((LivingEntityTrinketAttachment) trinkets).inventory.forEach((_, a) -> a.forEach((_, v) -> {
-            tag.put(v.slotType().getId(), v.getContainerSize());
-        }));
+        ((LivingEntityTrinketAttachment) trinkets).inventory.forEach((id, v) -> {
+            tag.put(id, v.getContainerSize());
+        });
         player.connection.send(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(player.getId(), Map.of(), tag)));
     }
 }
