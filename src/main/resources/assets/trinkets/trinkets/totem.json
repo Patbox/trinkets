@@ -1,0 +1,41 @@
+{
+  "target": ["minecraft:totem_of_undying"],
+  "render": [
+    {
+      "type": "model",
+      "model_part": "body",
+      "model": "trinkets:item/generic_necklace",
+      "offset": [0, 1, 1],
+      "transformation": {
+        "translation": [0, 0.01, 0.01],
+        "left_rotation": {
+          "axis": [0, 1, 0],
+          "angle": 0
+        },
+        "scale": [1, 1, 1],
+        "right_rotation": {
+          "axis": [0, 1, 0],
+          "angle": 0
+        }
+      }
+    },
+    {
+      "type": "item",
+      "model_part": "body",
+      "display_context": "none",
+      "offset": [0, 1, 1],
+      "transformation": {
+        "translation": [0, -0.3, 0.02],
+        "left_rotation": {
+          "axis": [0, 1, 0],
+          "angle": 3.141
+        },
+        "scale": [0.4, 0.4, 0.4],
+        "right_rotation": {
+          "axis": [0, 1, 0],
+          "angle": 0
+        }
+      }
+    }
+  ]
+}

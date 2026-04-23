@@ -6,3 +6,4 @@
 - You can now set the asset_id field in Trinkets Equipment component.
 - Trinkets are counted within player Inventory contains checks and in case of /clear command.
 - Data driven trinket rendering is now exclusive with code driven one.
+- Totems of Undying (and other items with death protection component) will now work in Trinkets slots (requires a datapack to enable it).

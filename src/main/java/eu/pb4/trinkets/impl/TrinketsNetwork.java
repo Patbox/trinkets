@@ -8,9 +8,9 @@ import net.minecraft.resources.Identifier;
 
 public class TrinketsNetwork {
 
-  public static final CustomPacketPayload.Type<SyncSlotsPayload> SYNC_SLOTS = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "sync_slots"));
-  public static final CustomPacketPayload.Type<SyncInventoryPayload> SYNC_INVENTORY = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "sync_inventory"));
-  public static final CustomPacketPayload.Type<BreakPayload> BREAK = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "break"));
+  public static final CustomPacketPayload.Type<SyncSlotsPayload> SYNC_SLOTS = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(TrinketsMain.NAMESPACE, "sync_slots"));
+  public static final CustomPacketPayload.Type<SyncInventoryPayload> SYNC_INVENTORY = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(TrinketsMain.NAMESPACE, "sync_inventory"));
+  public static final CustomPacketPayload.Type<BreakPayload> BREAK = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(TrinketsMain.NAMESPACE, "break"));
 
   private TrinketsNetwork() {
   }

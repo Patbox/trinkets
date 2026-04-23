@@ -31,7 +31,7 @@ public final class SlotAttributes {
                 return val;
             }
 
-            val = Registry.registerForHolder(BuiltInRegistries.ATTRIBUTE, Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "slot_count/" + slot), new SlotModifyingAttribute(slot));
+            val = Registry.registerForHolder(BuiltInRegistries.ATTRIBUTE, Identifier.fromNamespaceAndPath(TrinketsMain.NAMESPACE, "slot_count/" + slot), new SlotModifyingAttribute(slot));
             CACHED_ATTRIBUTES.put(slot, val);
             return val;
         }

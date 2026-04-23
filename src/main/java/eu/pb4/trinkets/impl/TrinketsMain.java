@@ -7,7 +7,6 @@ import static net.minecraft.commands.Commands.literal;
 
 import com.mojang.logging.LogUtils;
 import dev.yumi.mc.core.api.ModContainer;
-import dev.yumi.mc.core.api.YumiMods;
 import dev.yumi.mc.core.api.entrypoint.ModInitializer;
 import eu.pb4.trinkets.api.*;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
@@ -34,7 +33,6 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.level.ServerPlayer;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
 
@@ -44,7 +42,7 @@ import java.util.Map;
 
 public class TrinketsMain implements ModInitializer {
 
-	public static final String MOD_ID = "trinkets";
+	public static final String NAMESPACE = "trinkets";
 	public static final String UNIVERSAL_MOD_ID = "trinkets_updated";
 	public static final Logger LOGGER = LogUtils.getLogger();
 	public static final Map<Item, TrinketCallback> CALLBACKS = new IdentityHashMap<>();
@@ -57,8 +55,8 @@ public class TrinketsMain implements ModInitializer {
 		CommonAbstraction.get().registerServerReloadListener(SlotLoader.ID, SlotLoader.INSTANCE);
 		CommonAbstraction.get().registerServerReloadListener(EntitySlotLoader.ID ,EntitySlotLoader.SERVER, SlotLoader.ID);
 
-		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, "attribute_modifiers"), TrinketDataComponents.ATTRIBUTE_MODIFIERS);
-		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, "equipment"), TrinketDataComponents.EQUIPMENT);
+		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Identifier.fromNamespaceAndPath(NAMESPACE, "attribute_modifiers"), TrinketDataComponents.ATTRIBUTE_MODIFIERS);
+		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Identifier.fromNamespaceAndPath(NAMESPACE, "equipment"), TrinketDataComponents.EQUIPMENT);
 
 		CommonAbstraction.get().registerClientboundPlayPayload(TrinketsNetwork.BREAK, BreakPayload.CODEC);
 		CommonAbstraction.get().registerClientboundPlayPayload(TrinketsNetwork.SYNC_INVENTORY, SyncInventoryPayload.CODEC);

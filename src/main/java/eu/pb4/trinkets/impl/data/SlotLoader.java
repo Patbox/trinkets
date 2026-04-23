@@ -3,10 +3,8 @@ package eu.pb4.trinkets.impl.data;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.gson.*;
 
 import com.mojang.datafixers.util.Pair;
@@ -29,7 +27,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 
 	public static final SlotLoader INSTANCE = new SlotLoader();
 
-	public static final Identifier ID = Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "slots");
+	public static final Identifier ID = Identifier.fromNamespaceAndPath(TrinketsMain.NAMESPACE, "slots");
 
 	private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
 	private static final int FILE_SUFFIX_LENGTH = ".json".length();
@@ -43,7 +41,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 		for (Map.Entry<Identifier, List<Resource>> entry : resourceManager.listResourceStacks(dataType, id -> id.getPath().endsWith(".json")).entrySet()) {
 			Identifier identifier = entry.getKey();
 
-			if (identifier.getNamespace().equals(TrinketsMain.MOD_ID)) {
+			if (identifier.getNamespace().equals(TrinketsMain.NAMESPACE)) {
 
 				try {
 					for (Resource resource : entry.getValue()) {

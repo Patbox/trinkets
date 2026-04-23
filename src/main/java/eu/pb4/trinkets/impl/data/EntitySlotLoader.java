@@ -46,7 +46,7 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 	public static final EntitySlotLoader SERVER = new EntitySlotLoader();
 
 	private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
-	public static final Identifier ID = Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "entities");
+	public static final Identifier ID = Identifier.fromNamespaceAndPath(TrinketsMain.NAMESPACE, "entities");
 
 	private final Map<EntityType<?>, Map<String, SlotGroupImpl>> slots = new HashMap<>();
 
@@ -58,7 +58,7 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 		for (Map.Entry<Identifier, List<Resource>> entry : resourceManager.listResourceStacks(dataType, id -> id.getPath().endsWith(".json")).entrySet()) {
 			Identifier identifier = entry.getKey();
 
-			if (identifier.getNamespace().equals(TrinketsMain.MOD_ID)) {
+			if (identifier.getNamespace().equals(TrinketsMain.NAMESPACE)) {
 
 				try {
 					for (Resource resource : entry.getValue()) {

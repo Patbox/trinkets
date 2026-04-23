@@ -2,6 +2,7 @@
   "required": true,
   "package": "eu.pb4.trinkets.mixin",
   "compatibilityLevel": "JAVA_25",
+  "mixinextras": { "minVersion": "0.5.0" },
   "mixins": [
     "EnchantmentDefinitionMixin",
     "EnchantmentHelperMixin",
@@ -34,6 +35,7 @@
     "client.accessor.CreativeSlotAccessor",
     "client.accessor.LivingEntityAccessor",
     "client.accessor.RecipeBookScreenAccessor",
+    "client.behaviour.ClientPacketListenerMixin",
     "client.render.CapeLayerMixin",
     "client.render.EquipmentLayerRendererMixin",
     "client.render.HumanoidArmorLayerMixin",

@@ -88,7 +88,7 @@ public class TrinketsClient implements ClientModInitializer {
             }
         });
 
-        ClientAbstraction.INSTANCE.registerClientReloadListener(Identifier.fromNamespaceAndPath(TrinketsMain.MOD_ID, "client_trinkets"), ClientTrinketsManager.INSTANCE, List.of(),
+        ClientAbstraction.INSTANCE.registerClientReloadListener(Identifier.fromNamespaceAndPath(TrinketsMain.NAMESPACE, "client_trinkets"), ClientTrinketsManager.INSTANCE, List.of(),
                 List.of(ClientAbstraction.INSTANCE.getClientModelResourceReloaderId()));
         ClientAbstraction.INSTANCE.registerClientTagsLoadedEvent(ClientTrinketsManager.INSTANCE::updateItemMap);
     }
