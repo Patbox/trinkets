@@ -3,7 +3,7 @@ package eu.pb4.trinkets.impl.client.render.types;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
-import eu.pb4.trinkets.impl.client.render.TrinketEntityRenderState;
+import eu.pb4.trinkets.impl.client.render.TrinketRenderState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -23,10 +23,10 @@ public record ItemStackTrinketElement(AttachmentSettings settings, ItemDisplayCo
     }
 
     @Override
-    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketEntityRenderState state) {
+    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketRenderState state) {
         var itemStackState = new ItemStackRenderState();
         Minecraft.getInstance().getItemModelResolver().updateForLiving(itemStackState, stack, this.displayContext, livingEntity);
         state.trinkets$getPartAttachedRenderers().add(
-                new TrinketEntityRenderState.PartAttachedRenderer(this.settings.withResolvedModelPart(livingEntity, access), itemStackState::submit));
+                new TrinketRenderState.PartAttachedRenderer(this.settings.withResolvedModelPart(livingEntity, access), itemStackState::submit));
     }
 }

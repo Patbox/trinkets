@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
-import eu.pb4.trinkets.impl.client.render.TrinketEntityRenderState;
+import eu.pb4.trinkets.impl.client.render.TrinketRenderState;
 import eu.pb4.trinkets.impl.client.render.ClientRenderPasshack;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
@@ -31,7 +31,7 @@ public record EquipmentReplaceTrinketElement(Optional<Either<ResourceKey<Equipme
     }
 
     @Override
-    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketEntityRenderState state) {
+    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketRenderState state) {
         var equippable = stack.get(DataComponents.EQUIPPABLE);
 
         var equipmentSlot = this.equipmentSlot.orElse(equippable != null ? equippable.slot() : EquipmentSlot.BODY);
@@ -49,6 +49,6 @@ public record EquipmentReplaceTrinketElement(Optional<Either<ResourceKey<Equipme
             override = Optional.empty();
         }
 
-        state.trinkets$setEquipmentOverride(equipmentSlot, new TrinketEntityRenderState.EquipmentOverride(access, stack, true, assetId, override));
+        state.trinkets$setEquipmentOverride(equipmentSlot, new TrinketRenderState.EquipmentOverride(access, stack, true, assetId, override));
     }
 }

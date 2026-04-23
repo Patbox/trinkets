@@ -2,7 +2,7 @@ package eu.pb4.trinkets.mixin.client.render;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import eu.pb4.trinkets.impl.client.render.TrinketEntityRenderState;
+import eu.pb4.trinkets.impl.client.render.TrinketRenderState;
 import eu.pb4.trinkets.impl.client.render.ClientRenderPasshack;
 import eu.pb4.trinkets.mixin.client.EquipmentLayerRendererAccessor;
 import net.minecraft.client.renderer.entity.layers.EquipmentLayerRenderer;
@@ -34,7 +34,7 @@ public class WingsLayerMixin {
     @ModifyExpressionValue(method = "submit(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/client/renderer/entity/state/HumanoidRenderState;FF)V",
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/entity/state/HumanoidRenderState;chestEquipment:Lnet/minecraft/world/item/ItemStack;", opcode = Opcodes.GETFIELD))
     private ItemStack replaceWings(ItemStack original, @Local(argsOnly = true) HumanoidRenderState state) {
-        var override = ((TrinketEntityRenderState) state).trinkets$getWingOverride();
+        var override = ((TrinketRenderState) state).trinkets$getWingOverride();
         if (override != null) {
             if (override.force() || original.isEmpty()) {
                 return override.stack();
@@ -53,7 +53,7 @@ public class WingsLayerMixin {
 
     @ModifyExpressionValue(method = "submit(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/client/renderer/entity/state/HumanoidRenderState;FF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;get(Lnet/minecraft/core/component/DataComponentType;)Ljava/lang/Object;"))
     private Object replaceEquipment(Object object, @Local(argsOnly = true) HumanoidRenderState state, @Local ItemStack stack) {
-        var override = ((TrinketEntityRenderState) state).trinkets$getWingOverride();
+        var override = ((TrinketRenderState) state).trinkets$getWingOverride();
         if (override == null || stack != override.stack()) {
             return object;
         }

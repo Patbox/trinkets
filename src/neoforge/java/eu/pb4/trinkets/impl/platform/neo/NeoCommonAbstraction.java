@@ -13,6 +13,7 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.ConversionType;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -59,6 +60,11 @@ public record NeoCommonAbstraction(List<Consumer<IEventBus>> lateActions) implem
         NeoForge.EVENT_BUS.addListener(LivingConversionEvent.Post.class, e -> {
             conversion.convert(e.getEntity(), e.getOutcome(), new ConversionParams(ConversionType.SINGLE, true, false, null));
         });
+    }
+
+    @Override
+    public boolean isClient() {
+        return FMLEnvironment.getDist().isClient();
     }
 
     public void addLateAction(Consumer<IEventBus> consumer) {

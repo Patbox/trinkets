@@ -2,7 +2,7 @@ package eu.pb4.trinkets.mixin.client.render;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import eu.pb4.trinkets.impl.client.render.TrinketEntityRenderState;
+import eu.pb4.trinkets.impl.client.render.TrinketRenderState;
 import eu.pb4.trinkets.impl.client.render.ClientRenderPasshack;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
@@ -22,7 +22,7 @@ import java.util.Optional;
 public class HumanoidArmorLayerMixin {
     @ModifyVariable(method = "renderArmorPiece", at = @At("HEAD"), argsOnly = true)
     private ItemStack replaceStack(ItemStack itemStack, @Local(argsOnly = true) EquipmentSlot slot, @Local(argsOnly = true) HumanoidRenderState state) {
-        var override = ((TrinketEntityRenderState) state).trinkets$getEquipmentOverride(slot);
+        var override = ((TrinketRenderState) state).trinkets$getEquipmentOverride(slot);
         if (override == null) {
             return itemStack;
         }
@@ -32,7 +32,7 @@ public class HumanoidArmorLayerMixin {
 
     @ModifyExpressionValue(method = "renderArmorPiece", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;get(Lnet/minecraft/core/component/DataComponentType;)Ljava/lang/Object;"))
     private Object replaceEquipment(Object object, @Local(argsOnly = true) EquipmentSlot slot, @Local(argsOnly = true) HumanoidRenderState state) {
-        var override = ((TrinketEntityRenderState) state).trinkets$getEquipmentOverride(slot);
+        var override = ((TrinketRenderState) state).trinkets$getEquipmentOverride(slot);
         if (override == null) {
             return object;
         }

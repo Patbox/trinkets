@@ -7,6 +7,7 @@ import static net.minecraft.commands.Commands.literal;
 
 import com.mojang.logging.LogUtils;
 import dev.yumi.mc.core.api.ModContainer;
+import dev.yumi.mc.core.api.YumiMods;
 import dev.yumi.mc.core.api.entrypoint.ModInitializer;
 import eu.pb4.trinkets.api.*;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
@@ -48,6 +49,7 @@ public class TrinketsMain implements ModInitializer {
 	public static final Logger LOGGER = LogUtils.getLogger();
 	public static final Map<Item, TrinketCallback> CALLBACKS = new IdentityHashMap<>();
 	public static final Map<Identifier, TrinketsApi.TrinketPredicate> PREDICATES = new HashMap<>();
+	public static final boolean IS_CLIENT = CommonAbstraction.INSTANCE.isClient();
 
 	@Override
 	public void onInitialize(ModContainer modContainer) {

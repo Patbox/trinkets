@@ -61,7 +61,7 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 		if (alwaysVisible) {
 			if (x < 0) {
 				Level world = trinketInventory.getAttachment().getEntity().level();
-				if (world.isClientSide()) {
+				if (TrinketsMain.IS_CLIENT && world.isClientSide()) {
 					Minecraft client = Minecraft.getInstance();
 					Screen s = client.screen;
 					if (s instanceof InventoryScreen screen) {
@@ -78,10 +78,12 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 
 	@Override
 	public boolean isTrinketFocused() {
-		if (TrinketsClient.activeGroup == group) {
-			return slotOffset == 0 || TrinketsClient.activeType == type;
-		} else if (TrinketsClient.quickMoveGroup == group) {
-			return slotOffset == 0 || TrinketsClient.quickMoveType == type && TrinketsClient.quickMoveTimer > 0;
+		if (TrinketsMain.IS_CLIENT) {
+			if (TrinketsClient.activeGroup == group) {
+				return slotOffset == 0 || TrinketsClient.activeType == type;
+			} else if (TrinketsClient.quickMoveGroup == group) {
+				return slotOffset == 0 || TrinketsClient.quickMoveType == type && TrinketsClient.quickMoveTimer > 0;
+			}
 		}
 		return false;
 	}

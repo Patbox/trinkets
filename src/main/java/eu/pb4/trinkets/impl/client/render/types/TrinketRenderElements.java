@@ -20,7 +20,6 @@ public interface TrinketRenderElements {
         ID_MAPPER.put(Identifier.withDefaultNamespace("item"), ItemStackTrinketElement.CODEC);
         ID_MAPPER.put(Identifier.withDefaultNamespace("model"), ModelTrinketElement.CODEC);
 
-
         ID_MAPPER.put(Identifier.withDefaultNamespace("if_group"), IfGroupTrinketElement.CODEC);
         ID_MAPPER.put(Identifier.withDefaultNamespace("if_slot"), IfSlotTrinketElement.CODEC);
     }

@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
-import eu.pb4.trinkets.impl.client.render.TrinketEntityRenderState;
+import eu.pb4.trinkets.impl.client.render.TrinketRenderState;
 import eu.pb4.trinkets.impl.client.render.types.TrinketRenderElement;
 import eu.pb4.trinkets.impl.client.render.types.TrinketRenderElements;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -28,7 +28,7 @@ public record IfGroupTrinketElement(String group, List<TrinketRenderElement> the
     }
 
     @Override
-    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketEntityRenderState state) {
+    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketRenderState state) {
         if (this.group.equals(access.slotType().group())) {
             for (var r : this.then) {
                 r.apply(livingEntity, stack, access, entityState, tickDelta, state);

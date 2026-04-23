@@ -3,10 +3,12 @@ package eu.pb4.trinkets.impl.platform.fabric;
 
 import com.mojang.brigadier.CommandDispatcher;
 import eu.pb4.trinkets.impl.platform.CommonAbstraction;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -44,5 +46,10 @@ public record FabricCommonAbstraction() implements CommonAbstraction {
     @Override
     public void registerMobConversion(MobConversion conversion) {
         ServerLivingEntityEvents.MOB_CONVERSION.register(conversion::convert);
+    }
+
+    @Override
+    public boolean isClient() {
+        return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT;
     }
 }

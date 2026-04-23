@@ -40,6 +40,8 @@ public interface CommonAbstraction {
 
     void registerMobConversion(MobConversion conversion);
 
+    boolean isClient();
+
     interface MobConversion {
         void convert(LivingEntity from, LivingEntity to, ConversionParams params);
     }

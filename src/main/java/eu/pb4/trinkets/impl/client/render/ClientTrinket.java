@@ -8,7 +8,6 @@ import eu.pb4.trinkets.impl.client.render.types.TrinketRenderElement;
 import eu.pb4.trinkets.impl.client.render.types.TrinketRenderElements;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.resources.model.ModelBaker;
-import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -28,7 +27,7 @@ public record ClientTrinket(List<Either<Identifier, TagKey<Item>>> target, List<
 
     public static final ClientTrinket EMPTY = new ClientTrinket(List.of(), List.of());
 
-    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketEntityRenderState state) {
+    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketRenderState state) {
         for (var x : render) {
             x.apply(livingEntity, stack, access, entityState, tickDelta, state);
         }

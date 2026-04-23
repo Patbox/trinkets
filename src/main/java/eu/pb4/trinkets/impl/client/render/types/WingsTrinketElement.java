@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
-import eu.pb4.trinkets.impl.client.render.TrinketEntityRenderState;
+import eu.pb4.trinkets.impl.client.render.TrinketRenderState;
 import eu.pb4.trinkets.impl.client.render.ClientRenderPasshack;
 import eu.pb4.trinkets.mixin.client.EquipmentClientInfoAccessor;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -37,7 +37,7 @@ public record WingsTrinketElement(Optional<Either<ResourceKey<EquipmentAsset>, E
     }
 
     @Override
-    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketEntityRenderState state) {
+    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketRenderState state) {
         Optional<ResourceKey<EquipmentAsset>> assetId;
         Optional<EquipmentClientInfo> override;
 
@@ -52,6 +52,6 @@ public record WingsTrinketElement(Optional<Either<ResourceKey<EquipmentAsset>, E
             override = Optional.empty();
         }
 
-        state.trinkets$setWingOverride(new TrinketEntityRenderState.EquipmentOverride(access, stack, this.force, assetId, override));
+        state.trinkets$setWingOverride(new TrinketRenderState.EquipmentOverride(access, stack, this.force, assetId, override));
     }
 }
