@@ -15,9 +15,11 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public record WingsTrinketElement(Optional<Either<ResourceKey<EquipmentAsset>, EquipmentClientInfo>> asset,
                                   boolean force) implements TrinketRenderElement {
@@ -37,7 +39,9 @@ public record WingsTrinketElement(Optional<Either<ResourceKey<EquipmentAsset>, E
     }
 
     @Override
-    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketRenderState state) {
+    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, @Nullable TrinketRenderState state, Consumer<TrinketRenderState.PartAttachedRenderer> consumer) {
+        if (state == null) return;
+
         Optional<ResourceKey<EquipmentAsset>> assetId;
         Optional<EquipmentClientInfo> override;
 

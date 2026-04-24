@@ -20,6 +20,7 @@
     "accessor.AbstractedContainerMenuAccessor",
     "behaviour.LivingEntityMixin",
     "behaviour.PiglinAiMixin",
+    "client.CreativeModeInventoryScreenAccessor",
     "datafixer.V1460Mixin"
   ],
   "client": [

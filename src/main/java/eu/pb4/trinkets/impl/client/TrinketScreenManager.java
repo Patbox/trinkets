@@ -22,7 +22,8 @@ import eu.pb4.trinkets.api.TrinketsApi;
 @Environment(EnvType.CLIENT)
 public class TrinketScreenManager {
 	private static final Identifier MORE_SLOTS = Identifier.fromNamespaceAndPath("trinkets", "textures/gui/more_slots.png");
-	public static final Identifier MORE_SLOTS_INDICATOR = Identifier.fromNamespaceAndPath("trinkets", "container/more_slots_indicator");
+	public static final Identifier MORE_SLOTS_INDICATOR_HORIZONTAL = Identifier.fromNamespaceAndPath("trinkets", "container/more_slots_indicator_horizontal");
+	public static final Identifier MORE_SLOTS_INDICATOR_VERTICAL = Identifier.fromNamespaceAndPath("trinkets", "container/more_slots_indicator_vertical");
 	public static final Identifier SLOT_TEXTURE = Identifier.withDefaultNamespace("container/slot");
 	private static WeakReference<TrinketScreen> currentScreen;
 	public static Rect2i currentBounds = new Rect2i(0, 0, 0, 0);

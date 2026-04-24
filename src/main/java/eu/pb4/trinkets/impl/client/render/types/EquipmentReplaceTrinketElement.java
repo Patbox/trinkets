@@ -16,8 +16,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public record EquipmentReplaceTrinketElement(Optional<Either<ResourceKey<EquipmentAsset>, EquipmentClientInfo>> asset, Optional<EquipmentSlot> equipmentSlot) implements TrinketRenderElement {
     public static final MapCodec<EquipmentReplaceTrinketElement> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -31,7 +33,9 @@ public record EquipmentReplaceTrinketElement(Optional<Either<ResourceKey<Equipme
     }
 
     @Override
-    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketRenderState state) {
+    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, @Nullable TrinketRenderState state, Consumer<TrinketRenderState.PartAttachedRenderer> consumer) {
+        if (state == null) return;
+
         var equippable = stack.get(DataComponents.EQUIPPABLE);
 
         var equipmentSlot = this.equipmentSlot.orElse(equippable != null ? equippable.slot() : EquipmentSlot.BODY);

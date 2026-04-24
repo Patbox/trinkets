@@ -12,8 +12,10 @@ import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public record IfGroupTrinketElement(String group, List<TrinketRenderElement> then, List<TrinketRenderElement> otherwise) implements TrinketRenderElement {
     public static final MapCodec<IfGroupTrinketElement> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -28,14 +30,16 @@ public record IfGroupTrinketElement(String group, List<TrinketRenderElement> the
     }
 
     @Override
-    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketRenderState state) {
+    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access,
+                      @Nullable TrinketRenderState state,
+                      Consumer<TrinketRenderState.PartAttachedRenderer> consumer) {
         if (this.group.equals(access.slotType().group())) {
             for (var r : this.then) {
-                r.apply(livingEntity, stack, access, entityState, tickDelta, state);
+                r.apply(livingEntity, stack, access, state, consumer);
             }
         } else {
             for (var r : this.otherwise) {
-                r.apply(livingEntity, stack, access, entityState, tickDelta, state);
+                r.apply(livingEntity, stack, access, state, consumer);
             }
         }
     }

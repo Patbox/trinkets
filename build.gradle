@@ -66,9 +66,11 @@ dependencies {
 
 	// Mod dependencies
 	fabricCompileOnly localRuntime("net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}")
+	fabricCompileOnly localRuntime("com.terraformersmc:modmenu:${project.mod_menu_version}")
 
 	neoforgeCompileOnly("net.neoforged:neoforge:${project.neoforge_version}:universal")
 	neoforgeCompileOnly("net.neoforged.fancymodloader:loader:${project.neoforge_loader_version}")
+
 
 	// Optional mod dependencies
 	/*compileOnly("me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}") {

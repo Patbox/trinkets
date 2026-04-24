@@ -5,8 +5,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.impl.client.render.ModelAttachementImpl;
 import eu.pb4.trinkets.impl.client.render.ScaleTarget;
-import eu.pb4.trinkets.impl.client.render.TrinketRenderLayer;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.LivingEntity;
 import org.joml.Vector3f;
@@ -25,7 +25,7 @@ public record AttachmentSettings(String modelPart, Optional<Transformation> tran
 
     public AttachmentSettings withResolvedModelPart(LivingEntity livingEntity, TrinketSlotAccess access) {
         return !this.modelPart.isEmpty() && this.modelPart.charAt(0) == ':'
-                ? new AttachmentSettings(TrinketRenderLayer.replacePartName(livingEntity, access, modelPart),
+                ? new AttachmentSettings(ModelAttachementImpl.replacePartName(livingEntity, access, modelPart),
                 this.transformation, this.offset, this.scaleTarget) : this;
     }
 }

@@ -16,5 +16,8 @@
 	"trinkets.slot.hand.glove": "Glove",
 	"trinkets.slot.offhand.glove": "Glove",
 	"trinkets.slot.hand.ring": "Ring",
-	"trinkets.slot.offhand.ring": "Ring"
+	"trinkets.slot.offhand.ring": "Ring",
+	"config.trinkets.render_first_person_hand": "First Person Trinkets",
+	"config.trinkets.show_slots_indicator": "Show Slots Indicator",
+	"screen.trinkets.config": "Trinkets Updated Configuration"
 }

@@ -14,6 +14,8 @@ public class TrinketsConfig {
 
     @SerializedName("show_slot_indicator")
     public boolean showSlotsIndicator = false;
+    @SerializedName("render_trinkers_in_first_person")
+    public boolean renderFirstPersonHand = false;
 
     public static void load() {
         try {

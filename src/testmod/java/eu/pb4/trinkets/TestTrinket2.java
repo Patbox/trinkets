@@ -9,6 +9,8 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -16,6 +18,7 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -58,11 +61,38 @@ public class TestTrinket2 extends Item implements TrinketCallback, TrinketRender
 				case "head" -> TrinketRenderer.translateToFace(matrices, model, humanoidState, state.yRot, state.xRot);
 			}
 
-			matrices.mulPose(new Quaternionf().rotateX(Mth.HALF_PI));
-			matrices.scale(0.5f, 0.5f, 0.5f);
-			var r = new ItemStackRenderState();
-			Minecraft.getInstance().getItemModelResolver().appendItemLayers(r, stack, ItemDisplayContext.FIXED, null, null, 0);
-			r.submit(matrices, submit, light, 0, 0);
+			this.renderSimple(stack, matrices, submit, light);
 		}
+	}
+
+	@Environment(EnvType.CLIENT)
+	private void renderSimple(ItemStack stack, PoseStack matrices, SubmitNodeCollector submit, int light) {
+		matrices.mulPose(new Quaternionf().rotateX(Mth.HALF_PI));
+		matrices.scale(0.5f, 0.5f, 0.5f);
+		var r = new ItemStackRenderState();
+		Minecraft.getInstance().getItemModelResolver().appendItemLayers(r, stack, ItemDisplayContext.FIXED, null, null, 0);
+		r.submit(matrices, submit, light, 0, 0);
+	}
+
+	@Override
+	@Environment(EnvType.CLIENT)
+	public void submitFirstPersonLeftArm(ItemStack stack, TrinketSlotAccess slotReference, EntityModel<? extends LivingEntityRenderState> contextModel, ModelPart arm, PoseStack poseStack, SubmitNodeCollector submit, int light, LocalPlayer player, boolean isMainHand) {
+		if (!(slotReference.slotType().group().equals("hand") && isMainHand || slotReference.slotType().group().equals("offhand") && !isMainHand)) {
+			return;
+		}
+
+		TrinketRenderer.translateToFirstPersonArm(poseStack, arm, HumanoidArm.LEFT);
+		renderSimple(stack, poseStack, submit, light);
+	}
+
+	@Override
+	@Environment(EnvType.CLIENT)
+	public void submitFirstPersonRightArm(ItemStack stack, TrinketSlotAccess slotReference, EntityModel<? extends LivingEntityRenderState> contextModel, ModelPart arm, PoseStack poseStack, SubmitNodeCollector submit, int light, LocalPlayer player, boolean isMainHand) {
+		if (!(slotReference.slotType().group().equals("hand") && isMainHand || slotReference.slotType().group().equals("offhand") && !isMainHand)) {
+			return;
+		}
+
+		TrinketRenderer.translateToFirstPersonArm(poseStack, arm, HumanoidArm.RIGHT);
+		renderSimple(stack, poseStack, submit, light);
 	}
 }

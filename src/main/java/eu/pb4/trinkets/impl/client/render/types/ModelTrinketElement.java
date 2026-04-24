@@ -19,8 +19,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public record ModelTrinketElement(AttachmentSettings settings,
                                   Identifier model, List<ItemTintSource> tints,
@@ -45,7 +47,7 @@ public record ModelTrinketElement(AttachmentSettings settings,
     }
 
     @Override
-    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketRenderState state) {
+    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, @Nullable TrinketRenderState state, Consumer<TrinketRenderState.PartAttachedRenderer> consumer) {
         var res = this.resolvedModel.get();
         if (res == null) {
             return;
@@ -57,7 +59,7 @@ public record ModelTrinketElement(AttachmentSettings settings,
             tint[i] = this.tints.get(i).calculate(stack, (ClientLevel) livingEntity.level(), livingEntity);
         }
 
-        state.trinkets$getPartAttachedRenderers().add(new TrinketRenderState.PartAttachedRenderer(settings.withResolvedModelPart(livingEntity, access),
+        consumer.accept(new TrinketRenderState.PartAttachedRenderer(settings.withResolvedModelPart(livingEntity, access),
                 (poseStack, submitNodeCollector, lightCoords, overlayCoords, outlineColor) -> {
                     if (this.centered) {
                         poseStack.translate(-0.5f, -0.5f, -0.5f);

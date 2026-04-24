@@ -10,6 +10,9 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
+
+import java.util.function.Consumer;
 
 public record ItemStackTrinketElement(AttachmentSettings settings, ItemDisplayContext displayContext) implements TrinketRenderElement {
     public static final MapCodec<ItemStackTrinketElement> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -23,10 +26,9 @@ public record ItemStackTrinketElement(AttachmentSettings settings, ItemDisplayCo
     }
 
     @Override
-    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketRenderState state) {
+    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, @Nullable TrinketRenderState state, Consumer<TrinketRenderState.PartAttachedRenderer> consumer) {
         var itemStackState = new ItemStackRenderState();
         Minecraft.getInstance().getItemModelResolver().updateForLiving(itemStackState, stack, this.displayContext, livingEntity);
-        state.trinkets$getPartAttachedRenderers().add(
-                new TrinketRenderState.PartAttachedRenderer(this.settings.withResolvedModelPart(livingEntity, access), itemStackState::submit));
+        consumer.accept(new TrinketRenderState.PartAttachedRenderer(this.settings.withResolvedModelPart(livingEntity, access), itemStackState::submit));
     }
 }

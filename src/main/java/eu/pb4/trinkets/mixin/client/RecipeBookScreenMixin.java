@@ -4,6 +4,7 @@ import eu.pb4.trinkets.impl.client.TrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
 import eu.pb4.trinkets.impl.TrinketSlot;
 import eu.pb4.trinkets.impl.TrinketsConfig;
+import eu.pb4.trinkets.impl.client.TrinketsClient;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractRecipeBookScreen;
@@ -62,8 +63,8 @@ public abstract class RecipeBookScreenMixin extends AbstractContainerScreen<Reci
                         context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_FRONT_TEXTURE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
                     }
 
-                    if (TrinketsConfig.instance.showSlotsIndicator && trinketSlot.getAccess().inventory().getContainerSize() > 1 && trinketSlot.getAccess().index() == 0) {
-                        context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR, slot.x - 1, slot.y - 1, 18, 18);
+                    if (TrinketsConfig.instance.showSlotsIndicator && trinketSlot.getAccess().inventory().getContainerSize() > 1 && trinketSlot.getAccess().index() == 0 && TrinketsClient.activeType != trinketSlot.getType()) {
+                        context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR_VERTICAL, slot.x - 8, slot.y - 8, 32, 32);
                     }
                 }
             }

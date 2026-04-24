@@ -1,5 +1,6 @@
 package eu.pb4.trinkets.mixin.client.render;
 
+import eu.pb4.trinkets.impl.client.render.ModelAttachementImpl;
 import eu.pb4.trinkets.impl.client.render.ModelExt;
 import eu.pb4.trinkets.impl.client.render.ModelPartBounds;
 import eu.pb4.trinkets.mixin.client.ModelPartAccessor;
@@ -49,6 +50,10 @@ public abstract class ModelMixin implements ModelExt {
 
     @Override
     public ModelPartBounds trinkets$getBounds(String name) {
+        //if (ModelAttachementImpl.skipCache) {
+        //    return this.computeElementAABB(name);
+        //}
+
         return this.modelPartBoundCache.computeIfAbsent(name, this::computeElementAABB);
     }
 

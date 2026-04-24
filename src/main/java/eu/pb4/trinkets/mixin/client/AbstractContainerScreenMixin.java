@@ -11,9 +11,11 @@ import eu.pb4.trinkets.impl.client.TrinketScreenManager;
 import eu.pb4.trinkets.impl.TrinketsConfig;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.CreativeModeTab;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -52,6 +54,9 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 	@Shadow
 	@Final
 	protected AbstractContainerMenu menu;
+
+	@Shadow
+	protected int inventoryLabelX;
 
 	@Inject(at = @At("HEAD"), method = "removed")
 	private void removed(CallbackInfo info) {
@@ -117,18 +122,23 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 
 	@Inject(method = "extractSlotHighlightFront", at = @At("TAIL"))
 	private void drawMoreSlotsIndicator(GuiGraphicsExtractor context, CallbackInfo ci) {
+        //noinspection ConstantValue
+        if (((Object) this) instanceof CreativeModeInventoryScreen s && CreativeModeInventoryScreenAccessor.getSelectedTab().getType() != CreativeModeTab.Type.INVENTORY) {
+			return;
+		}
+
 		if ((this.menu instanceof ItemPickerMenuAccessor accessor ? accessor.getInventoryMenu() : this.menu) instanceof TrinketInventoryMenu trinketMenu
 				&& TrinketsConfig.instance.showSlotsIndicator) {
 			for (int i = 0; i < this.menu.slots.size(); i++) {
 				Slot slot = this.menu.slots.get(i);
 				if (slot instanceof TrinketSlot trinketSlot) {
-					if (!trinketSlot.renderAfterRegularSlots() && slot.isActive() && trinketSlot.getAccess().inventory().getContainerSize() > 1 && trinketSlot.getAccess().index() == 0) {
-						context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR, slot.x - 1, slot.y - 1, 18, 18);
+					if (!trinketSlot.renderAfterRegularSlots() && slot.isActive() && trinketSlot.getAccess().inventory().getContainerSize() > 1 && trinketSlot.getAccess().index() == 0 && TrinketsClient.activeType != trinketSlot.getType()) {
+						context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR_HORIZONTAL, slot.x - 8, slot.y - 8, 32, 32);
 					}
 				} else {
 					var g = trinketMenu.trinkets$getGroupAtSlot(i);
-					if (g != null) {
-						context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR, slot.x - 1, slot.y - 1, 18, 18);
+					if (g != null && TrinketScreenManager.group != g) {
+						context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR_HORIZONTAL, slot.x - 8, slot.y - 8, 32, 32);
 					}
 				}
 			}

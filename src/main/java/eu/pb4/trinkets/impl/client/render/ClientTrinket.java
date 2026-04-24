@@ -16,8 +16,10 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public record ClientTrinket(List<Either<Identifier, TagKey<Item>>> target, List<TrinketRenderElement> render) implements ResolvableModel {
     public static final Codec<ClientTrinket> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -27,9 +29,9 @@ public record ClientTrinket(List<Either<Identifier, TagKey<Item>>> target, List<
 
     public static final ClientTrinket EMPTY = new ClientTrinket(List.of(), List.of());
 
-    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketRenderState state) {
+    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, @Nullable TrinketRenderState state, Consumer<TrinketRenderState.PartAttachedRenderer> consumer) {
         for (var x : render) {
-            x.apply(livingEntity, stack, access, entityState, tickDelta, state);
+            x.apply(livingEntity, stack, access, state, consumer);
         }
     }
 

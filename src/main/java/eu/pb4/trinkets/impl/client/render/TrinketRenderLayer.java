@@ -4,17 +4,24 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.client.TrinketRendererRegistry;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
+import eu.pb4.trinkets.impl.TrinketsConfig;
 import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartNames;
+import net.minecraft.client.model.player.PlayerModel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,79 +34,17 @@ public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends Ent
     public static void extract(LivingEntity livingEntity, LivingEntityRenderState entityState, float tickDelta, TrinketRenderState state) {
         var component = LivingEntityTrinketAttachment.get(livingEntity);
         var items = new ArrayList<TrinketRenderState.CodeRenderCall>();
+        var attached = new ArrayList<TrinketRenderState.PartAttachedRenderer>();
         state.trinkets$setCodeRenderers(items);
-        state.trinkets$setPartAttachedRenderers(new ArrayList<>());
+        state.trinkets$setPartAttachedRenderers(attached);
         component.forEach((slotReference, stack) -> {
             var renderer = TrinketRendererRegistry.getRenderer(stack.getItem());
             if (renderer.isPresent()) {
                 items.add(new TrinketRenderState.CodeRenderCall(slotReference, stack, renderer.get()));
             } else {
-                ClientTrinketsManager.INSTANCE.get(stack).apply(livingEntity, stack, slotReference, entityState, tickDelta, state);
+                ClientTrinketsManager.INSTANCE.get(stack).apply(livingEntity, stack, slotReference, state, attached::add);
             }
         });
-    }
-
-    public static String replacePartName(LivingEntity livingEntity, TrinketSlotAccess access, String modelPart) {
-        if (modelPart.isEmpty() || modelPart.charAt(0) != ':') {
-            return modelPart;
-        }
-
-        return switch (modelPart) {
-            case ":main_hand", ":mainhand", ":hand" -> livingEntity.getMainArm().getSerializedName() + "_arm";
-            case ":off_hand", ":offhand" -> livingEntity.getMainArm().getOpposite().getSerializedName() + "_arm";
-            default -> modelPart;
-        };
-    }
-
-    public static boolean translateToModelPart(Model<?> model, String modelPart, Vector3fc offset, PoseStack poseStack) {
-        var parts = ((ModelExt) model).trinkets$findPart(modelPart);
-
-        if (parts.isEmpty()) {
-            return false;
-        }
-
-        translateToModelPart(model, modelPart, parts, offset, poseStack);
-        return true;
-    }
-
-    public static boolean translateToModelPartNoOffset(Model<?> model, String modelPart, PoseStack poseStack) {
-        var parts = ((ModelExt) model).trinkets$findPart(modelPart);
-
-        if (parts.isEmpty()) {
-            return false;
-        }
-
-        translateToModelPartNoOffset(model, modelPart, parts, poseStack);
-        return true;
-    }
-
-    public static void translateToModelPart(Model<?> model, String modelPart, List<String> parts, Vector3fc offset, PoseStack poseStack) {
-        translateToModelPartNoOffset(model, modelPart, parts, poseStack);
-
-        var bound = ((ModelExt) model).trinkets$getBounds(modelPart);
-
-        poseStack.translate(
-                bound.centerX() + bound.lX() * offset.x(),
-                bound.centerY() - bound.lY() * offset.y(),
-                bound.centerZ() - bound.lZ() * offset.z()
-        );
-    }
-
-    public static boolean translateToModelPartNoOffset(Model<?> model, String modelPart, List<String> parts, PoseStack poseStack) {
-        ModelPart part = model.root();
-        part.translateAndRotate(poseStack);
-
-        for (var p : parts) {
-            part = part.getChild(p);
-            part.translateAndRotate(poseStack);
-        }
-
-        if (part.hasChild("EMF_" + modelPart)) {
-            part = part.getChild("EMF_" + modelPart);
-            part.translateAndRotate(poseStack);
-        }
-
-        return true;
     }
 
     @Override
@@ -114,28 +59,68 @@ public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends Ent
         }
 
         for (var o : ((TrinketRenderState) state).trinkets$getPartAttachedRenderers()) {
-            var settings = o.settings();
-            var parts = ((ModelExt) parent).trinkets$findPart(settings.modelPart());
+            submitAttached(parent, "", poseStack, queue, light, state.outlineColor, o);
+        }
+    }
 
-            if (parts.isEmpty()) {
-                continue;
-            }
-            poseStack.pushPose();
+    private static void submitAttached(Model<?> parent, String startingPart, PoseStack poseStack, SubmitNodeCollector queue, int light, int outlineColor, TrinketRenderState.PartAttachedRenderer o) {
+        var settings = o.settings();
+        var parts = ((ModelExt) parent).trinkets$findPart(settings.modelPart());
 
-            translateToModelPart(parent, settings.modelPart(), parts, settings.offset(), poseStack);
+        if (parts.isEmpty() || (!startingPart.isEmpty() && !parts.contains(startingPart))) {
+            return;
+        }
+        poseStack.pushPose();
 
-            poseStack.scale(1, -1, -1);
+        ModelAttachementImpl.translateToModelPart(parent, startingPart, settings.modelPart(), parts, settings.offset(), poseStack);
 
-            var bound = ((ModelExt) parent).trinkets$getBounds(settings.modelPart());
-            poseStack.scale(settings.scaleTarget().scaleX(bound), settings.scaleTarget().scaleY(bound), settings.scaleTarget().scaleZ(bound));
+        poseStack.scale(1, -1, -1);
 
-            if (settings.transformation().isPresent()) {
-                poseStack.mulPose(settings.transformation().get().getMatrix());
-            }
+        var bound = ((ModelExt) parent).trinkets$getBounds(settings.modelPart());
+        poseStack.scale(settings.scaleTarget().scaleX(bound), settings.scaleTarget().scaleY(bound), settings.scaleTarget().scaleZ(bound));
 
-            o.call().submit(poseStack, queue, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
+        if (settings.transformation().isPresent()) {
+            poseStack.mulPose(settings.transformation().get().getMatrix());
+        }
 
-            poseStack.popPose();
+        o.call().submit(poseStack, queue, light, OverlayTexture.NO_OVERLAY, outlineColor);
+
+        poseStack.popPose();
+    }
+
+    public void renderFirstPersonRightHand(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int light, LocalPlayer player) {
+        if (TrinketsConfig.instance.renderFirstPersonHand && this.getParentModel() instanceof HumanoidModel<?> model) {
+            var component = LivingEntityTrinketAttachment.get(player);
+            var isMainHand = player.getMainArm() == HumanoidArm.RIGHT;
+
+            component.forEach((slotReference, stack) -> {
+                var renderer = TrinketRendererRegistry.getRenderer(stack.getItem());
+                if (renderer.isPresent()) {
+                    renderer.get().submitFirstPersonRightArm(stack, slotReference, model, model.rightArm,
+                            poseStack, submitNodeCollector, light, player, isMainHand);
+                } else {
+                    ClientTrinketsManager.INSTANCE.get(stack).apply(player, stack, slotReference, null,
+                            o -> submitAttached(model, PartNames.RIGHT_ARM, poseStack, submitNodeCollector, light, 0, o));
+                }
+            });
+        }
+    }
+
+    public void renderFirstPersonLeftHand(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int light, LocalPlayer player) {
+        if (TrinketsConfig.instance.renderFirstPersonHand && this.getParentModel() instanceof HumanoidModel<?> model) {
+            var component = LivingEntityTrinketAttachment.get(player);
+            var isMainHand = player.getMainArm() == HumanoidArm.LEFT;
+
+            component.forEach((slotReference, stack) -> {
+                var renderer = TrinketRendererRegistry.getRenderer(stack.getItem());
+                if (renderer.isPresent()) {
+                    renderer.get().submitFirstPersonLeftArm(stack, slotReference, model, model.leftArm,
+                            poseStack, submitNodeCollector, light, player, isMainHand);
+                } else {
+                    ClientTrinketsManager.INSTANCE.get(stack).apply(player, stack, slotReference, null,
+                            o -> submitAttached(model, PartNames.LEFT_ARM, poseStack, submitNodeCollector, light, 0, o));
+                }
+            });
         }
     }
 }

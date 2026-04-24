@@ -8,11 +8,16 @@ import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
+
+import java.util.function.Consumer;
 
 public interface TrinketRenderElement extends ResolvableModel {
     MapCodec<? extends TrinketRenderElement> codec();
 
-    void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, LivingEntityRenderState entityState, float tickDelta, TrinketRenderState state);
+    void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access,
+               @Nullable TrinketRenderState state,
+               Consumer<TrinketRenderState.PartAttachedRenderer> consumer);
 
     @Override
     default void resolveDependencies(Resolver resolver) {};

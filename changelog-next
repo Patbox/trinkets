@@ -3,7 +3,11 @@
   - Do note the compatibility isn't perfect and more heavily modified (or vanilla non-conforming) models
     might show trinkets wrong or not render them at all.
   - Most popular packs, such as Fresh Animations (including player addon) will look correctly now through!
+- Added support for rendering trinkets in first person:
+  - It is optional and disabled by default. It can be enabled in Trinkets config.
+- Added Config Screen to allow dynamic in game modification of Trinkets settings. It's accessible via Mod Menu/List.
 - You can now set the asset_id field in Trinkets Equipment component.
 - Trinkets are counted within player Inventory contains checks and in case of /clear command.
 - Data driven trinket rendering is now exclusive with code driven one.
 - Totems of Undying (and other items with death protection component) will now work in Trinkets slots (requires a datapack to enable it).
+- Improved the look of Trinket slot indicator option.
