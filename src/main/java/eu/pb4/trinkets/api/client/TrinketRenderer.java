@@ -3,6 +3,7 @@ package eu.pb4.trinkets.api.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.impl.TrinketsConfig;
 import eu.pb4.trinkets.impl.client.render.ModelAttachementImpl;
 import eu.pb4.trinkets.impl.client.render.TrinketRenderLayer;
 import net.fabricmc.api.EnvType;
@@ -45,6 +46,15 @@ public interface TrinketRenderer {
 										   PoseStack poseStack, SubmitNodeCollector submit, int light, LocalPlayer player, boolean isMainHand) {
 
 	}
+
+	/**
+	 * Method for checking if first person rendering is enabled.
+	 * Should be used by mods handling the rendering on their own, while wanting to respect this setting.
+	 */
+	static boolean renderInFirstPerson() {
+		return TrinketsConfig.instance.renderFirstPersonHand;
+	}
+
 
 	/**
 	 * Rotates the rendering for the models based on the entity's poses and movements. This will do

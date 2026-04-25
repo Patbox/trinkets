@@ -7,6 +7,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import eu.pb4.trinkets.api.TrinketInventory;
 import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.client.CreativeTrinketScreen;
+import eu.pb4.trinkets.impl.client.TrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
 import eu.pb4.trinkets.impl.TrinketsConfig;
 import net.minecraft.client.gui.components.ImageButton;
@@ -56,7 +57,7 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 	protected AbstractContainerMenu menu;
 
 	@Shadow
-	protected int inventoryLabelX;
+	protected abstract boolean isHovering(Slot slot, double xm, double ym);
 
 	@Inject(at = @At("HEAD"), method = "removed")
 	private void removed(CallbackInfo info) {
@@ -97,6 +98,18 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 		}
 	}
 
+	@Inject(method = "getHoveredSlot", at = @At("HEAD"), cancellable = true)
+	private void preferLateTrinketsSlots(double x, double y, CallbackInfoReturnable<Slot> cir) {
+		if (this instanceof TrinketScreen) {
+			for (Slot slot : this.menu.slots) {
+				if (slot instanceof TrinketSlot trinketSlot && trinketSlot.renderAfterRegularSlots() && slot.isActive() && this.isHovering(slot, x, y)) {
+					cir.setReturnValue(slot);
+					return;
+				}
+			}
+		}
+	}
+
 	@Inject(at = @At("HEAD"), method = "onStopHovering", cancellable = true)
 	private void onStopHovering(Slot slot, CallbackInfo info) {
 		if (slot instanceof TrinketSlot && slot.container instanceof TrinketInventory inventory) {
@@ -132,8 +145,12 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 			for (int i = 0; i < this.menu.slots.size(); i++) {
 				Slot slot = this.menu.slots.get(i);
 				if (slot instanceof TrinketSlot trinketSlot) {
-					if (!trinketSlot.renderAfterRegularSlots() && slot.isActive() && trinketSlot.getAccess().inventory().getContainerSize() > 1 && trinketSlot.getAccess().index() == 0 && TrinketsClient.activeType != trinketSlot.getType()) {
+					var g = trinketMenu.trinkets$getGroupAtSlot(i);
+					if (!trinketSlot.renderAfterRegularSlots() && slot.isActive() && trinketSlot.getAccess().index() == 0 && TrinketsClient.activeGroup != g && g != null) {
 						context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR_HORIZONTAL, slot.x - 8, slot.y - 8, 32, 32);
+					}
+					if (!trinketSlot.renderAfterRegularSlots() && slot.isActive() && trinketSlot.getAccess().inventory().getContainerSize() > 1 && trinketSlot.getAccess().index() == 0 && TrinketsClient.activeType != trinketSlot.getType()) {
+						context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR_VERTICAL_STANDALONE, slot.x - 8, slot.y - 8, 32, 32);
 					}
 				} else {
 					var g = trinketMenu.trinkets$getGroupAtSlot(i);

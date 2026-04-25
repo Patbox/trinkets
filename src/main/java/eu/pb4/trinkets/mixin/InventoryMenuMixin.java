@@ -82,7 +82,8 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
             trinketSlotEnd--;
         }
 
-        int groupNum = 1; // Start at 1 because offhand exists
+        int maxHeight = TrinketsConfig.instance.sidebarHeight;
+        int groupNum = TrinketsConfig.instance.sidebarTrinketsSlots ? 4 : 1; // Start at 1 because offhand exists
 
         for (SlotGroup group : groups.values().stream().sorted(Comparator.comparing(SlotGroup::order).thenComparing(SlotGroup::name)).toList()) {
             if (!hasSlots(trinkets, group)) {
@@ -104,8 +105,8 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
                 int x = 77;
                 int y;
                 if (groupNum >= 4) {
-                    x = 4 - (groupNum / 4) * 18;
-                    y = 8 + (groupNum % 4) * 18;
+                    x = 4 - ((groupNum - 4) / maxHeight) * 18 - 18;
+                    y = 8 + ((groupNum - 4) % maxHeight) * 18;
                 } else {
                     y = 62 - groupNum * 18;
                 }
@@ -144,6 +145,10 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
                 int x = (int) ((groupOffset / 2) * 18 * Math.pow(-1, groupOffset));
                 slotHeights.computeIfAbsent(group, (k) -> new ArrayList<>()).add(new Point(x, stacks.getContainerSize()));
                 slotTypes.computeIfAbsent(group, (k) -> new ArrayList<>()).add(stacks.slotType());
+                if (groupOffset == 1 && entry.getValue().size() > 1) {
+                    slotToGroup.put(this.slots.size(), group);
+                }
+
                 for (int i = 0; i < stacks.getContainerSize(); i++) {
                     int y = (int) (pos.y() + (slotOffset / 2) * 18 * Math.pow(-1, slotOffset));
                     this.addSlot(new SurvivalTrinketSlot(stacks, i, x + pos.x(), y, group, stacks.slotType(), i, groupOffset == 1 && i == 0, this.owner));
@@ -227,7 +232,7 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
     @Inject(at = @At("HEAD"), method = "removed")
     private void onClosed(Player player, CallbackInfo info) {
         Level world = player.level();
-        if (world.isClientSide()) {
+        if (TrinketsMain.IS_CLIENT && world.isClientSide()) {
             TrinketsClient.activeGroup = null;
             TrinketsClient.activeType = null;
             TrinketsClient.quickMoveGroup = null;
@@ -261,7 +266,7 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
                     if (res) {
                         if (this.moveItemStackTo(stack, i, i + 1, false)) {
                             Level world = player.level();
-                            if (world.isClientSide()) {
+                            if (TrinketsMain.IS_CLIENT && world.isClientSide()) {
                                 TrinketsClient.quickMoveTimer = 20;
                                 TrinketsClient.quickMoveGroup = TrinketsApi.getPlayerSlots(this.owner).get(type.group());
                                 if (ref.index() > 0) {

@@ -16,6 +16,10 @@ public class TrinketsConfig {
     public boolean showSlotsIndicator = false;
     @SerializedName("render_trinkers_in_first_person")
     public boolean renderFirstPersonHand = false;
+    @SerializedName("sidebar_trinkets_slots")
+    public boolean sidebarTrinketsSlots = false;
+    @SerializedName("sidebar_height")
+    public int sidebarHeight = 4;
 
     public static void load() {
         try {

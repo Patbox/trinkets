@@ -19,5 +19,7 @@
 	"trinkets.slot.offhand.ring": "Ring",
 	"config.trinkets.render_first_person_hand": "First Person Trinkets",
 	"config.trinkets.show_slots_indicator": "Show Slots Indicator",
-	"screen.trinkets.config": "Trinkets Updated Configuration"
+	"screen.trinkets.config": "Trinkets Updated Configuration",
+	"config.trinkets.sidebar_slots": "Sidebar Trinket Slots",
+	"config.trinkets.sidebar_heigth": "Sidebar Height"
 }

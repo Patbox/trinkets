@@ -1,3 +1,8 @@
+- Added Config Screen to allow dynamic in game modification of Trinkets settings. It's accessible via Mod Menu/List.
+- Added Sidebar-only UI Style:
+  - Rather than having slots inside of other equipment slots, they will shown on the sidebar instead.
+  - It is optional and disabled by default. It can be enabled in Trinkets config.
+- Sidebar size can now be configured.
 - Improved compatibility with Entity Model Features mod:
   - Applies both api/code and data driven trinket rendering (so won't change for mods not using Trinket's provided utility methods).
   - Do note the compatibility isn't perfect and more heavily modified (or vanilla non-conforming) models
@@ -5,7 +10,6 @@
   - Most popular packs, such as Fresh Animations (including player addon) will look correctly now through!
 - Added support for rendering trinkets in first person:
   - It is optional and disabled by default. It can be enabled in Trinkets config.
-- Added Config Screen to allow dynamic in game modification of Trinkets settings. It's accessible via Mod Menu/List.
 - You can now set the asset_id field in Trinkets Equipment component.
 - Trinkets are counted within player Inventory contains checks and in case of /clear command.
 - Data driven trinket rendering is now exclusive with code driven one.

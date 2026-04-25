@@ -1,6 +1,7 @@
 package eu.pb4.trinkets.impl.client.compat;
 
 import eu.pb4.trinkets.impl.TrinketInventoryMenu;
+import eu.pb4.trinkets.impl.TrinketsConfig;
 import eu.pb4.trinkets.impl.client.TrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
 import eu.pb4.trinkets.impl.client.TrinketsClient;
@@ -37,10 +38,12 @@ public class TrinketsExclusionAreas {
 					new Rect2i(rect.getX() + x, rect.getY() + y, rect.getWidth(),
 						rect.getHeight()));
 			}
-			int width = groupCount / 4;
-			int height = groupCount % 4;
+			var maxHeight = TrinketsConfig.instance.sidebarHeight;
+
+			int width = groupCount / maxHeight;
+			int height = groupCount % maxHeight;
 			if (width > 0) {
-				rects.add(new Rect2i(-4 - 18 * width + x, y, 7 + 18 * width, 86));
+				rects.add(new Rect2i(-4 - 18 * width + x, y, 7 + 18 * width, 14 + 18 * maxHeight));
 			}
 
 			if (height > 0) {

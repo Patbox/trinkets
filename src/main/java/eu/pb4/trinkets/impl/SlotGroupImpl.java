@@ -29,7 +29,7 @@ public record SlotGroupImpl(String name, int slotId, int order,
 
     @Override
     public boolean hasSlotAttachment() {
-        return this.slotId != -1;
+        return !TrinketsConfig.instance.sidebarTrinketsSlots && this.slotId != -1;
     }
 
     @Override

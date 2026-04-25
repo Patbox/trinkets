@@ -6,6 +6,7 @@ import java.util.List;
 import eu.pb4.trinkets.impl.Point;
 import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.TrinketSlot;
+import eu.pb4.trinkets.impl.TrinketsConfig;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -24,6 +25,7 @@ public class TrinketScreenManager {
 	private static final Identifier MORE_SLOTS = Identifier.fromNamespaceAndPath("trinkets", "textures/gui/more_slots.png");
 	public static final Identifier MORE_SLOTS_INDICATOR_HORIZONTAL = Identifier.fromNamespaceAndPath("trinkets", "container/more_slots_indicator_horizontal");
 	public static final Identifier MORE_SLOTS_INDICATOR_VERTICAL = Identifier.fromNamespaceAndPath("trinkets", "container/more_slots_indicator_vertical");
+	public static final Identifier MORE_SLOTS_INDICATOR_VERTICAL_STANDALONE = Identifier.fromNamespaceAndPath("trinkets", "container/more_slots_indicator_vertical_standalone");
 	public static final Identifier SLOT_TEXTURE = Identifier.withDefaultNamespace("container/slot");
 	private static WeakReference<TrinketScreen> currentScreen;
 	public static Rect2i currentBounds = new Rect2i(0, 0, 0, 0);
@@ -325,10 +327,12 @@ public class TrinketScreenManager {
 		if (groupCount <= 0 || currentScreen.trinkets$isRecipeBookOpen()) {
 			return;
 		}
-		int width = groupCount / 4;
-		int height = groupCount % 4;
+		var maxHeight = TrinketsConfig.instance.sidebarHeight;
+
+		int width = groupCount / maxHeight;
+		int height = groupCount % maxHeight;
 		if (height == 0) {
-			height = 4;
+			height = maxHeight;
 			width--;
 		}
 
@@ -336,7 +340,7 @@ public class TrinketScreenManager {
 		// Repeated tops and bottoms
 		for (int i = 0; i < width; i++) {
 			drawTexture(context, MORE_SLOTS, x - 15 - 18 * i, y,      7, 26, 18, 7);
-			drawTexture(context, MORE_SLOTS, x - 15 - 18 * i, y + 79, 7, 51, 18, 7);
+			drawTexture(context, MORE_SLOTS, x - 15 - 18 * i, y + maxHeight * 18 + 7, 7, 51, 18, 7);
 		}
 		// Top and bottom
 		drawTexture(context, MORE_SLOTS, x - 15 - 18 * width, y,                   7, 26, 18, 7);
@@ -351,20 +355,25 @@ public class TrinketScreenManager {
 
 		// Inner sides
 		if (width > 0) {
-			for (int i = height; i < 4; i++) {
+			for (int i = height; i < TrinketsConfig.instance.sidebarHeight; i++) {
 				drawTexture(context, MORE_SLOTS, x - 4 - 18 * width, y + 7 + 18 * i, 0, 34, 7, 18);
 			}
 		}
 
-		if (width > 0 && height < 4) {
+		if (width > 0 && height < TrinketsConfig.instance.sidebarHeight) {
 			// Bottom corner
-			drawTexture(context, MORE_SLOTS, x - 4 - 18 * width, y + 79, 0, 51, 7, 7);
+			drawTexture(context, MORE_SLOTS, x - 4 - 18 * width, y + maxHeight * 18 + 7, 0, 51, 7, 7);
 			// Inner corner
 			drawTexture(context, MORE_SLOTS, x - 4 - 18 * width, y + 7 + 18 * height, 0, 58, 7, 7);
 		}
-		if (width > 0 || height == 4) {
+		if (width > 0 || height == TrinketsConfig.instance.sidebarHeight) {
 			// Inner corner
-			drawTexture(context, MORE_SLOTS, x, y + 79, 0, 58, 3, 7);
+			drawTexture(context, MORE_SLOTS, x, y + maxHeight * 18 + 7, 0, 58, 3, 7);
+		}
+
+		if (width == 0 || height <= TrinketsConfig.instance.sidebarHeight) {
+			// Inner corner
+			drawTexture(context, MORE_SLOTS, x, y + height * 18 + 7, 0, 58, 3, 7);
 		}
 	}
 
