@@ -12,6 +12,6 @@ import org.spongepowered.asm.mixin.injection.At;
 public class PiglinAiMixin {
     @ModifyReturnValue(method = "isWearingSafeArmor", at = @At("TAIL"))
     private static boolean isWearingSafeTrinket(boolean original, LivingEntity livingEntity) {
-        return original || TrinketsApi.getAttachment(livingEntity).isEquipped(ItemTags.PIGLIN_SAFE_ARMOR);
+        return original || TrinketsApi.getAttachment(livingEntity).isEquipped(ItemTags.PIGLIN_SAFE_ARMOR, true);
     }
 }

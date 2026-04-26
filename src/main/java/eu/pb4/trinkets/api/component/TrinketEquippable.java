@@ -5,11 +5,9 @@ import eu.pb4.trinkets.impl.component.TrinketEquippableImpl;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.equipment.EquipmentAsset;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
 
@@ -36,6 +34,8 @@ public interface TrinketEquippable {
 
     TrinketEquippable withEquipOnInteract(boolean equipOnInteract);
 
+    TrinketEquippable withApplyEffects(boolean canApplyEffects);
+
     List<String> allowedSlots();
 
     Holder<SoundEvent> equipSound();
@@ -49,4 +49,6 @@ public interface TrinketEquippable {
     boolean swappable();
 
     boolean equipOnInteract();
+
+    boolean canApplyEffects();
 }

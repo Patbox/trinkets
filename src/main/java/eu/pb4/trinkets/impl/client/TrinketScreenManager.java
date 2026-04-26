@@ -371,7 +371,7 @@ public class TrinketScreenManager {
 			drawTexture(context, MORE_SLOTS, x, y + maxHeight * 18 + 7, 0, 58, 3, 7);
 		}
 
-		if (width == 0 || height <= TrinketsConfig.instance.sidebarHeight) {
+		if (width == 0 && height <= TrinketsConfig.instance.sidebarHeight) {
 			// Inner corner
 			drawTexture(context, MORE_SLOTS, x, y + height * 18 + 7, 0, 58, 3, 7);
 		}

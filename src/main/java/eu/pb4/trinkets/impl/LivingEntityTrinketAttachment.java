@@ -369,10 +369,15 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     }
 
     @Override
-    public boolean isEquipped(Predicate<ItemStack> predicate) {
+    public boolean isEquipped(Predicate<ItemStack> predicate, boolean requireActive) {
         for (var inv : this.inventory.values()) {
+            if (requireActive && inv.slotType().isVanityOnly()) {
+                continue;
+            }
+
             for (int i = 0; i < inv.getContainerSize(); i++) {
-                if (predicate.test(inv.getItem(i))) {
+                var access = inv.getOrCreateSlotAccess(i);
+                if (predicate.test(access.get()) && (!requireActive || TrinketsApi.canApplyEffects(access.get(), access, this.entity))) {
                     return true;
                 }
             }
@@ -381,10 +386,10 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     }
 
     @Override
-    public List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Predicate<ItemStack> predicate) {
+    public List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Predicate<ItemStack> predicate, boolean requireActive) {
         List<Tuple<TrinketSlotAccess, ItemStack>> list = new ArrayList<>();
         forEach((slotReference, itemStack) -> {
-            if (predicate.test(itemStack)) {
+            if (predicate.test(itemStack) && (!requireActive || TrinketsApi.canApplyEffects(itemStack, slotReference, this.entity))) {
                 list.add(new Tuple<>(slotReference, itemStack));
             }
         });
@@ -392,11 +397,16 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     }
 
     @Override
-    public Optional<TrinketSlotAccess> findFirst(Predicate<ItemStack> predicate) {
+    public Optional<TrinketSlotAccess> findFirst(Predicate<ItemStack> predicate, boolean requireActive) {
         for (var inv : this.inventory.values()) {
+            if (requireActive && inv.slotType().isVanityOnly()) {
+                continue;
+            }
+
             for (int i = 0; i < inv.getContainerSize(); i++) {
-                if (predicate.test(inv.getItem(i))) {
-                    return Optional.ofNullable(inv.getSlotAccess(i));
+                var access = inv.getOrCreateSlotAccess(i);
+                if (predicate.test(access.get()) && (!requireActive || TrinketsApi.canApplyEffects(access.get(), access, this.entity))) {
+                    return Optional.of(access);
                 }
             }
         }

@@ -181,4 +181,16 @@ public interface TrinketCallback {
     default void onEquippedStackChanged(ItemStack previous, ItemStack newStack, TrinketSlotAccess slot, LivingEntity entity) {
 
     }
+
+    /**
+     * Controls whatever this trinket can apply extra effects, be it from Trinket's itself (for example glider components)
+     * or by other mods.
+     *
+     * @param stack The stack being broken
+     * @param slot The slot the stack is being broken in
+     * @param entity The entity that is breaking the stack
+     */
+    default boolean canApplyEffects(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
+        return true;
+    }
 }

@@ -121,6 +121,8 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 		private SlotTypeImpl.Condition tooltipPredicates = null;
 		private String dropRule = TrinketDropRule.DEFAULT.toString();
 
+		private boolean isVanityOnly = false;
+
 		SlotType create(String group, String name) {
 			Identifier finalIcon = icon == null || icon.isEmpty() ? null : Identifier.parse(icon);
 			SlotTypeImpl.Condition finalValidatorPredicates = validatorPredicates;
@@ -141,7 +143,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 				amount = 1;
 			}
 			return new SlotTypeImpl(group, name, order, amount, Optional.ofNullable(finalIcon), finalQuickMovePredicates, finalValidatorPredicates,
-				finalTooltipPredicates, TrinketDropRule.valueOf(dropRule));
+				finalTooltipPredicates, TrinketDropRule.valueOf(dropRule), isVanityOnly);
 		}
 
 		void read(JsonObject jsonObject) {
@@ -159,6 +161,8 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 			tooltipPredicates = readPredicate(jsonObject, replace, "tooltip_predicates", tooltipPredicates);
 
 			String jsonDropRule = GsonHelper.getAsString(jsonObject, "drop_rule", dropRule).toUpperCase();
+
+			isVanityOnly = GsonHelper.getAsBoolean(jsonObject, "is_vanity", this.isVanityOnly && !replace);
 
 			if (TrinketDropRule.has(jsonDropRule)) {
 				dropRule = jsonDropRule;

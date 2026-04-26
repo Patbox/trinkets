@@ -2,6 +2,8 @@ package eu.pb4.trinkets.api;
 
 import com.google.common.collect.ImmutableMap;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
+import eu.pb4.trinkets.api.component.TrinketDataComponents;
+import eu.pb4.trinkets.api.component.TrinketEquippable;
 import eu.pb4.trinkets.api.event.TrinketDropCallback;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.TrinketSlotTarget;
@@ -60,6 +62,20 @@ public class TrinketsApi {
         }
 
         return dropRule;
+    }
+
+    public static boolean canApplyEffects(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
+        if (slot.slotType().isVanityOnly()) {
+            return false;
+        }
+
+        var callback = TrinketCallback.getCallback(stack);
+
+        if (!callback.canApplyEffects(stack, slot, entity)) {
+            return false;
+        }
+
+        return stack.getOrDefault(TrinketDataComponents.EQUIPMENT, TrinketEquippable.DEFAULT).canApplyEffects();
     }
 
     /**

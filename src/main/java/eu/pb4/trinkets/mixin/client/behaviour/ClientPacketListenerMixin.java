@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class ClientPacketListenerMixin {
     @Inject(method = "findTotem", at = @At("TAIL"), cancellable = true)
     private static void findTrinketTotem(Player player, CallbackInfoReturnable<ItemStack> cir) {
-        LivingEntityTrinketAttachment.get(player).findFirst(x -> x.has(DataComponents.DEATH_PROTECTION))
+        LivingEntityTrinketAttachment.get(player).findFirst(x -> x.has(DataComponents.DEATH_PROTECTION), true)
                 .map(TrinketSlotAccess::get).ifPresent(cir::setReturnValue);
     }
 }

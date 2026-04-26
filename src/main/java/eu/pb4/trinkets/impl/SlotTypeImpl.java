@@ -23,7 +23,7 @@ import java.util.Optional;
 
 public record SlotTypeImpl(String group, String name, int order, int amount, Optional<Identifier> optionalIcon,
                            Condition quickMovePredicates, Condition validatorPredicates,
-                           Condition tooltipPredicates, TrinketDropRule dropRule) implements SlotType {
+                           Condition tooltipPredicates, TrinketDropRule dropRule, boolean isVanityOnly) implements SlotType {
 
     public static StreamCodec<FriendlyByteBuf, SlotTypeImpl> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.STRING_UTF8, SlotTypeImpl::group,
@@ -35,6 +35,7 @@ public record SlotTypeImpl(String group, String name, int order, int amount, Opt
             Condition.STREAM_CODEC, SlotTypeImpl::validatorPredicates,
             Condition.STREAM_CODEC, SlotTypeImpl::tooltipPredicates,
             ByteBufCodecs.idMapper(x -> TrinketDropRule.values()[x], TrinketDropRule::ordinal), SlotTypeImpl::dropRule,
+            ByteBufCodecs.BOOL, SlotTypeImpl::isVanityOnly,
             SlotTypeImpl::new
     );
 

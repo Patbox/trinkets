@@ -65,7 +65,9 @@ public interface TrinketAttachment {
 	/**
 	 * @return Whether the predicate matches any slots available to the entity
 	 */
-	boolean isEquipped(Predicate<ItemStack> predicate);
+	default boolean isEquipped(Predicate<ItemStack> predicate) {
+		return isEquipped(predicate, false);
+	}
 
 	/**
 	 * @return Whether the item is in any slots available to the entity
@@ -82,9 +84,35 @@ public interface TrinketAttachment {
 	}
 
 	/**
+	 * @return Whether the predicate matches any slots available to the entity
+	 */
+	boolean isEquipped(Predicate<ItemStack> predicate, boolean requireActive);
+
+	/**
+	 * @return Whether the item is in any slots available to the entity
+	 */
+	default boolean isEquipped(Item item, boolean requireActive) {
+		return isEquipped(stack -> stack.is(item), requireActive);
+	}
+
+	/**
+	 * @return Whether the item is in any slots available to the entity
+	 */
+	default boolean isEquipped(TagKey<Item> item, boolean requireActive) {
+		return isEquipped(stack -> stack.is(item), requireActive);
+	}
+
+	/**
 	 * @return All slots that match the provided predicate
 	 */
-	List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Predicate<ItemStack> predicate);
+	default List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Predicate<ItemStack> predicate) {
+		return getEquipped(predicate, false);
+	}
+
+	/**
+	 * @return All slots that match the provided predicate
+	 */
+	List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Predicate<ItemStack> predicate, boolean requireActive);
 
 	/**
 	 * @return All slots that contain the provided item
@@ -96,7 +124,28 @@ public interface TrinketAttachment {
 	/**
 	 * @return All slots that match the provided predicate
 	 */
-	Optional<TrinketSlotAccess> findFirst(Predicate<ItemStack> predicate);
+	default Optional<TrinketSlotAccess> findFirst(Predicate<ItemStack> predicate) {
+		return this.findFirst(predicate, false);
+	}
+
+	/**
+	 * @return All slots that match the provided predicate
+	 */
+	Optional<TrinketSlotAccess> findFirst(Predicate<ItemStack> predicate, boolean requireActive);
+
+	/**
+	 * @return All slots that contain the provided item
+	 */
+	default Optional<TrinketSlotAccess> findFirst(Item item, boolean requireActive) {
+		return findFirst(stack -> stack.is(item), requireActive);
+	}
+
+	/**
+	 * @return All slots that contain the provided item
+	 */
+	default Optional<TrinketSlotAccess> findFirst(TagKey<Item> tag, boolean requireActive) {
+		return findFirst(stack -> stack.is(tag), requireActive);
+	}
 
 	/**
 	 * @return All slots that contain the provided item
@@ -117,6 +166,13 @@ public interface TrinketAttachment {
 	 */
 	default List<Tuple<TrinketSlotAccess, ItemStack>> getAllEquipped() {
 		return getEquipped(stack -> !stack.isEmpty());
+	}
+
+	/**
+	 * @return All non-empty slots
+	 */
+	default List<Tuple<TrinketSlotAccess, ItemStack>> getAllEquipped(boolean requireActive) {
+		return getEquipped(stack -> !stack.isEmpty(), requireActive);
 	}
 
 	/**

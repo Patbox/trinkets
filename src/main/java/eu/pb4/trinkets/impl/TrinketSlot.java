@@ -3,19 +3,31 @@ package eu.pb4.trinkets.impl;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
+import eu.pb4.trinkets.api.event.TrinketCanEquipCallback;
+import eu.pb4.trinkets.api.event.TrinketSlotCompatibilityCallback;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 public interface TrinketSlot {
 
     static boolean canInsert(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
-        boolean res = slotRef.inventory().slotType().validatorCheck(stack, slotRef, entity);
+        var res = isSlotCompatible(stack, slotRef, entity);
 
         if (res) {
-            return TrinketCallback.getCallback(stack).canEquip(stack, slotRef, entity);
+            return isEquipable(stack, slotRef, entity);
         }
 
         return false;
+    }
+
+    static boolean isSlotCompatible(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
+        boolean res = slotRef.inventory().slotType().validatorCheck(stack, slotRef, entity);
+        return TrinketSlotCompatibilityCallback.EVENT.invoker().isTrinketSlotCompatible(stack, slotRef, entity, res).toBooleanOrElse(res);
+    }
+
+    static boolean isEquipable(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
+        boolean res = TrinketCallback.getCallback(stack).canEquip(stack, slotRef, entity);
+        return TrinketCanEquipCallback.EVENT.invoker().canEquip(stack, slotRef, entity, res).toBooleanOrElse(res);
     }
 
     static boolean mayPickup(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {

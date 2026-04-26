@@ -8,6 +8,7 @@ import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
+import eu.pb4.trinkets.impl.TrinketSlot;
 import eu.pb4.trinkets.impl.TrinketUtilities;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
@@ -82,12 +83,11 @@ public abstract class ItemStackMixin {
             SlotType slotType = trinketInventory.slotType();
             slotCount++;
             for (int i = 0; i < trinketInventory.getContainerSize(); i++) {
-                var callback = TrinketCallback.getCallback(self);
                 var ref = trinketInventory.getOrCreateSlotAccess(i);
 
                 var res = slotType.tooltipCheck(self, ref, player);
-                var isValidForSlot = ref.slotType().validatorCheck(self, ref, player);
-                var canInsert = isValidForSlot && callback.canEquip(self, ref, player);
+                var isValidForSlot = TrinketSlot.isSlotCompatible(self, ref, player);
+                var canInsert = isValidForSlot && TrinketSlot.isEquipable(self, ref, player);
 
                 if (res && isValidForSlot) {
                     boolean sameTranslationExists = false;

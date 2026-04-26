@@ -31,9 +31,10 @@ public record TrinketEquippableImpl(
         Optional<HolderSet<EntityType<?>>> allowedEntities,
         TrinketDropRule dropRule,
         boolean swappable,
-        boolean equipOnInteract
+        boolean equipOnInteract,
+        boolean canApplyEffects
 ) implements TrinketEquippable {
-    public static final TrinketEquippable DEFAULT = new TrinketEquippableImpl(List.of(), SoundEvents.ARMOR_EQUIP_GENERIC, Optional.empty(), Optional.empty(), TrinketDropRule.DEFAULT, false,  true);
+    public static final TrinketEquippable DEFAULT = new TrinketEquippableImpl(List.of(), SoundEvents.ARMOR_EQUIP_GENERIC, Optional.empty(), Optional.empty(), TrinketDropRule.DEFAULT, false,  true, true);
 
     public static final Codec<TrinketEquippable> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
             ExtraCodecs.compactListCodec(Codec.STRING).optionalFieldOf("slot", List.of()).forGetter(TrinketEquippable::allowedSlots),
@@ -42,7 +43,8 @@ public record TrinketEquippableImpl(
             RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE).optionalFieldOf("allowed_entities").forGetter(TrinketEquippable::allowedEntities),
             StringRepresentable.fromEnum(TrinketDropRule::values).optionalFieldOf("drop_rule", TrinketDropRule.DEFAULT).forGetter(TrinketEquippable::dropRule),
             Codec.BOOL.optionalFieldOf("swappable", true).forGetter(TrinketEquippable::swappable),
-            Codec.BOOL.optionalFieldOf("equip_on_interact", false).forGetter(TrinketEquippable::equipOnInteract)
+            Codec.BOOL.optionalFieldOf("equip_on_interact", false).forGetter(TrinketEquippable::equipOnInteract),
+            Codec.BOOL.optionalFieldOf("can_apply_effects", true).forGetter(TrinketEquippable::canApplyEffects)
     ).apply(instance, TrinketEquippableImpl::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, TrinketEquippable> STREAM_CODEC = StreamCodec.composite(
@@ -53,6 +55,7 @@ public record TrinketEquippableImpl(
             ByteBufCodecs.idMapper(x -> TrinketDropRule.values()[x], TrinketDropRule::ordinal), TrinketEquippable::dropRule,
             ByteBufCodecs.BOOL, TrinketEquippable::swappable,
             ByteBufCodecs.BOOL, TrinketEquippable::equipOnInteract,
+            ByteBufCodecs.BOOL, TrinketEquippable::canApplyEffects,
             TrinketEquippableImpl::new
     );
 
@@ -63,36 +66,41 @@ public record TrinketEquippableImpl(
 
     @Override
     public TrinketEquippable withSlots(String... slots) {
-        return new TrinketEquippableImpl(List.of(slots), equipSound, assetId, allowedEntities, dropRule, swappable, equipOnInteract);
+        return new TrinketEquippableImpl(List.of(slots), equipSound, assetId, allowedEntities, dropRule, swappable, equipOnInteract, canApplyEffects);
     }
 
     @Override
     public TrinketEquippable withEquipSound(Holder<SoundEvent> equipSound) {
-        return new TrinketEquippableImpl(allowedSlots, equipSound, assetId, allowedEntities, dropRule, swappable, equipOnInteract);
+        return new TrinketEquippableImpl(allowedSlots, equipSound, assetId, allowedEntities, dropRule, swappable, equipOnInteract, canApplyEffects);
     }
 
     @Override
     public TrinketEquippable withAllowedEntities(@Nullable HolderSet<EntityType<?>> allowedEntities) {
-        return new TrinketEquippableImpl(allowedSlots, equipSound, assetId, Optional.ofNullable(allowedEntities), dropRule, swappable, equipOnInteract);
+        return new TrinketEquippableImpl(allowedSlots, equipSound, assetId, Optional.ofNullable(allowedEntities), dropRule, swappable, equipOnInteract, canApplyEffects);
     }
 
     @Override
     public TrinketEquippable withDropRule(TrinketDropRule dropRule) {
-        return new TrinketEquippableImpl(allowedSlots, equipSound, assetId, allowedEntities, dropRule, swappable, equipOnInteract);
+        return new TrinketEquippableImpl(allowedSlots, equipSound, assetId, allowedEntities, dropRule, swappable, equipOnInteract, canApplyEffects);
     }
 
     @Override
     public TrinketEquippable withSwappable(boolean swappable) {
-        return new TrinketEquippableImpl(allowedSlots, equipSound, assetId, allowedEntities, dropRule, swappable, equipOnInteract);
+        return new TrinketEquippableImpl(allowedSlots, equipSound, assetId, allowedEntities, dropRule, swappable, equipOnInteract, canApplyEffects);
     }
 
     @Override
     public TrinketEquippable withEquipOnInteract(boolean equipOnInteract) {
-        return new TrinketEquippableImpl(allowedSlots, equipSound, assetId, allowedEntities, dropRule, swappable, equipOnInteract);
+        return new TrinketEquippableImpl(allowedSlots, equipSound, assetId, allowedEntities, dropRule, swappable, equipOnInteract, canApplyEffects);
     }
 
     @Override
     public TrinketEquippable withAssetId(@Nullable Identifier assetId) {
-        return new TrinketEquippableImpl(allowedSlots, equipSound, Optional.ofNullable(assetId), allowedEntities, dropRule, swappable, equipOnInteract);
+        return new TrinketEquippableImpl(allowedSlots, equipSound, Optional.ofNullable(assetId), allowedEntities, dropRule, swappable, equipOnInteract, canApplyEffects);
+    }
+
+    @Override
+    public TrinketEquippable withApplyEffects(boolean canApplyEffects) {
+        return new TrinketEquippableImpl(allowedSlots, equipSound, assetId, allowedEntities, dropRule, swappable, equipOnInteract, canApplyEffects);
     }
 }

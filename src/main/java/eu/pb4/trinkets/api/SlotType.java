@@ -21,4 +21,5 @@ public interface SlotType {
     boolean validatorCheck(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity);
     boolean tooltipCheck(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity);
     TrinketDropRule dropRule();
+    boolean isVanityOnly();
 }

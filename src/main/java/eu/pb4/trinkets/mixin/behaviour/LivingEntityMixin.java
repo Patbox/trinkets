@@ -37,7 +37,7 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Inject(method = "canGlide", at = @At(value = "INVOKE", target = "Ljava/util/List;iterator()Ljava/util/Iterator;"), cancellable = true)
     private void handleGliderForTrinkets(CallbackInfoReturnable<Boolean> cir) {
-        if (TrinketsApi.getAttachment((LivingEntity) (Object) this).isEquipped(stack -> stack.has(DataComponents.GLIDER) && !stack.nextDamageWillBreak())) {
+        if (TrinketsApi.getAttachment((LivingEntity) (Object) this).isEquipped(stack -> stack.has(DataComponents.GLIDER) && !stack.nextDamageWillBreak(), true)) {
             cir.setReturnValue(true);
         }
     }
@@ -57,7 +57,7 @@ public abstract class LivingEntityMixin extends Entity {
         if (ref.get()) {
             var list = new ArrayList<TrinketSlotAccess>();
             TrinketsApi.getAttachment((LivingEntity) (Object) this).forEach((slot, stack) -> {
-                if (stack.has(DataComponents.GLIDER) && !stack.nextDamageWillBreak()) {
+                if (stack.has(DataComponents.GLIDER) && !stack.nextDamageWillBreak() && TrinketsApi.canApplyEffects(stack, slot, livingEntity)) {
                     list.add(slot);
                 }
             });
@@ -78,7 +78,7 @@ public abstract class LivingEntityMixin extends Entity {
             return;
         }
 
-        var totem = LivingEntityTrinketAttachment.get((LivingEntity) (Object) this).findFirst(x -> x.has(DataComponents.DEATH_PROTECTION));
+        var totem = LivingEntityTrinketAttachment.get((LivingEntity) (Object) this).findFirst(x -> x.has(DataComponents.DEATH_PROTECTION), true);
 
         if (totem.isPresent()) {
             var stack = totem.get().get();
