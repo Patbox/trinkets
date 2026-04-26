@@ -17,3 +17,5 @@
 - Totems of Undying (and other items with death protection component) will now work in Trinkets slots (requires a datapack to enable it).
 - Improved the look of Trinket slot indicator option.
 - Added support for creation of passive trinkets and slot types that won't apply any effects by default.
+- Trinkets can now make players hidden for entities using LivingEntity#PLAYER_NOT_WEARING_DISGUISE_ITEM check for trinkets being in the `minecraft:gaze_disguise_equipment` tag.
+- Attributes provided via trinkets:attributes component are now unique by default. This behaviour can be toggled by changing the unique field.

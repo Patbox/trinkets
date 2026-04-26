@@ -5,7 +5,13 @@ import net.minecraft.util.StringRepresentable;
 import java.util.Locale;
 
 public enum TrinketDropRule implements StringRepresentable {
-    KEEP, DROP, DESTROY, DEFAULT;
+    KEEP("keep"), DROP("drop"), DESTROY("destroy"), DEFAULT("default");
+
+    private final String name;
+
+    private TrinketDropRule(String name) {
+        this.name = name;
+    }
 
     static public boolean has(String name) {
         TrinketDropRule[] rules = TrinketDropRule.values();
@@ -21,6 +27,6 @@ public enum TrinketDropRule implements StringRepresentable {
 
     @Override
     public String getSerializedName() {
-        return this.name().toLowerCase(Locale.ROOT);
+        return this.name;
     }
 }

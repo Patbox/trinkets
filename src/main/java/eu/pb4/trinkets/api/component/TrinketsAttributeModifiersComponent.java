@@ -42,9 +42,7 @@ public record TrinketsAttributeModifiersComponent(List<Entry> modifiers) {
 
     public void forEach(TrinketSlotAccess slot, BiConsumer<Holder<Attribute>, AttributeModifier> consumer) {
         for (Entry entry : this.modifiers) {
-            if (entry.slot.isEmpty() || entry.slot.get().equals(slot.slotType().getId())) {
-                consumer.accept(entry.attribute, entry.modifier);
-            }
+            entry.provide(consumer, slot);
         }
     }
 
@@ -62,8 +60,20 @@ public record TrinketsAttributeModifiersComponent(List<Entry> modifiers) {
             return add(attribute, modifier, Optional.of(slot));
         }
 
+        public Builder add(Holder<Attribute> attribute, AttributeModifier modifier, boolean unique) {
+            return add(attribute, modifier, Optional.empty(), unique);
+        }
+
+        public Builder add(Holder<Attribute> attribute, AttributeModifier modifier, String slot, boolean unique) {
+            return add(attribute, modifier, Optional.of(slot), unique);
+        }
+
         public Builder add(Holder<Attribute> attribute, AttributeModifier modifier, Optional<String> slot) {
-            this.entries.add(new Entry(attribute, modifier, slot));
+            return this.add(attribute, modifier, slot, true);
+        }
+
+        public Builder add(Holder<Attribute> attribute, AttributeModifier modifier, Optional<String> slot, boolean unique) {
+            this.entries.add(new Entry(attribute, modifier, slot, unique));
             return this;
         }
 
@@ -72,12 +82,21 @@ public record TrinketsAttributeModifiersComponent(List<Entry> modifiers) {
         }
     }
 
-    public record Entry(Holder<Attribute> attribute, AttributeModifier modifier, Optional<String> slot) {
+    public record Entry(Holder<Attribute> attribute, AttributeModifier modifier, Optional<String> slot, boolean unique) {
+
+        @Deprecated
+        public Entry(Holder<Attribute> attribute, AttributeModifier modifier, Optional<String> slot) {
+            this(attribute, modifier, slot, true);
+        }
+
         public static final Codec<Entry> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
                 BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("type").forGetter(Entry::attribute),
                 AttributeModifier.MAP_CODEC.forGetter(Entry::modifier),
-                Codec.STRING.optionalFieldOf("slot").forGetter(Entry::slot)
+                Codec.STRING.optionalFieldOf("slot").forGetter(Entry::slot),
+                Codec.BOOL.optionalFieldOf("unique", true).forGetter(Entry::unique)
         ).apply(instance, Entry::new));
+
+
         public static final StreamCodec<RegistryFriendlyByteBuf, Entry> PACKET_CODEC = StreamCodec.composite(
                 ByteBufCodecs.holderRegistry(Registries.ATTRIBUTE),
                 Entry::attribute,
@@ -85,6 +104,18 @@ public record TrinketsAttributeModifiersComponent(List<Entry> modifiers) {
                 Entry::modifier,
                 ByteBufCodecs.optional(ByteBufCodecs.STRING_UTF8),
                 Entry::slot,
+                ByteBufCodecs.BOOL,
+                Entry::unique,
                 Entry::new);
+
+        public void provide(BiConsumer<Holder<Attribute>, AttributeModifier> consumer, TrinketSlotAccess slot) {
+            if (this.slot.isEmpty() || this.slot.get().equals(slot.slotType().getId())) {
+                if (this.unique) {
+                    consumer.accept(this.attribute, new AttributeModifier(this.modifier.id().withSuffix("/" + slot.getAsIdentifierPath()), this.modifier.amount(), this.modifier.operation()));
+                } else {
+                    consumer.accept(this.attribute, this.modifier);
+                }
+            }
+        }
     }
 }
