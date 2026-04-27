@@ -138,12 +138,20 @@ public record SlotTypeImpl(String group, String name, int order, int amount, Opt
                 }
                 var and = ops.get(input, "and");
                 if (and.isSuccess()) {
-                    return and.flatMap(x -> listCodec.decode(ops, x)).map(x -> x.mapFirst(AndCondition::new));
+                    var maybe = and.flatMap(x -> listCodec.decode(ops, x));
+
+                    if (maybe.isSuccess()) {
+                        return maybe.map(x -> x.mapFirst(AndCondition::new));
+                    }
                 }
 
                 var or = ops.get(input, "or");
                 if (or.isSuccess()) {
-                    return and.flatMap(x -> listCodec.decode(ops, x)).map(x -> x.mapFirst(OrCondition::new));
+                    var maybe = or.flatMap(x -> listCodec.decode(ops, x));
+
+                    if (maybe.isSuccess()) {
+                        return or.flatMap(x -> listCodec.decode(ops, x)).map(x -> x.mapFirst(OrCondition::new));
+                    }
                 }
 
                 return listCodec.map(OrCondition::new).map(x -> (Condition) x).decode(ops, input);

@@ -20,6 +20,8 @@ bin/
 .classpath
 .project
 
+src/testmod/generated
+
 # fabric
 
 run/

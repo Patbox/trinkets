@@ -73,8 +73,8 @@ public abstract class ItemStackMixin {
 
         boolean canEquipAnywhere = true;
         List<Tuple<SlotType, Boolean>> slots = new ArrayList<>();
-        Map<SlotType, Multimap<Holder<Attribute>, AttributeModifier>> modifiers = Maps.newHashMap();
-        Multimap<Holder<Attribute>, AttributeModifier> defaultModifier = null;
+        Map<SlotType, Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>>> modifiers = Maps.newHashMap();
+        Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>> defaultModifier = null;
         boolean allModifiersSame = true;
         int slotCount = 0;
 
@@ -104,8 +104,8 @@ public abstract class ItemStackMixin {
                     if (!sameTranslationExists) {
                         slots.add(new Tuple<>(slotType, canInsert));
                     }
-                    Multimap<Holder<Attribute>, AttributeModifier> map = Multimaps.newMultimap(Maps.newLinkedHashMap(), ArrayList::new);
-                    TrinketUtilities.forEachModifier(player, self, ref, map::put);
+                    Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>> map = Multimaps.newMultimap(Maps.newLinkedHashMap(), ArrayList::new);
+                    TrinketUtilities.forEachModifier(player, self, ref, (atr, mod, dis) -> map.put(atr, new Tuple<>(mod, dis)));
 
                     if (defaultModifier == null) {
                         defaultModifier = map;
@@ -114,7 +114,7 @@ public abstract class ItemStackMixin {
                     }
 
                     boolean duplicate = false;
-                    for (Map.Entry<SlotType, Multimap<Holder<Attribute>, AttributeModifier>> entry : modifiers.entrySet()) {
+                    for (var entry : modifiers.entrySet()) {
                         if (entry.getKey().getTranslation().getString().equals(slotType.getTranslation().getString())) {
                             if (areMapsEqual(entry.getValue(), map)) {
                                 duplicate = true;
@@ -166,7 +166,7 @@ public abstract class ItemStackMixin {
                     addAttributes(textConsumer, defaultModifier);
                 }
             } else {
-                for (Map.Entry<SlotType, Multimap<Holder<Attribute>, AttributeModifier>> entry : modifiers.entrySet()) {
+                for (var entry : modifiers.entrySet()) {
                     textConsumer.accept(Component.translatable("trinkets.tooltip.attributes.single",
                             entry.getKey().getTranslation().withStyle(ChatFormatting.BLUE)).withStyle(ChatFormatting.GRAY));
                     addAttributes(textConsumer, entry.getValue());
@@ -176,11 +176,16 @@ public abstract class ItemStackMixin {
     }
 
     @Unique
-    private void addAttributes(Consumer<Component> textConsumer, Multimap<Holder<Attribute>, AttributeModifier> map) {
+    private void addAttributes(Consumer<Component> textConsumer, Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>> map) {
         if (!map.isEmpty()) {
-            for (Map.Entry<Holder<Attribute>, AttributeModifier> entry : map.entries()) {
+            for (var entry : map.entries()) {
                 Holder<Attribute> attribute = entry.getKey();
-                AttributeModifier modifier = entry.getValue();
+                var tuple = entry.getValue();
+                if (tuple.getB().type() == ItemAttributeModifiers.Display.Type.HIDDEN) {
+                    continue;
+                }
+
+                AttributeModifier modifier = tuple.getA();
                 double g = modifier.amount();
 
                 if (modifier.operation() != AttributeModifier.Operation.ADD_MULTIPLIED_BASE && modifier.operation() != AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
@@ -191,10 +196,18 @@ public abstract class ItemStackMixin {
                     g *= 100.0D;
                 }
 
-                Component text = Component.translatable(attribute.value().getDescriptionId());
+                if (tuple.getB() instanceof ItemAttributeModifiers.Display.OverrideText(var t)) {
+                    textConsumer.accept(t);
+                    continue;
+                }
+
+
+                var text = Component.translatable(attribute.value().getDescriptionId());
                 if (attribute.isBound() && attribute.value() instanceof SlotAttributes.SlotModifyingAttribute) {
                     text = Component.translatable("trinkets.tooltip.attributes.slots", text);
                 }
+
+
                 if (g > 0.0D) {
                     textConsumer.accept(Component.translatable("attribute.modifier.plus." + modifier.operation().id(),
                             ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(g), text).withStyle(ChatFormatting.BLUE));
@@ -209,7 +222,7 @@ public abstract class ItemStackMixin {
 
     // `equals` doesn't test thoroughly
     @Unique
-    private boolean areMapsEqual(Multimap<Holder<Attribute>, AttributeModifier> map1, Multimap<Holder<Attribute>, AttributeModifier> map2) {
+    private boolean areMapsEqual(Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>> map1, Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>> map2) {
         if (map1.size() != map2.size()) {
             return false;
         } else {
@@ -218,22 +231,22 @@ public abstract class ItemStackMixin {
                     return false;
                 }
 
-                Collection<AttributeModifier> col1 = map1.get(attribute);
-                Collection<AttributeModifier> col2 = map2.get(attribute);
+                var col1 = map1.get(attribute);
+                var col2 = map2.get(attribute);
 
                 if (col1.size() != col2.size()) {
                     return false;
                 } else {
-                    Iterator<AttributeModifier> iter = col2.iterator();
+                    var iter = col2.iterator();
 
-                    for (AttributeModifier modifier : col1) {
-                        AttributeModifier eam = iter.next();
+                    for (var modifier : col1) {
+                        AttributeModifier eam = iter.next().getA();
 
                         //we can't check identifiers. EAMs will have slot-specific identifiers so fail total equality by nature.
-                        if (!modifier.operation().equals(eam.operation())) {
+                        if (!modifier.getA().operation().equals(eam.operation())) {
                             return false;
                         }
-                        if (modifier.amount() != eam.amount()) {
+                        if (modifier.getA().amount() != eam.amount()) {
                             return false;
                         }
                     }

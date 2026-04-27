@@ -34,6 +34,9 @@
 		],
 		"client": [
 			"eu.pb4.trinkets.client.TrinketsTestClient"
+		],
+		"fabric-datagen": [
+			"eu.pb4.trinkets.DataGenTest"
 		]
 	},
 	"custom": {

@@ -12,6 +12,12 @@ base {
 	archivesName = project.archives_base_name
 }
 
+fabricApi {
+	configureDataGeneration() {
+		client = true
+	}
+}
+
 repositories {
 	maven { url = "https://maven.terraformersmc.com" }
 	maven { url = "https://maven.architectury.dev" }
@@ -42,11 +48,18 @@ sourceSets {
 	testmod {
 		compileClasspath += main.compileClasspath
 		runtimeClasspath += main.runtimeClasspath
+
+		resources {
+			srcDirs += [
+					'src/testmod/generated'
+			]
+		}
 	}
 }
 
 loom {
 	accessWidenerPath = file("src/main/resources/trinkets.accesswidener")
+	//uncompressNestedJars = true
 
 	runs {
 		testmodClient {
@@ -54,10 +67,21 @@ loom {
 			name = "Testmod Client"
 			source sourceSets.testmod
 		}
-	}
 
-	//uncompressNestedJars = true
+        datagen {
+            client()
+            name "Data Generation Client"
+            vmArg "-Dfabric-api.datagen"
+            vmArg "-Dfabric-api.datagen.output-dir=${file("src/testmod/generated")}"
+            vmArg "-Dfabric-api.datagen.strict-validation"
+
+            ideConfigGenerated = false
+            runDir "build/datagen"
+            source sourceSets.testmod
+        }
+    }
 }
+
 dependencies {
 	// Base Fabric dependencies
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -67,7 +91,7 @@ dependencies {
 	compileOnly localRuntime("net.fabricmc:fabric-loader:${project.loader_version}")
 
 	// Mod dependencies
-	fabricCompileOnly localRuntime("net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}")
+	fabricCompileOnly testmodCompileOnly(localRuntime("net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"))
 	fabricCompileOnly localRuntime("com.terraformersmc:modmenu:${project.mod_menu_version}")
 
 	neoforgeCompileOnly("net.neoforged:neoforge:${project.neoforge_version}:universal")

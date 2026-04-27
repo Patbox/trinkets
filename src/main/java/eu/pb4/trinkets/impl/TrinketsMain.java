@@ -110,32 +110,31 @@ public class TrinketsMain implements ModInitializer {
 			));
 
 
-		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "all"), (stack, ref, entity) -> true);
-		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "none"), (stack, ref, entity) -> false);
-		TagKey<Item> trinketsAll = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("trinkets", "all"));
+		TrinketsApi.registerTrinketPredicate(BuiltInTrinketConditions.ALL, (stack, ref, entity) -> true);
+		TrinketsApi.registerTrinketPredicate(BuiltInTrinketConditions.NONE, (stack, ref, entity) -> false);
 
-		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "default"), (stack, ref, entity) -> {
+		TrinketsApi.registerTrinketPredicate(BuiltInTrinketConditions.DEFAULT, (stack, ref, entity) -> {
 			SlotType slot = ref.inventory().slotType();
 			TagKey<Item> tag = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("trinkets", slot.getId()));
 			var component = stack.get(TrinketDataComponents.EQUIPMENT);
 
-			if (stack.is(tag) || stack.is(trinketsAll) || component != null && component.allowedSlots().contains(slot.getId())) {
+			if (stack.is(tag) || stack.is(DefaultTrinketSlotTags.ALL) || component != null && component.allowedSlots().contains(slot.getId())) {
 				return true;
 			}
 			return false;
 		});
 
-		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "tag"), (stack, ref, entity) -> {
+		TrinketsApi.registerTrinketPredicate(BuiltInTrinketConditions.TAG, (stack, ref, entity) -> {
 			SlotType slot = ref.inventory().slotType();
 			TagKey<Item> tag = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("trinkets", slot.getId()));
 
-			if (stack.is(tag) || stack.is(trinketsAll)) {
+			if (stack.is(tag) || stack.is(DefaultTrinketSlotTags.ALL)) {
 				return true;
 			}
 			return false;
 		});
 
-		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "component"), (stack, ref, entity) -> {
+		TrinketsApi.registerTrinketPredicate(BuiltInTrinketConditions.COMPONENT, (stack, ref, entity) -> {
 			SlotType slot = ref.inventory().slotType();
 			var component = stack.get(TrinketDataComponents.EQUIPMENT);
 
@@ -145,7 +144,7 @@ public class TrinketsMain implements ModInitializer {
 			return false;
 		});
 
-		TrinketsApi.registerTrinketPredicate(Identifier.fromNamespaceAndPath("trinkets", "attributes"), (stack, ref, entity) -> {
+		TrinketsApi.registerTrinketPredicate(BuiltInTrinketConditions.ATTRIBUTES, (stack, ref, entity) -> {
 			var b = new MutableBoolean();
 
 			TrinketUtilities.forEachModifier(entity, stack, ref, (_, _) -> b.setTrue());

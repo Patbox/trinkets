@@ -194,4 +194,6 @@ public interface TrinketAttachment {
 	 * Iterates over every slot available of the entity as long as it returns true.
 	 */
 	void forEachWhileTrue(Predicate<TrinketSlotAccess> consumer);
+
+    boolean canApplyEffects(ItemStack itemStack, TrinketSlotAccess trinketSlotAccess);
 }

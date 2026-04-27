@@ -41,4 +41,8 @@ public record TrinketSlotAccess(TrinketInventory inventory, int index) implement
     public boolean isValid() {
         return inventory.isValidSlot(index);
     }
+
+    public boolean canApplyEffects() {
+        return this.inventory.getAttachment().canApplyEffects(this.get(), this);
+    }
 }

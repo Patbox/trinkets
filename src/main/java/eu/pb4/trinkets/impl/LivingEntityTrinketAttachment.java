@@ -453,6 +453,11 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         }
     }
 
+    @Override
+    public boolean canApplyEffects(ItemStack itemStack, TrinketSlotAccess trinketSlotAccess) {
+        return TrinketsApi.canApplyEffects(itemStack, trinketSlotAccess, this.entity);
+    }
+
     public void tick() {
         for (var inv : this.inventory.values()) {
             for (int i = 0; i < inv.getContainerSize(); i++) {

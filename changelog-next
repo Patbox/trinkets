@@ -11,6 +11,9 @@
 - Added support for rendering trinkets in first person:
   - It is optional and disabled by default. It can be enabled in Trinkets config.
 - Added events for checking if item is compatible with trinket slot and for checking if trinket is equipable.
+- Added datagen utilities:
+  - Allows easily create / configure slot types and entities with data generation.
+  - See local loader's api for reference.
 - You can now set the asset_id field in Trinkets Equipment component.
 - Trinkets are counted within player Inventory contains checks and in case of /clear command.
 - Data driven trinket rendering is now exclusive with code driven one.
@@ -19,3 +22,5 @@
 - Added support for creation of passive trinkets and slot types that won't apply any effects by default.
 - Trinkets can now make players hidden for entities using LivingEntity#PLAYER_NOT_WEARING_DISGUISE_ITEM check for trinkets being in the `minecraft:gaze_disguise_equipment` tag.
 - Attributes provided via trinkets:attributes component are now unique by default. This behaviour can be toggled by changing the unique field.
+- Attributes provided via trinkets:attributes component can now customise the display just like vanilla ones do.
+- Fixed new slot predicate format not being read correctly.

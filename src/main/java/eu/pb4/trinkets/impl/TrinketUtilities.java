@@ -19,8 +19,10 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.*;
 import net.minecraft.world.level.gameevent.GameEvent;
+import org.apache.commons.lang3.function.TriConsumer;
 
 import java.util.List;
 import java.util.Set;
@@ -53,6 +55,19 @@ public class TrinketUtilities {
         EnchantmentHelper.runIterationOnItem(stack, (enchantment, level) -> enchantment.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES).forEach((effect) -> {
             if (isEnchantmentTrinketCompatible(enchantment, slot)) {
                 consumer.accept(effect.attribute(), effect.getModifier(level, slot));
+            }
+        }));
+    }
+
+    public static void forEachModifier(LivingEntity entity, ItemStack stack, TrinketSlotAccess slot, final TriConsumer<Holder<Attribute>, AttributeModifier, ItemAttributeModifiers.Display> consumer) {
+        var modifiers = stack.getOrDefault(TrinketDataComponents.ATTRIBUTE_MODIFIERS, TrinketsAttributeModifiersComponent.DEFAULT);
+        modifiers.forEach(slot, consumer);
+
+        TrinketCallback.getCallback(stack).forEachTrinketModifier(stack, slot, entity, SlotAttributes.getIdentifier(slot), (a, b) -> consumer.accept(a, b, ItemAttributeModifiers.Display.attributeModifiers()));
+
+        EnchantmentHelper.runIterationOnItem(stack, (enchantment, level) -> enchantment.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES).forEach((effect) -> {
+            if (isEnchantmentTrinketCompatible(enchantment, slot)) {
+                consumer.accept(effect.attribute(), effect.getModifier(level, slot), ItemAttributeModifiers.Display.attributeModifiers());
             }
         }));
     }
