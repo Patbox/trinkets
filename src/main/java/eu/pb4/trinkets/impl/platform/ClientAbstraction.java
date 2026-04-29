@@ -20,10 +20,6 @@ public interface ClientAbstraction {
         }
     });
 
-    static ClientAbstraction get() {
-        return INSTANCE;
-    }
-
     <T extends CustomPacketPayload> void registerGlobalReceiverPlay(CustomPacketPayload.Type<T> type, PlayPacketReceiver<T> receiver);
 
     void registerClientReloadListener(Identifier identifier, PreparableReloadListener instance, List<Identifier> requires, List<Identifier> requiredBy);

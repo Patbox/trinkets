@@ -2,7 +2,6 @@ package eu.pb4.trinkets.impl.client.render;
 
 import com.mojang.serialization.Codec;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
@@ -12,19 +11,16 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class ClientTrinketsManager extends SimpleJsonResourceReloadListener<ClientTrinket> {
     public static final ClientTrinketsManager INSTANCE = new ClientTrinketsManager(ClientTrinket.CODEC, FileToIdConverter.json("trinkets"));
+    public CompletableFuture<Map<Identifier, ClientTrinket>> completableFuture = new CompletableFuture<>();
     private Map<Identifier, ClientTrinket> idMap = Map.of();
     private Map<Item, ClientTrinket> defaultMap = Map.of();
     private Map<Identifier, ClientTrinket> futureIdMap = Map.of();
-
-    public CompletableFuture<Map<Identifier, ClientTrinket>> completableFuture = new CompletableFuture<>();
 
     protected ClientTrinketsManager(Codec<ClientTrinket> codec, FileToIdConverter lister) {
         super(codec, lister);
@@ -58,19 +54,27 @@ public class ClientTrinketsManager extends SimpleJsonResourceReloadListener<Clie
                 if (key.left().isPresent()) {
                     var item = BuiltInRegistries.ITEM.get(key.left().orElseThrow());
                     if (item.isPresent()) {
-                        map.put(item.get().value(), trinket);
+                        var old = map.get(item.get().value());
+
+                        if (old == null || old.priority() <= trinket.priority()) {
+                            map.put(item.get().value(), trinket);
+                        }
                     }
                 } else {
                     var tag = BuiltInRegistries.ITEM.get(key.right().orElseThrow());
                     if (tag.isPresent()) {
                         for (var item : tag.get()) {
-                            map.put(item.value(), trinket);
+                            var old = map.get(item.value());
+
+                            if (old == null || old.priority() <= trinket.priority()) {
+                                map.put(item.value(), trinket);
+                            }
                         }
                     }
                 }
             }
         }
-        
+
         this.defaultMap = map;
     }
 

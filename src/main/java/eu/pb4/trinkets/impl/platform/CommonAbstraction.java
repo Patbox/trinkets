@@ -28,10 +28,6 @@ public interface CommonAbstraction {
         }
     });
 
-    static CommonAbstraction get() {
-        return INSTANCE;
-    }
-
     void registerServerReloadListener(Identifier identifier, PreparableReloadListener instance, Identifier... requires);
 
     <T extends CustomPacketPayload> void registerClientboundPlayPayload(CustomPacketPayload.Type<T> type, StreamCodec<RegistryFriendlyByteBuf, T> codec);

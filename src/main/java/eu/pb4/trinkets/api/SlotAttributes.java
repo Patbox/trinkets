@@ -49,6 +49,7 @@ public final class SlotAttributes {
         private SlotModifyingAttribute(String slot) {
             super("trinkets.slot." + slot.replace("/", "."), 0);
             this.slot = slot;
+            this.setSyncable(true);
         }
     }
 }

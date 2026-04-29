@@ -24,3 +24,9 @@
 - Attributes provided via trinkets:attributes component are now unique by default. This behaviour can be toggled by changing the unique field.
 - Attributes provided via trinkets:attributes component can now customise the display just like vanilla ones do.
 - Fixed new slot predicate format not being read correctly.
+- Added support for hidden slots (slots that aren't accessible directly out of default trinkets slots).
+- Added injected-interface for ItemStack, adding trinkets-compatible hurtAndBreak method.
+- Data driven trinket models definitions can now define the priority, at which they are applied:
+  - Definition will override the ones with lower or equal priority rather than just based on load order.
+  - Default models (provided with Trinkets itself) all have priority set to -1000
+- API for getting only "renderable" and droppable item stacks from trinket attachment. These apis are primarily intended for improving mod compatibility.

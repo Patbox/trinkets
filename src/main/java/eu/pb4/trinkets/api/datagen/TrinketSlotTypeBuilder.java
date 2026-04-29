@@ -20,6 +20,8 @@ public interface TrinketSlotTypeBuilder {
 
     TrinketSlotTypeBuilder isVanityOnly(boolean value);
 
+    TrinketSlotTypeBuilder isHidden(boolean value);
+
     TrinketSlotTypeBuilder quickMoveCondition(Consumer<ConditionBuilder> consumer);
 
     TrinketSlotTypeBuilder validatorCondition(Consumer<ConditionBuilder> consumer);

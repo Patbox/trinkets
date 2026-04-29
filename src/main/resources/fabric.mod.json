@@ -50,7 +50,7 @@
       "eu.pb4.trinkets.impl.client.compat.TrinketsEmiPlugin"
     ]
   },
-  "accessWidener": "trinkets.accesswidener",
+  "accessWidener": "trinkets.classtweaker",
   "mixins": [
     "trinkets.mixins.json"
   ],

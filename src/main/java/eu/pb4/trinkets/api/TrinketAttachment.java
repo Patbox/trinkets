@@ -196,4 +196,21 @@ public interface TrinketAttachment {
 	void forEachWhileTrue(Predicate<TrinketSlotAccess> consumer);
 
     boolean canApplyEffects(ItemStack itemStack, TrinketSlotAccess trinketSlotAccess);
+
+	/**
+	 * Iterates over every slot available of the entity as long as it is visible / should be rendered.
+	 */
+	void forEachVisible(BiConsumer<TrinketSlotAccess, ItemStack> consumer);
+
+	/**
+	 * Iterates over every slot available of the entity as long as it should drop when killed.
+	 * Intended for grave mods an alike.
+	 */
+	void forEachDroppable(BiConsumer<TrinketSlotAccess, ItemStack> consumer, boolean keepInventory);
+
+	/**
+	 * Iterates over every slot available of the entity as long as it should drop when killed.
+	 * Intended for grave mods an alike.
+	 */
+	void forEachDroppable(BiConsumer<TrinketSlotAccess, ItemStack> consumer);
 }

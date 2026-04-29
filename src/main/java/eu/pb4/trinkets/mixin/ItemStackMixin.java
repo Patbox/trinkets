@@ -7,6 +7,7 @@ import eu.pb4.trinkets.api.SlotAttributes;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
+import eu.pb4.trinkets.api.ext.TrinketsItemStackExtension;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.TrinketSlot;
 import eu.pb4.trinkets.impl.TrinketUtilities;
@@ -40,7 +41,7 @@ import java.util.function.Consumer;
  * @author Emi
  */
 @Mixin(ItemStack.class)
-public abstract class ItemStackMixin {
+public abstract class ItemStackMixin implements TrinketsItemStackExtension {
     @Inject(method = "addDetailsToTooltip", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/item/ItemStack;addAttributeTooltips(Ljava/util/function/Consumer;Lnet/minecraft/world/item/component/TooltipDisplay;Lnet/minecraft/world/entity/player/Player;)V",
             shift = Shift.BEFORE), require = 0)

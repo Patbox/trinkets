@@ -34,7 +34,7 @@ public class TrinketsClient implements ClientModInitializer {
     public void onInitializeClient(ModContainer modContainer) {
         TrinketRenderElements.bootstrap();
 
-        ClientAbstraction.get().registerGlobalReceiverPlay(TrinketsNetwork.SYNC_INVENTORY, (client, player, payload) -> {
+        ClientAbstraction.INSTANCE.registerGlobalReceiverPlay(TrinketsNetwork.SYNC_INVENTORY, (client, player, payload) -> {
             Entity entity = client.level.getEntity(payload.entityId());
             if (entity instanceof LivingEntity livingEntity) {
                 var trinkets = LivingEntityTrinketAttachment.get(livingEntity);
@@ -59,7 +59,7 @@ public class TrinketsClient implements ClientModInitializer {
                 }
             }
         });
-        ClientAbstraction.get().registerGlobalReceiverPlay(TrinketsNetwork.SYNC_SLOTS, (client, player, payload) -> {
+        ClientAbstraction.INSTANCE.registerGlobalReceiverPlay(TrinketsNetwork.SYNC_SLOTS, (client, player, payload) -> {
             EntitySlotLoader.CLIENT.setSlots(payload.map());
 
             if (player != null) {
@@ -75,7 +75,7 @@ public class TrinketsClient implements ClientModInitializer {
             }
 
         });
-        ClientAbstraction.get().registerGlobalReceiverPlay(TrinketsNetwork.BREAK, (client, player, payload) -> {
+        ClientAbstraction.INSTANCE.registerGlobalReceiverPlay(TrinketsNetwork.BREAK, (client, player, payload) -> {
             Entity e = client.level.getEntity(payload.entityId());
             if (e instanceof LivingEntity livingEntity) {
                 var comp = LivingEntityTrinketAttachment.get(livingEntity);

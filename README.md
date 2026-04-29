@@ -19,19 +19,22 @@ as attached to any body part of any entity based on vanilla model system. This i
 mods and resource packs such as Entity Model Features and Fresh Animations.
 
 ### Data Driven at it's core
-Custom trinkets can be defined with json files or custom components on the items. Additionally, [you can easily
+Custom trinkets can be defined with json files via tags or custom components on the items. Additionally, [you can easily
 define the rendering of such trinkets purely with a resource pack](https://github.com/Patbox/trinkets/wiki/Data-Driven-Trinket-rendering-asset-definition).
-Slots and slot groups are also data driven, making it easy to create and modify them.
+Slots and slot groups are also data driven, making it easy to create and modify them, from their size to
+mobs which support them.
+Mods need to declare to use slots before they are accessible to the player, preventing creation of unused ones.
 
 ### Vanilla component and feature support
 Trinkets implement a basic support for vanilla features such as glider component, which allows you to enable items
-using them to be easily turned into a trinket with a simple data pack and a resource pack.
+using them to be easily turned into a trinket with a simple data pack and a resource pack. Additionally, things 
+such as enchantments should also work fully correctly, giving you bit of that needed flexibility.
 
 ### Multiplatform without extra dependencies needed
 Only dependency needed by Trinkets Updated is local mod loader apis (Fabric API on Fabric, nothing extra on NeoForge). 
 This allows to keep the library slim, easy to port and have minimal effects on other unrelated areas.
 Trinkets API's themselves were also made to be used in the same way on both Fabric and NeoForge, eliminating requirement
-of handling integration code on both platforms.
+of handling integration code separately on both platforms.
 
 ## Download
 You can get this mod from [Modrinth](https://modrinth.com/mod/trinkets-updated), 

@@ -7,6 +7,7 @@ import eu.pb4.trinkets.api.callback.TrinketCallback;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.ConversionParams;
@@ -17,6 +18,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
@@ -237,7 +239,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         if (!oldStack.isEmpty()) {
             this.forEach(((slotReference, itemStack) -> {
                 // We check type and index separately, as equals would depend on the inventory being the same as well.
-                if (slotReference != null && !(slotReference.slotType().equals(inSlot.slotType()) && slotReference.index() == inSlot.index()) && !itemStack.isEmpty()) {
+                if (slotReference != null && !(slotReference.slotType().equals(inSlot.slotType()) && slotReference.index() == inSlot.index()) && !itemStack.isEmpty() && slotReference.canApplyEffects(itemStack)) {
                     TrinketUtilities.forEachModifier(entity, itemStack, slotReference, existsElsewhere::put);
                 }
             }));
@@ -263,6 +265,9 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     }
 
     public void addSlotModifiers(final ItemStack newStack, final TrinketSlotAccess inSlot, final AttributeMap attributes) {
+        if (!inSlot.canApplyEffects(newStack)) {
+            return;
+        }
         TrinketUtilities.forEachModifier(entity, newStack, inSlot, (attribute, modifier) -> {
             if (attribute.value() instanceof SlotAttributes.SlotModifyingAttribute x) {
                 this.addModifiers(x.slot, List.of(modifier));
@@ -326,7 +331,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         }
         Multimap<String, AttributeModifier> slotMap = HashMultimap.create();
         this.forEach((ref, stack) -> {
-            if (!stack.isEmpty()) {
+            if (!stack.isEmpty() && ref.canApplyEffects(stack)) {
                 TrinketUtilities.forEachModifier(entity, stack, ref, (entityAttribute, value) -> {
                     if (entityAttribute.isBound() && entityAttribute.value() instanceof SlotAttributes.SlotModifyingAttribute slotEntityAttribute) {
                         slotMap.put(slotEntityAttribute.slot, value);
@@ -448,6 +453,29 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
             for (int i = 0; i < inv.getContainerSize(); i++) {
                 if (!consumer.test(inv.getSlotAccess(i))) {
                     return;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void forEachVisible(BiConsumer<TrinketSlotAccess, ItemStack> consumer) {
+        // This might change in the future!
+        this.forEach(consumer);
+    }
+
+    public void forEachDroppable(BiConsumer<TrinketSlotAccess, ItemStack> consumer) {
+        this.forEachDroppable(consumer, this.entity instanceof ServerPlayer player && player.level().getGameRules().get(GameRules.KEEP_INVENTORY));
+    }
+
+    @Override
+    public void forEachDroppable(BiConsumer<TrinketSlotAccess, ItemStack> consumer, boolean keepInventory) {
+        for (var inv : this.inventory.values()) {
+            for (int i = 0; i < inv.getContainerSize(); i++) {
+                var access = inv.getSlotAccess(i);
+                var stack = inv.getItem(i);
+                if (TrinketsApi.getDropRule(stack, access, this.entity, keepInventory) == TrinketDropRule.DROP) {
+                    consumer.accept(access, stack);
                 }
             }
         }

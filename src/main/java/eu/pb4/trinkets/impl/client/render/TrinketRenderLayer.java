@@ -37,7 +37,7 @@ public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends Ent
         var attached = new ArrayList<TrinketRenderState.PartAttachedRenderer>();
         state.trinkets$setCodeRenderers(items);
         state.trinkets$setPartAttachedRenderers(attached);
-        component.forEach((slotReference, stack) -> {
+        component.forEachVisible((slotReference, stack) -> {
             var renderer = TrinketRendererRegistry.getRenderer(stack.getItem());
             if (renderer.isPresent()) {
                 items.add(new TrinketRenderState.CodeRenderCall(slotReference, stack, renderer.get()));
@@ -93,7 +93,7 @@ public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends Ent
             var component = LivingEntityTrinketAttachment.get(player);
             var isMainHand = player.getMainArm() == HumanoidArm.RIGHT;
 
-            component.forEach((slotReference, stack) -> {
+            component.forEachVisible((slotReference, stack) -> {
                 var renderer = TrinketRendererRegistry.getRenderer(stack.getItem());
                 if (renderer.isPresent()) {
                     renderer.get().submitFirstPersonRightArm(stack, slotReference, model, model.rightArm,
@@ -111,7 +111,7 @@ public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends Ent
             var component = LivingEntityTrinketAttachment.get(player);
             var isMainHand = player.getMainArm() == HumanoidArm.LEFT;
 
-            component.forEach((slotReference, stack) -> {
+            component.forEachVisible((slotReference, stack) -> {
                 var renderer = TrinketRendererRegistry.getRenderer(stack.getItem());
                 if (renderer.isPresent()) {
                     renderer.get().submitFirstPersonLeftArm(stack, slotReference, model, model.leftArm,

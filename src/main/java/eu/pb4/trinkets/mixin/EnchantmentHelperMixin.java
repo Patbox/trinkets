@@ -40,7 +40,7 @@ public abstract class EnchantmentHelperMixin {
         var comp = LivingEntityTrinketAttachment.get(entity);
 
         comp.forEach((ref, stack) -> {
-            if (!stack.isEmpty()) {
+            if (!stack.isEmpty() && ref.canApplyEffects(stack)) {
                 ItemEnchantments enchantments = stack.get(DataComponents.ENCHANTMENTS);
                 if (enchantments != null && !enchantments.isEmpty()) {
                     EnchantedItemInUse context = new EnchantedItemInUse(stack, null, entity, (item) -> {
@@ -64,7 +64,7 @@ public abstract class EnchantmentHelperMixin {
         var comp = LivingEntityTrinketAttachment.get(entity);
 
         comp.forEach((ref, stack) -> {
-            if (stackPredicate.test(stack)) {
+            if (ref.canApplyEffects(stack) && stackPredicate.test(stack)) {
                 ItemEnchantments enchantments = stack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
                 for (Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
                     Holder<Enchantment> registryEntry = entry.getKey();

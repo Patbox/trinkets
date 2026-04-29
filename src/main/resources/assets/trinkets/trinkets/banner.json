@@ -1,4 +1,5 @@
 {
+  "priority": -1000,
   "target": ["#banners"],
   "render": [
     {

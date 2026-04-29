@@ -154,16 +154,16 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 					if (group != null) {
 						var builder = builders.computeIfAbsent(groupName,
 								(k) -> new SlotGroupImpl.Builder(groupName, group.getSlotId(), group.getOrder()));
-						slotNames.forEach(slotName -> {
-							SlotData slotData = group.getSlot(slotName);
+                        for (String slotSubId : slotNames) {
+                            SlotData slotData = group.getSlot(slotSubId);
 
-							if (slotData != null) {
-								builder.addSlot(slotName, slotData.create(groupName, slotName));
-							} else {
-								TrinketsMain.LOGGER.error("[trinkets] Attempted to assign unknown slot " + slotName);
-							}
-						});
-					} else {
+                            if (slotData != null) {
+                                builder.addSlot(slotSubId, slotData.create(groupName + '/' + slotSubId, groupName));
+                            } else {
+                                TrinketsMain.LOGGER.error("[trinkets] Attempted to assign unknown slot " + slotSubId);
+                            }
+                        }
+                    } else {
 						TrinketsMain.LOGGER.error("[trinkets] Attempted to assign slot from unknown group " + groupName);
 					}
 				});

@@ -21,13 +21,14 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.function.Consumer;
 
-public record ClientTrinket(List<Either<Identifier, TagKey<Item>>> target, List<TrinketRenderElement> render) implements ResolvableModel {
+public record ClientTrinket(int priority, List<Either<Identifier, TagKey<Item>>> target, List<TrinketRenderElement> render) implements ResolvableModel {
     public static final Codec<ClientTrinket> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.INT.optionalFieldOf("priority", 0).forGetter(ClientTrinket::priority),
             ExtraCodecs.compactListCodec(Codec.either(Identifier.CODEC, TagKey.hashedCodec(Registries.ITEM))).optionalFieldOf("target", List.of()).forGetter(ClientTrinket::target),
             ExtraCodecs.compactListCodec(TrinketRenderElements.CODEC).fieldOf("render").forGetter(ClientTrinket::render)
     ).apply(instance, ClientTrinket::new));
 
-    public static final ClientTrinket EMPTY = new ClientTrinket(List.of(), List.of());
+    public static final ClientTrinket EMPTY = new ClientTrinket(0, List.of(), List.of());
 
     public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, @Nullable TrinketRenderState state, Consumer<TrinketRenderState.PartAttachedRenderer> consumer) {
         for (var x : render) {

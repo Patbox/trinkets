@@ -44,11 +44,7 @@ public class TestTrinket extends Item implements TrinketRenderer, TrinketCallbac
 
 	@Override
 	public void tick(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
-		if (entity.level() instanceof ServerLevel level) {
-			stack.hurtAndBreak(1, level, entity instanceof ServerPlayer player ? player : null, e -> {
-				TrinketsApi.onTrinketBroken(stack, slot, entity);
-			});
-		}
+		stack.hurtAndBreak(1, entity, slot);
 	}
 
 	@Override

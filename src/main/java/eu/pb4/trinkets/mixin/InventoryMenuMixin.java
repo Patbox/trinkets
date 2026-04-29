@@ -138,7 +138,7 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
                             .thenComparing(x -> x.slotType().getId()))
             ).toList()) {
                 var stacks = slot.getValue();
-                if (stacks.getContainerSize() == 0) {
+                if (stacks.getContainerSize() == 0 || slot.getValue().slotType().isHidden()) {
                     continue;
                 }
                 int slotOffset = 1;

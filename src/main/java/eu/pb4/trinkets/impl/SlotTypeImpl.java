@@ -21,13 +21,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public record SlotTypeImpl(String group, String name, int order, int amount, Optional<Identifier> optionalIcon,
+public record SlotTypeImpl(String id, String group, int order, int amount, Optional<Identifier> optionalIcon,
                            Condition quickMovePredicates, Condition validatorPredicates,
-                           Condition tooltipPredicates, TrinketDropRule dropRule, boolean isVanityOnly) implements SlotType {
+                           Condition tooltipPredicates, TrinketDropRule dropRule,
+                           boolean isVanityOnly,
+                           boolean isHidden) implements SlotType {
 
     public static StreamCodec<FriendlyByteBuf, SlotTypeImpl> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8, SlotTypeImpl::id,
             ByteBufCodecs.STRING_UTF8, SlotTypeImpl::group,
-            ByteBufCodecs.STRING_UTF8, SlotTypeImpl::name,
             ByteBufCodecs.INT, SlotTypeImpl::order,
             ByteBufCodecs.INT, SlotTypeImpl::amount,
             ByteBufCodecs.optional(Identifier.STREAM_CODEC), SlotTypeImpl::optionalIcon,
@@ -36,12 +38,13 @@ public record SlotTypeImpl(String group, String name, int order, int amount, Opt
             Condition.STREAM_CODEC, SlotTypeImpl::tooltipPredicates,
             ByteBufCodecs.idMapper(x -> TrinketDropRule.values()[x], TrinketDropRule::ordinal), SlotTypeImpl::dropRule,
             ByteBufCodecs.BOOL, SlotTypeImpl::isVanityOnly,
+            ByteBufCodecs.BOOL, SlotTypeImpl::isHidden,
             SlotTypeImpl::new
     );
 
     @Override
     public MutableComponent getTranslation() {
-        return Component.translatable("trinkets.slot." + this.group + "." + this.name);
+        return Component.translatable("trinkets.slot." + this.id.replace('/', '.'));
     }
 
     @Override
@@ -49,17 +52,17 @@ public record SlotTypeImpl(String group, String name, int order, int amount, Opt
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SlotType slotType = (SlotType) o;
-        return group.equals(slotType.group()) && name.equals(slotType.name());
+        return this.id.equals(slotType.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(group, name);
+        return Objects.hash(this.id);
     }
 
     @Override
     public String getId() {
-        return this.group + "/" + this.name;
+        return this.id;
     }
 
     @Override
@@ -80,6 +83,11 @@ public record SlotTypeImpl(String group, String name, int order, int amount, Opt
     @Override
     public boolean tooltipCheck(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
         return this.tooltipPredicates.test(stack, slotRef, entity);
+    }
+
+    @Override
+    public String name() {
+        return this.id.substring(this.group.length() + 1);
     }
 
     public interface Condition {

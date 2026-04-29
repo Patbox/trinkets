@@ -46,7 +46,8 @@ public class TrinketUtilities {
         }
     }
 
-    public static void forEachModifier(LivingEntity entity, ItemStack stack, TrinketSlotAccess slot, final BiConsumer<Holder<Attribute>, AttributeModifier> consumer) {
+    public static void forEachModifier(LivingEntity entity, ItemStack stack, TrinketSlotAccess slot,
+                                       final BiConsumer<Holder<Attribute>, AttributeModifier> consumer) {
         var modifiers = stack.getOrDefault(TrinketDataComponents.ATTRIBUTE_MODIFIERS, TrinketsAttributeModifiersComponent.DEFAULT);
         modifiers.forEach(slot, consumer);
 
@@ -59,7 +60,8 @@ public class TrinketUtilities {
         }));
     }
 
-    public static void forEachModifier(LivingEntity entity, ItemStack stack, TrinketSlotAccess slot, final TriConsumer<Holder<Attribute>, AttributeModifier, ItemAttributeModifiers.Display> consumer) {
+    public static void forEachModifier(LivingEntity entity, ItemStack stack, TrinketSlotAccess slot,
+                                       final TriConsumer<Holder<Attribute>, AttributeModifier, ItemAttributeModifiers.Display> consumer) {
         var modifiers = stack.getOrDefault(TrinketDataComponents.ATTRIBUTE_MODIFIERS, TrinketsAttributeModifiersComponent.DEFAULT);
         modifiers.forEach(slot, consumer);
 

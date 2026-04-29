@@ -1,5 +1,6 @@
 {
-  "target": ["minecraft:elytra", "c:elytra"],
+  "priority": -1000,
+  "target": ["minecraft:elytra", "#c:elytra"],
   "render": [
     {
       "type": "wings"

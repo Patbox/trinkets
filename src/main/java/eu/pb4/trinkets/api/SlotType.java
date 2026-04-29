@@ -13,7 +13,6 @@ public interface SlotType {
     MutableComponent getTranslation();
     String getId();
     String group();
-    String name();
     int order();
     int amount();
     Identifier icon();
@@ -22,4 +21,8 @@ public interface SlotType {
     boolean tooltipCheck(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity);
     TrinketDropRule dropRule();
     boolean isVanityOnly();
+    boolean isHidden();
+
+    @Deprecated
+    String name();
 }

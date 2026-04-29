@@ -20,6 +20,7 @@ public final class TrinketSlotTypeBuilderImpl implements TrinketSlotTypeBuilder 
     private ConditionBuilderImpl tooltip = null;
     private TrinketDropRule dropRule = null;
     private Boolean isVanityOnly = null;
+    private Boolean isHidden = null;
 
     @Override
     public TrinketSlotTypeBuilder replace(boolean replace) {
@@ -54,6 +55,12 @@ public final class TrinketSlotTypeBuilderImpl implements TrinketSlotTypeBuilder 
     @Override
     public TrinketSlotTypeBuilder isVanityOnly(boolean value) {
         this.isVanityOnly = value;
+        return this;
+    }
+
+    @Override
+    public TrinketSlotTypeBuilder isHidden(boolean value) {
+        this.isHidden = value;
         return this;
     }
 
@@ -105,6 +112,9 @@ public final class TrinketSlotTypeBuilderImpl implements TrinketSlotTypeBuilder 
         }
         if (this.isVanityOnly != null) {
             object.addProperty("is_vanity", this.isVanityOnly);
+        }
+        if (this.isHidden != null) {
+            object.addProperty("is_hidden", this.isHidden);
         }
 
         this.writeCondition(object, "quick_move_predicates", this.quickMove);

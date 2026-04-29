@@ -52,12 +52,10 @@ public class TrinketsApi {
         if (dropRule == TrinketDropRule.DEFAULT) {
             if (keepInventory && entity.getType() == EntityType.PLAYER) {
                 dropRule = TrinketDropRule.KEEP;
+            } else if (EnchantmentHelper.has(stack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
+                dropRule = TrinketDropRule.DESTROY;
             } else {
-                if (EnchantmentHelper.has(stack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
-                    dropRule = TrinketDropRule.DESTROY;
-                } else {
-                    dropRule = TrinketDropRule.DROP;
-                }
+                dropRule = TrinketDropRule.DROP;
             }
         }
 
@@ -81,7 +79,7 @@ public class TrinketsApi {
     /**
      * A simple to use, trinkets-aware implementation of {@link ItemStack#hurtAndBreak}
      */
-    public void hurtAndBreakItemStack(ItemStack itemStack, int amount, LivingEntity owner, TrinketSlotAccess access) {
+    public static void hurtAndBreakItemStack(ItemStack itemStack, int amount, LivingEntity owner, TrinketSlotAccess access) {
         if (owner.level() instanceof ServerLevel serverLevel) {
             itemStack.hurtAndBreak(amount, serverLevel, owner instanceof ServerPlayer player ? player : null, (brokenItem) -> onTrinketBroken(itemStack, access, owner));
         }
@@ -146,10 +144,6 @@ public class TrinketsApi {
         TrinketsMain.PREDICATES.put(id, predicate);
     }
 
-    public interface TrinketPredicate {
-        boolean test(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity);
-    }
-
     /**
      * Modifies the EnchantmentDefinition to include trinkets slot support.
      */
@@ -159,5 +153,9 @@ public class TrinketsApi {
 
         ((TrinketSlotTarget) (Object) def).trinkets$slots(slots);
         return def;
+    }
+
+    public interface TrinketPredicate {
+        boolean test(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity);
     }
 }

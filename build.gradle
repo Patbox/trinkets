@@ -58,7 +58,7 @@ sourceSets {
 }
 
 loom {
-	accessWidenerPath = file("src/main/resources/trinkets.accesswidener")
+	accessWidenerPath = file("src/main/resources/trinkets.classtweaker")
 	//uncompressNestedJars = true
 
 	runs {

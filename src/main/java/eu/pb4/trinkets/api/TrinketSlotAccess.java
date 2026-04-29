@@ -45,4 +45,8 @@ public record TrinketSlotAccess(TrinketInventory inventory, int index) implement
     public boolean canApplyEffects() {
         return this.inventory.getAttachment().canApplyEffects(this.get(), this);
     }
+
+    public boolean canApplyEffects(ItemStack otherStack) {
+        return this.inventory.getAttachment().canApplyEffects(otherStack, this);
+    }
 }
