@@ -34,6 +34,15 @@ Already done:
   - It will however change the color from blue to dark gray.
 - Data Driven Trinket Rendering in addition to improved compatibility for code-driven one:
   - https://github.com/Patbox/trinkets/wiki/Data-Driven-Trinket-rendering-asset-definition.
+- More configurability for the library users / players
+- Support for rendering trinkets in first person hand
+- Improved mod compatibility
+- Builtin datagen utilities
+- Additional events allowing more control over trinket
+- Non-active/Visual only trinkets/slots types
+- Hidded slot type
+- Support death protection component out of the box (datapack required to allow items to be but in slot)
+- And more... see changelogs for everything!
 
 Planned:
 - General implementation cleanup
