@@ -77,8 +77,8 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
         slotToGroup.clear();
         while (trinketSlotStart < trinketSlotEnd) {
             slots.remove(trinketSlotStart);
-            ((AbstractedContainerMenuAccessor) (this)).getLastSlots().remove(trinketSlotStart);
-            ((AbstractedContainerMenuAccessor) (this)).getRemoteSlots().remove(trinketSlotStart);
+            ((AbstractedContainerMenuAccessor) (this)).trinkets$getLastSlots().remove(trinketSlotStart);
+            ((AbstractedContainerMenuAccessor) (this)).trinkets$getRemoteSlots().remove(trinketSlotStart);
             trinketSlotEnd--;
         }
 

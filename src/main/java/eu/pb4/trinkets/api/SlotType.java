@@ -6,8 +6,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.Set;
-
 @ApiStatus.NonExtendable
 public interface SlotType {
     MutableComponent getTranslation();
@@ -22,6 +20,8 @@ public interface SlotType {
     TrinketDropRule dropRule();
     boolean isVanityOnly();
     boolean isHidden();
+    int maxStackSize(ItemStack stack);
+    int maxStackSize();
 
     @Deprecated
     String name();

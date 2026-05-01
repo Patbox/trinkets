@@ -10,6 +10,8 @@ import eu.pb4.trinkets.impl.client.CreativeTrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
 import eu.pb4.trinkets.impl.TrinketsConfig;
+import eu.pb4.trinkets.mixin.client.accessor.CreativeModeInventoryScreenAccessor;
+import eu.pb4.trinkets.mixin.client.accessor.ItemPickerMenuAccessor;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -59,6 +61,16 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 	@Shadow
 	protected abstract boolean isHovering(Slot slot, double xm, double ym);
 
+	@Shadow
+	@Nullable
+	protected abstract Slot getHoveredSlot(double x, double y);
+
+	@Shadow
+	protected int leftPos;
+
+	@Shadow
+	protected int topPos;
+
 	@Inject(at = @At("HEAD"), method = "removed")
 	private void removed(CallbackInfo info) {
 		if ((Object)this instanceof InventoryScreen) {
@@ -88,7 +100,7 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 				}
 			} else {
 				if (slot instanceof SlotWrapper cs) {
-					if (!TrinketsClient.activeGroup.isAttachedToSlot(((CreativeSlotAccessor) cs).getSlot())) {
+					if (!TrinketsClient.activeGroup.isAttachedToSlot(((CreativeSlotAccessor) cs).trinkets$target())) {
 						info.setReturnValue(false);
 					}
 				} else if (!TrinketsClient.activeGroup.isAttachedToSlot(slot)) {
@@ -140,7 +152,7 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 			return;
 		}
 
-		if ((this.menu instanceof ItemPickerMenuAccessor accessor ? accessor.getInventoryMenu() : this.menu) instanceof TrinketInventoryMenu trinketMenu
+		if ((this.menu instanceof ItemPickerMenuAccessor accessor ? accessor.trinkets$getInventoryMenu() : this.menu) instanceof TrinketInventoryMenu trinketMenu
 				&& TrinketsConfig.instance.showSlotsIndicator) {
 			for (int i = 0; i < this.menu.slots.size(); i++) {
 				Slot slot = this.menu.slots.get(i);
@@ -159,6 +171,14 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 					}
 				}
 			}
+		}
+	}
+
+	@Inject(method = "extractTooltip", at = @At("HEAD"), require = 0)
+	private void extractSlotNameTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY, CallbackInfo ci) {
+		var slot = this.getHoveredSlot(mouseX, mouseY);
+		if (TrinketsConfig.instance.showSlotTooltip && slot instanceof TrinketSlot trinketSlot && slot.isActive() && slot.getItem().isEmpty() && trinketSlot.isTrinketFocused() && this.menu.getCarried().isEmpty()) {
+			TrinketScreenManager.setupSlotTooltip(graphics, (AbstractContainerScreen) (Object) this, this.leftPos, this.topPos, slot, trinketSlot, mouseX, mouseY);
 		}
 	}
 }

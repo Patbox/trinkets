@@ -5,12 +5,12 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import eu.pb4.trinkets.api.SlotAttributes;
 import eu.pb4.trinkets.api.SlotType;
-import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
 import eu.pb4.trinkets.api.ext.TrinketsItemStackExtension;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.TrinketSlot;
 import eu.pb4.trinkets.impl.TrinketUtilities;
+import eu.pb4.trinkets.impl.TrinketsConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
@@ -60,7 +60,7 @@ public abstract class ItemStackMixin implements TrinketsItemStackExtension {
 
     @Unique
     private void getTooltip(TooltipDisplay displayComponent, Player player, Consumer<Component> textConsumer) {
-        if (player == null) return;
+        if (player == null || !TrinketsConfig.instance.showItemTooltip) return;
 
         var comp = LivingEntityTrinketAttachment.get(player);
 

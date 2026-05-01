@@ -1,4 +1,4 @@
-package eu.pb4.trinkets.mixin.client;
+package eu.pb4.trinkets.mixin.client.accessor;
 
 import net.minecraft.world.item.CreativeModeTab;
 import org.spongepowered.asm.mixin.gen.Accessor;

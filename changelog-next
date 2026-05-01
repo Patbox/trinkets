@@ -15,6 +15,10 @@
   - Allows easily create / configure slot types and entities with data generation.
   - See local loader's api for reference.
 - You can now set the asset_id field in Trinkets Equipment component.
+- Added an option to toggle showing slot names as a tooltip on hover (it's disabled by by default).
+- Added an option to toggle Trinket item tooltip (it's enabled by default).
+- Max default stack size of trinkets slots is now set to 1 (like equipment slots):
+  - This can be changed by setting the `max_stack_size` property in slot type definition.
 - Trinkets are counted within player Inventory contains checks and in case of /clear command.
 - Data driven trinket rendering is now exclusive with code driven one.
 - Totems of Undying (and other items with death protection component) will now work in Trinkets slots (requires a datapack to enable it).
@@ -30,3 +34,4 @@
   - Definition will override the ones with lower or equal priority rather than just based on load order.
   - Default models (provided with Trinkets itself) all have priority set to -1000
 - API for getting only "renderable" and droppable item stacks from trinket attachment. These apis are primarily intended for improving mod compatibility.
+- Fixed compatibility with Controlify mod.

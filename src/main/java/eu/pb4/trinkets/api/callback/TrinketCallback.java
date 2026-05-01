@@ -166,7 +166,7 @@ public interface TrinketCallback {
      * @param entity The entity that is breaking the stack
      */
     default void onBreak(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
-        ((LivingEntityAccessor) entity).invokePlayEquipmentBreakEffects(stack);
+        ((LivingEntityAccessor) entity).trinkets$BreakItem(stack);
     }
 
     default TrinketDropRule getDropRule(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {

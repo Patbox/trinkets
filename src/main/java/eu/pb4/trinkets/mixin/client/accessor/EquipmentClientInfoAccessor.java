@@ -1,4 +1,4 @@
-package eu.pb4.trinkets.mixin.client;
+package eu.pb4.trinkets.mixin.client.accessor;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.client.resources.model.EquipmentClientInfo;

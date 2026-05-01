@@ -17,9 +17,18 @@
 	"trinkets.slot.offhand.glove": "Glove",
 	"trinkets.slot.hand.ring": "Ring",
 	"trinkets.slot.offhand.ring": "Ring",
+
+	"screen.trinkets.config": "Trinkets Updated Settings",
 	"config.trinkets.render_first_person_hand": "First Person Trinkets",
+	"config.trinkets.render_first_person_hand.desc": "Toggles visibility of trinkets in first person hand.",
 	"config.trinkets.show_slots_indicator": "Show Slots Indicator",
-	"screen.trinkets.config": "Trinkets Updated Configuration",
-	"config.trinkets.sidebar_slots": "Sidebar Trinket Slots",
-	"config.trinkets.sidebar_heigth": "Sidebar Height"
+	"config.trinkets.show_slots_indicator.desc": "Toggles visibility of the indicator for slots that aren't currently shown and require you to hover over other slots.",
+	"config.trinkets.show_slot_tooltip": "Show Slot Name",
+	"config.trinkets.show_slot_tooltip.desc": "Toggles visibility of a tooltip when hovering over trinket slots.",
+	"config.trinkets.sidebar_slots": "Sidebar Trinkets Slots",
+	"config.trinkets.sidebar_slots.desc": "Forces all trinkets slots into being placed in a sidebar, rather than being attached to equipment slots.",
+	"config.trinkets.sidebar_heigth": "Sidebar Max Height",
+	"config.trinkets.sidebar_heigth.desc": "Controls maximum height sidebar-placed slots can take before moving to a next column.",
+	"config.trinkets.show_item_tooltip": "Show Item Tooltip",
+	"config.trinkets.show_item_tooltip.desc": "Toggles visibility of a tooltip indicating slot an item can be put in."
 }

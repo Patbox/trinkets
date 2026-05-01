@@ -1,4 +1,4 @@
-package eu.pb4.trinkets.mixin.client;
+package eu.pb4.trinkets.mixin.client.accessor;
 
 import net.minecraft.client.model.geom.ModelPart;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -8,9 +8,9 @@ import java.util.Map;
 
 @org.spongepowered.asm.mixin.Mixin(net.minecraft.client.model.geom.ModelPart.class)
 public interface ModelPartAccessor {
-    @Accessor
-    List<ModelPart.Cube> getCubes();
+    @Accessor("cubes")
+    List<ModelPart.Cube> trinkets$getCubes();
 
-    @Accessor
-    Map<String, ModelPart> getChildren();
+    @Accessor("children")
+    Map<String, ModelPart> trinkets$getChildren();
 }

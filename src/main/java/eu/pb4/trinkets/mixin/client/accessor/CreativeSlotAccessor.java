@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  */
 @Mixin(SlotWrapper.class)
 public interface CreativeSlotAccessor {
-	
-	@Accessor("target")
-	public Slot getSlot();
+
+    @Accessor("target")
+    Slot trinkets$target();
 }

@@ -12,14 +12,19 @@ public class TrinketsConfig {
     private static final Path CONFIG_PATH = YumiMods.get().getConfigDirectory().resolve("trinkets.json");
     public static TrinketsConfig instance = new TrinketsConfig();
 
-    @SerializedName("show_slot_indicator")
-    public boolean showSlotsIndicator = false;
+
     @SerializedName("render_trinkers_in_first_person")
     public boolean renderFirstPersonHand = false;
     @SerializedName("sidebar_trinkets_slots")
     public boolean sidebarTrinketsSlots = false;
     @SerializedName("sidebar_height")
     public int sidebarHeight = 4;
+    @SerializedName("show_slot_indicator")
+    public boolean showSlotsIndicator = false;
+    @SerializedName("show_slot_name_tooltip")
+    public boolean showSlotTooltip = false;
+    @SerializedName("show_item_tooltip")
+    public boolean showItemTooltip = true;
 
     public static void load() {
         try {

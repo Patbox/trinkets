@@ -13,6 +13,7 @@ public interface TrinketSlotTypeBuilder {
     TrinketSlotTypeBuilder order(int order);
 
     TrinketSlotTypeBuilder amount(int defaultAmount);
+    TrinketSlotTypeBuilder maxStackSize(int maxStackSize);
 
     TrinketSlotTypeBuilder icon(Identifier icon);
 

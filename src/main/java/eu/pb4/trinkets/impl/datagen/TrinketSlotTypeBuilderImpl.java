@@ -14,6 +14,7 @@ public final class TrinketSlotTypeBuilderImpl implements TrinketSlotTypeBuilder 
     private Boolean replace = null;
     private Integer order = null;
     private Integer amount = null;
+    private Integer maxStackSize = null;
     private Identifier icon = null;
     private ConditionBuilderImpl quickMove = null;
     private ConditionBuilderImpl validator = null;
@@ -37,6 +38,12 @@ public final class TrinketSlotTypeBuilderImpl implements TrinketSlotTypeBuilder 
     @Override
     public TrinketSlotTypeBuilder amount(int defaultAmount) {
         this.amount = defaultAmount;
+        return this;
+    }
+
+    @Override
+    public TrinketSlotTypeBuilder maxStackSize(int maxStackSize) {
+        this.maxStackSize = maxStackSize;
         return this;
     }
 
@@ -103,6 +110,9 @@ public final class TrinketSlotTypeBuilderImpl implements TrinketSlotTypeBuilder 
         }
         if (this.amount != null) {
             object.addProperty("amount", this.amount);
+        }
+        if (this.maxStackSize != null) {
+            object.addProperty("max_stack_size", this.maxStackSize);
         }
         if (this.icon != null) {
             object.addProperty("icon", this.icon.toString());

@@ -8,6 +8,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.SlotWrapper;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -45,5 +46,15 @@ public class CreativeTrinketSlot extends SlotWrapper implements TrinketSlot {
 	@Override
 	public @Nullable Identifier getNoItemIcon() {
 		return original.getNoItemIcon();
+	}
+
+	@Override
+	public int getMaxStackSize(ItemStack itemStack) {
+		return this.original.getMaxStackSize(itemStack);
+	}
+
+	@Override
+	public int getMaxStackSize() {
+		return this.original.getMaxStackSize();
 	}
 }

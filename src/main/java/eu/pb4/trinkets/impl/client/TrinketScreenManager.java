@@ -430,4 +430,17 @@ public class TrinketScreenManager {
 		}
 		return currentScreen.get();
 	}
+
+	public static void setupSlotTooltip(GuiGraphicsExtractor graphics, AbstractContainerScreen menu, int leftPos, int topPos, Slot slot, TrinketSlot trinketSlot, int mouseX, int mouseY) {
+		var mc = Minecraft.getInstance();
+
+		var text = trinketSlot.getType().getTranslation();
+		//var slotX = slot.x + leftPos - mc.font.width(text) / 2 - 4;
+		//var slotY = slot.y + topPos - 2;
+		var slotX = mouseX;
+		var slotY = mouseY;
+
+
+		graphics.setTooltipForNextFrame(text, slotX, slotY);
+	}
 }

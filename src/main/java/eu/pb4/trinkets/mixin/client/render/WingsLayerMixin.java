@@ -4,7 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import eu.pb4.trinkets.impl.client.render.TrinketRenderState;
 import eu.pb4.trinkets.impl.client.render.ClientRenderPasshack;
-import eu.pb4.trinkets.mixin.client.EquipmentLayerRendererAccessor;
+import eu.pb4.trinkets.mixin.client.accessor.EquipmentLayerRendererAccessor;
 import net.minecraft.client.renderer.entity.layers.EquipmentLayerRenderer;
 import net.minecraft.client.renderer.entity.layers.WingsLayer;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
@@ -42,7 +42,7 @@ public class WingsLayerMixin {
 
             var equippable = original.get(DataComponents.EQUIPPABLE);
             if (equippable == null || equippable.assetId().isEmpty()
-                    || ((EquipmentLayerRendererAccessor) this.equipmentRenderer).getEquipmentAssets().get(equippable.assetId().get())
+                    || ((EquipmentLayerRendererAccessor) this.equipmentRenderer).trinkets$getEquipmentAssets().get(equippable.assetId().get())
                     .getLayers(EquipmentClientInfo.LayerType.WINGS).isEmpty()) {
                 return override.stack();
             }

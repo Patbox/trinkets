@@ -115,6 +115,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 
 		private int order = 0;
 		private int amount = -1;
+		private int maxStackSize = 1;
 		private String icon = "";
 		private SlotTypeImpl.Condition quickMovePredicates = null;
 		private SlotTypeImpl.Condition validatorPredicates = null;
@@ -143,8 +144,9 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 			if (amount == -1) {
 				amount = 1;
 			}
+
 			return new SlotTypeImpl(id, group, order, amount, Optional.ofNullable(finalIcon), finalQuickMovePredicates, finalValidatorPredicates,
-				finalTooltipPredicates, TrinketDropRule.valueOf(dropRule), isVanityOnly, isHidden);
+				finalTooltipPredicates, TrinketDropRule.valueOf(dropRule), isVanityOnly, isHidden, maxStackSize);
 		}
 
 		void read(JsonObject jsonObject) {
@@ -154,6 +156,9 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 
 			int jsonAmount = GsonHelper.getAsInt(jsonObject, "amount", amount);
 			amount = replace ? jsonAmount : Math.max(jsonAmount, amount);
+
+			int jsonStackSize = GsonHelper.getAsInt(jsonObject, "max_stack_size", maxStackSize);
+			maxStackSize = replace ? jsonStackSize : Math.max(jsonStackSize, maxStackSize);
 
 			icon = GsonHelper.getAsString(jsonObject, "icon", icon);
 

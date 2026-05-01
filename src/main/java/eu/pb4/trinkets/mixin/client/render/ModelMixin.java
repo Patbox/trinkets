@@ -1,9 +1,8 @@
 package eu.pb4.trinkets.mixin.client.render;
 
-import eu.pb4.trinkets.impl.client.render.ModelAttachementImpl;
 import eu.pb4.trinkets.impl.client.render.ModelExt;
 import eu.pb4.trinkets.impl.client.render.ModelPartBounds;
-import eu.pb4.trinkets.mixin.client.ModelPartAccessor;
+import eu.pb4.trinkets.mixin.client.accessor.ModelPartAccessor;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import org.spongepowered.asm.mixin.Final;
@@ -37,7 +36,7 @@ public abstract class ModelMixin implements ModelExt {
             return res;
         }
 
-        for (var x : ((ModelPartAccessor) (Object) this.root).getChildren().entrySet()) {
+        for (var x : ((ModelPartAccessor) (Object) this.root).trinkets$getChildren().entrySet()) {
             var t = findAndDefineRecursive(List.of(), name, x.getKey(), x.getValue());
             if (t != null) {
                 return t;
@@ -67,11 +66,11 @@ public abstract class ModelMixin implements ModelExt {
             return elements;
         }
 
-        if (((ModelPartAccessor) (Object) value).getChildren().isEmpty()) {
+        if (((ModelPartAccessor) (Object) value).trinkets$getChildren().isEmpty()) {
             return null;
         }
 
-        for (var x : ((ModelPartAccessor) (Object) value).getChildren().entrySet()) {
+        for (var x : ((ModelPartAccessor) (Object) value).trinkets$getChildren().entrySet()) {
             var t = findAndDefineRecursive(elements, searched, x.getKey(), x.getValue());
             if (t != null) {
                 return t;
@@ -93,12 +92,12 @@ public abstract class ModelMixin implements ModelExt {
             part = part.getChild(x);
         }
 
-        List<ModelPart.Cube> cubes = ((ModelPartAccessor) (Object) part).getCubes();
+        List<ModelPart.Cube> cubes = ((ModelPartAccessor) (Object) part).trinkets$getCubes();
 
         if (cubes.isEmpty()) {
             if (part.hasChild("EMF_" + s)) {
                 part = part.getChild("EMF_" + s);
-                cubes = ((ModelPartAccessor) (Object) part).getCubes();
+                cubes = ((ModelPartAccessor) (Object) part).trinkets$getCubes();
 
                 if (cubes.isEmpty()) {
                     cubes = new ArrayList<>();
@@ -146,8 +145,8 @@ public abstract class ModelMixin implements ModelExt {
 
     @Unique
     private void recursiveCubeExtraction(ModelPart part, Consumer<ModelPart.Cube> consumer) {
-        ((ModelPartAccessor) (Object) part).getCubes().forEach(consumer);
-        for (var x : ((ModelPartAccessor) (Object) part).getChildren().values()) {
+        ((ModelPartAccessor) (Object) part).trinkets$getCubes().forEach(consumer);
+        for (var x : ((ModelPartAccessor) (Object) part).trinkets$getChildren().values()) {
             recursiveCubeExtraction(x, consumer);
         }
     }

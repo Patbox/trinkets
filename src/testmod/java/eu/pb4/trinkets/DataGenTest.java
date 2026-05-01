@@ -17,7 +17,9 @@ public class DataGenTest implements DataGeneratorEntrypoint {
             @Override
             protected void generate(TrinketsOutput output) {
                 output.defineSlotGroup("datagen", 5);
-                output.slotType("datagen/test_1").amount(1)
+                output.slotType("datagen/test_1")
+                        .amount(1)
+                        .maxStackSize(99)
                         .icon(Identifier.withDefaultNamespace("container/slot/hoe"))
                         .isVanityOnly(true)
                         .order(16)
@@ -25,7 +27,9 @@ public class DataGenTest implements DataGeneratorEntrypoint {
                         .tooltipCondition(x -> x.andAllOf(BuiltInTrinketConditions.NONE))
                         .dropRule(TrinketDropRule.KEEP)
                 ;
-                output.slotType("datagen/test_2").amount(1)
+                output.slotType("datagen/test_2")
+                        .amount(1)
+                        .maxStackSize(99)
                         .icon(Identifier.withDefaultNamespace("container/slot/pickaxe"))
                         .order(0)
                         .validatorCondition(x -> x.orAnyOf(BuiltInTrinketConditions.ALL))

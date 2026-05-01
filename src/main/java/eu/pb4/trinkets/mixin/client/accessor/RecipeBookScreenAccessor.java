@@ -7,9 +7,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(AbstractRecipeBookScreen.class)
 public interface RecipeBookScreenAccessor {
-
-	@Accessor
-	RecipeBookComponent<?> getRecipeBookComponent();
-	@Accessor
-	boolean getWidthTooNarrow();
+	@Accessor("recipeBookComponent")
+	RecipeBookComponent<?> trinkets$getRecipeBookComponent();
+	@Accessor("widthTooNarrow")
+	boolean trinkets$getWidthTooNarrow();
 }

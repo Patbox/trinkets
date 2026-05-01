@@ -163,6 +163,9 @@ public class TrinketUtilities {
         for (var slot : slots) {
             var split = slot.split("/", 2);
             if (split.length < 2) {
+                if (split[0].equals("any") && !ent.isEmpty()) {
+                    return true;
+                }
                 continue;
             }
 

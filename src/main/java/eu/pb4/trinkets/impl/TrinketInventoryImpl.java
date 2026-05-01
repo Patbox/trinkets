@@ -164,6 +164,16 @@ public final class TrinketInventoryImpl implements TrinketInventory {
         return this.isValid;
     }
 
+    @Override
+    public int getMaxStackSize() {
+        return this.slotType.maxStackSize();
+    }
+
+    @Override
+    public int getMaxStackSize(ItemStack itemStack) {
+        return this.slotType.maxStackSize(itemStack);
+    }
+
     public Map<Identifier, AttributeModifier> getModifiers() {
         return this.modifiers;
     }

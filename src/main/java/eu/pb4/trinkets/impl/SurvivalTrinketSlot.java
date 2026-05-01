@@ -48,7 +48,7 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 
 	@Override
 	public boolean mayPlace(ItemStack stack) {
-		return TrinketSlot.canInsert(stack, this.ref, trinketInventory.getAttachment().getEntity());
+		return TrinketSlot.canInsert(stack, this.ref, this.owner);
 	}
 
 	@Override
@@ -60,12 +60,12 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 	public boolean isActive() {
 		if (alwaysVisible) {
 			if (x < 0) {
-				Level world = trinketInventory.getAttachment().getEntity().level();
+				Level world = this.owner.level();
 				if (TrinketsMain.IS_CLIENT && world.isClientSide()) {
 					Minecraft client = Minecraft.getInstance();
 					Screen s = client.screen;
 					if (s instanceof InventoryScreen screen) {
-						if (((RecipeBookScreenAccessor) screen).getRecipeBookComponent().isVisible()) {
+						if (((RecipeBookScreenAccessor) screen).trinkets$getRecipeBookComponent().isVisible()) {
 							return false;
 						}
 					}

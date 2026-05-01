@@ -25,13 +25,14 @@ public record SlotTypeImpl(String id, String group, int order, int amount, Optio
                            Condition quickMovePredicates, Condition validatorPredicates,
                            Condition tooltipPredicates, TrinketDropRule dropRule,
                            boolean isVanityOnly,
-                           boolean isHidden) implements SlotType {
+                           boolean isHidden,
+                           int maxStackSize) implements SlotType {
 
     public static StreamCodec<FriendlyByteBuf, SlotTypeImpl> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.STRING_UTF8, SlotTypeImpl::id,
             ByteBufCodecs.STRING_UTF8, SlotTypeImpl::group,
-            ByteBufCodecs.INT, SlotTypeImpl::order,
-            ByteBufCodecs.INT, SlotTypeImpl::amount,
+            ByteBufCodecs.VAR_INT, SlotTypeImpl::order,
+            ByteBufCodecs.VAR_INT, SlotTypeImpl::amount,
             ByteBufCodecs.optional(Identifier.STREAM_CODEC), SlotTypeImpl::optionalIcon,
             Condition.STREAM_CODEC, SlotTypeImpl::quickMovePredicates,
             Condition.STREAM_CODEC, SlotTypeImpl::validatorPredicates,
@@ -39,6 +40,7 @@ public record SlotTypeImpl(String id, String group, int order, int amount, Optio
             ByteBufCodecs.idMapper(x -> TrinketDropRule.values()[x], TrinketDropRule::ordinal), SlotTypeImpl::dropRule,
             ByteBufCodecs.BOOL, SlotTypeImpl::isVanityOnly,
             ByteBufCodecs.BOOL, SlotTypeImpl::isHidden,
+            ByteBufCodecs.VAR_INT, SlotTypeImpl::maxStackSize,
             SlotTypeImpl::new
     );
 
@@ -83,6 +85,11 @@ public record SlotTypeImpl(String id, String group, int order, int amount, Optio
     @Override
     public boolean tooltipCheck(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
         return this.tooltipPredicates.test(stack, slotRef, entity);
+    }
+
+    @Override
+    public int maxStackSize(ItemStack stack) {
+        return Math.min(stack.getMaxStackSize(), this.maxStackSize);
     }
 
     @Override

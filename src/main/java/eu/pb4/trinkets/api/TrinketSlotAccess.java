@@ -34,6 +34,10 @@ public record TrinketSlotAccess(TrinketInventory inventory, int index) implement
         return false;
     }
 
+    public int maxStackSize(ItemStack stack) {
+        return this.inventory.getMaxStackSize(stack);
+    }
+
     public TrinketSlotReference reference() {
         return new TrinketSlotReference(this.slotType(), index);
     }

@@ -119,7 +119,7 @@ public class TrinketsMain implements ModInitializer {
             TagKey<Item> tag = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("trinkets", slot.getId()));
             var component = stack.get(TrinketDataComponents.EQUIPMENT);
 
-            return stack.is(tag) || stack.is(DefaultTrinketSlotTags.ALL) || component != null && component.allowedSlots().contains(slot.getId());
+            return stack.is(tag) || stack.is(DefaultTrinketSlotTags.ALL) || component != null && (component.allowedSlots().contains(slot.getId()) || component.allowedSlots().contains("any"));
         });
 
         TrinketsApi.registerTrinketPredicate(BuiltInTrinketConditions.TAG, (stack, ref, entity) -> {
@@ -133,7 +133,7 @@ public class TrinketsMain implements ModInitializer {
             SlotType slot = ref.inventory().slotType();
             var component = stack.get(TrinketDataComponents.EQUIPMENT);
 
-            return component != null && component.allowedSlots().contains(slot.getId());
+            return component != null && (component.allowedSlots().contains(slot.getId()) || component.allowedSlots().contains("any"));
         });
 
         TrinketsApi.registerTrinketPredicate(BuiltInTrinketConditions.ATTRIBUTES, (stack, ref, entity) -> {
