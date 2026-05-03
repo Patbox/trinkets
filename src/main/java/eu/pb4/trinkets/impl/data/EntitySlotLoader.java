@@ -222,10 +222,12 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 			((TrinketInventoryMenu) player.inventoryMenu).trinkets$updateTrinketSlots(true);
 			var trinkets = TrinketsApi.getAttachment(player);
 			Map<String, Integer> tag = new HashMap<>();
+			Map<String, BitSet> vis = new HashMap<>();
 			((LivingEntityTrinketAttachment) trinkets).inventory.forEach((key, v) -> {
 				tag.put(key, v.getContainerSize());
+				vis.put(key, v.copyHiddenSlots());
 			});
-			player.connection.send(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(player.getId(), Map.of(), tag)));
+			player.connection.send(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(player.getId(), Map.of(), tag, vis)));
 			player.connection.send(packet);
 		}
 	}

@@ -1,6 +1,7 @@
 package eu.pb4.trinkets.impl;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.logging.LogUtils;
 import dev.yumi.mc.core.api.ModContainer;
@@ -24,7 +25,9 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
@@ -103,6 +106,13 @@ public class TrinketsMain implements ModInitializer {
                                                         )
                                                 )
                                         )
+                                        .then(literal("visiblity")
+                                                .then(argument("offset", integer(0))
+                                                        .then(argument("show", BoolArgumentType.bool())
+                                                                .executes(TrinketsMain::setTrinketSlotVisibility)
+                                                        )
+                                                )
+                                        )
                                 )
                         )
 
@@ -155,6 +165,32 @@ public class TrinketsMain implements ModInitializer {
                 var access = comp.getSlotAccess(slot, offset);
                 if (access != null && access.set(stack.createItemStack(amount))) {
                     return Command.SINGLE_SUCCESS;
+                } else {
+                    context.getSource().sendFailure(Component.literal("Slot '" + slot + "' at " + offset + " offset does not exist!"));
+                }
+            } else {
+                context.getSource().sendFailure(Component.literal("Not a living entity!"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    private static int setTrinketSlotVisibility(CommandContext<CommandSourceStack> context) {
+        try {
+            String slot = IdentifierArgument.getId(context, "slot").getPath();
+            int offset = context.getArgument("offset", Integer.class);
+            var show = context.getArgument("show", Boolean.class);
+            if (EntityArgument.getEntity(context, "entity") instanceof LivingEntity livingEntity) {
+                var comp = LivingEntityTrinketAttachment.get(livingEntity);
+                var access = comp.getInventory(slot);
+                if (access != null) {
+                    access.setVisible(offset, show);
+
+                    if (livingEntity instanceof ServerPlayer player) {
+                        player.connection.send(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(player.getId(), Map.of(), Map.of(), Map.of(slot, access.copyHiddenSlots()))));
+                    }
                 } else {
                     context.getSource().sendFailure(Component.literal("Slot '" + slot + "' at " + offset + " offset does not exist!"));
                 }

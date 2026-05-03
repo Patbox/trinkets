@@ -34,13 +34,16 @@ public final class TrinketInventoryImpl implements TrinketInventory {
     private boolean update = false;
     private boolean suppressUpdates = false;
     private int forcedSlotCount;
+    public boolean isVisibilityDirty = false;
     boolean isValid = true;
+    public BitSet hiddenSlots;
 
     public TrinketInventoryImpl(SlotType slotType, TrinketAttachment comp, Consumer<TrinketInventoryImpl> markDirty, InventorySizeChangedCallback updateSizeCallback, boolean clientSide) {
         this.attachment = comp;
         this.slotType = slotType;
         this.baseSize = slotType.amount();
         this.stacks = NonNullList.withSize(this.baseSize, ItemStack.EMPTY);
+        this.hiddenSlots = new BitSet(this.baseSize);
         this.updateSlotAccess();
         this.size = this.baseSize;
         this.forcedSlotCount = clientSide ? this.baseSize : -1;
@@ -103,6 +106,21 @@ public final class TrinketInventoryImpl implements TrinketInventory {
     @Override
     public TrinketAttachment getAttachment() {
         return this.attachment;
+    }
+
+    @Override
+    public boolean isVisible(int index) {
+        return !this.hiddenSlots.get(index);
+    }
+
+    public void setVisible(int index, boolean value) {
+        if (index >= this.size) {
+            return;
+        }
+
+        this.hiddenSlots.set(index, !value);
+        this.isVisibilityDirty = true;
+        this.markUpdate();
     }
 
     @Override
@@ -278,6 +296,13 @@ public final class TrinketInventoryImpl implements TrinketInventory {
                 }
 
                 this.stacks = newStacks;
+                var old = this.hiddenSlots;
+                this.hiddenSlots = new BitSet(size);
+
+                for (int i = 0; i < Math.min(size, old.length()); i++) {
+                    this.hiddenSlots.set(i, old.get(i));
+                }
+
                 this.updateSlotAccess();
                 this.updateSizeCallback.callSizeChanged(this, oldSize, this.size);
             }
@@ -308,7 +333,9 @@ public final class TrinketInventoryImpl implements TrinketInventory {
     @SuppressWarnings("removal")
     @Override
     public void copyFrom(TrinketInventory value) {
-        this.copyFrom((TrinketInventoryImpl) value);
+        if (value instanceof TrinketInventoryImpl other) {
+            this.copyFrom(other);
+        }
     }
 
     public void copyFrom(TrinketInventoryImpl other) {
@@ -322,6 +349,9 @@ public final class TrinketInventoryImpl implements TrinketInventory {
         this.forcedSlotCount = other.forcedSlotCount;
         this.update = true;
         this.update();
+        for (int i = 0; i < this.size; i++) {
+            this.hiddenSlots.set(i, other.hiddenSlots.get(i));
+        }
     }
 
     @Override
@@ -393,6 +423,14 @@ public final class TrinketInventoryImpl implements TrinketInventory {
                 }
             }
         }
+    }
+
+    public BitSet copyHiddenSlots() {
+        var bitset = new BitSet(this.hiddenSlots.size());
+        for (int i = 0; i < this.size; i++) {
+            bitset.set(i, this.hiddenSlots.get(i));
+        }
+        return bitset;
     }
 
     public interface InventorySizeChangedCallback {

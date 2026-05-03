@@ -136,6 +136,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
         var trinkets = this.trinketAttachment;
 
         List<TrinketSlotAccess> changedItems = new ArrayList<>();
+        var changedVisibility = new HashMap<String, BitSet>();
         //noinspection unchecked
 
         trinkets.forEach((ref, stack) -> {
@@ -155,6 +156,13 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
             }
         });
 
+        for (var inv : trinkets.inventory.values()) {
+            if (inv.isVisibilityDirty) {
+                changedVisibility.put(inv.slotType().getId(), inv.copyHiddenSlots());
+                inv.isVisibilityDirty = false;
+            }
+        }
+
         // Check that the inventory hasn't shrunk past the new stacks
         for (var slot : changedItems) {
             if (slot.index() < slot.inventory().getContainerSize()) {
@@ -171,7 +179,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
 
         var inventoriesToSend = trinkets.getContainerSizeChanged();
 
-        if (!changedItems.isEmpty() || !inventoriesToSend.isEmpty()) {
+        if (!changedItems.isEmpty() || !inventoriesToSend.isEmpty() || !changedVisibility.isEmpty()) {
             Map<String, Integer> map = new HashMap<>();
             Map<TrinketSlotReference, ItemStack> items = new HashMap<>();
 
@@ -184,14 +192,14 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
             for (TrinketInventoryImpl trinketInventory : inventoriesToSend) {
                 map.put(trinketInventory.slotType().getId(), trinketInventory.getSize());
             }
-            var packet = new ClientboundCustomPayloadPacket(new SyncInventoryPayload(this.getId(), items, map));
+            var packet = new ClientboundCustomPayloadPacket(new SyncInventoryPayload(this.getId(), items, map, changedVisibility));
 
             if (this.level().getChunkSource() instanceof ServerChunkCache cache) {
                 cache.sendToTrackingPlayers(entity, packet);
             }
 
             if (entity instanceof ServerPlayer serverPlayer && !map.isEmpty()) {
-                serverPlayer.connection.send(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(this.getId(), Map.of(), map)));
+                serverPlayer.connection.send(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(this.getId(), Map.of(), map, Map.of())));
                 ((TrinketInventoryMenu) serverPlayer.inventoryMenu).trinkets$updateTrinketSlots(false);
             }
 

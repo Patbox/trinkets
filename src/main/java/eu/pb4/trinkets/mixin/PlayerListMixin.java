@@ -21,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,9 +58,11 @@ public abstract class PlayerListMixin {
         ((TrinketInventoryMenu) player.inventoryMenu).trinkets$updateTrinketSlots(false);
         var trinkets = TrinketsApi.getAttachment(player);
         Map<String, Integer> tag = new HashMap<>();
+        var hidden = new HashMap<String, BitSet>();
         ((LivingEntityTrinketAttachment) trinkets).inventory.forEach((id, v) -> {
             tag.put(id, v.getContainerSize());
+            hidden.put(id, v.copyHiddenSlots());
         });
-        player.connection.send(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(player.getId(), Map.of(), tag)));
+        player.connection.send(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(player.getId(), Map.of(), tag, hidden)));
     }
 }
