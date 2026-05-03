@@ -56,6 +56,13 @@ public class TrinketsClient implements ClientModInitializer {
                     TrinketScreenManager.tryUpdateTrinketsSlot();
                 }
 
+                for (var entry : payload.changedVisibility().entrySet()) {
+                    var inv = trinkets.getInventory(entry.getKey());
+                    if (inv != null) {
+                        inv.hiddenSlots = entry.getValue();
+                    }
+                }
+
                 for (var entry : payload.contentUpdates().entrySet()) {
                     var access = trinkets.getSlotAccess(entry.getKey());
                     if (access != null) {

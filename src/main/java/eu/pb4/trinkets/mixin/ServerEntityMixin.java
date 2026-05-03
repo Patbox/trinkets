@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
@@ -35,6 +36,7 @@ public class ServerEntityMixin {
         var trinket = LivingEntityTrinketAttachment.get(livingEntity);
 
         var slotCount = new HashMap<String, Integer>();
+        var hidden = new HashMap<String, BitSet>();
         var items = new HashMap<TrinketSlotReference, ItemStack>();
 
         for (var y : trinket.inventory.values()) {
@@ -42,6 +44,8 @@ public class ServerEntityMixin {
             if (y.getContainerSize() != y.slotType().amount()) {
                 slotCount.put(id, y.getContainerSize());
             }
+            hidden.put(id, y.copyHiddenSlots());
+
 
             for (int i = 0; i < y.getContainerSize(); i++) {
                 var item = y.getItem(i);
@@ -52,7 +56,7 @@ public class ServerEntityMixin {
         }
 
         if (!slotCount.isEmpty() || !items.isEmpty()) {
-            broadcast.accept(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(this.entity.getId(), items, slotCount)));
+            broadcast.accept(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(this.entity.getId(), items, slotCount, hidden)));
         }
     }
 }
