@@ -9,6 +9,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.ConversionType;
@@ -19,7 +20,6 @@ import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingConversionEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import org.apache.commons.lang3.mutable.MutableObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +45,15 @@ public record NeoCommonAbstraction(List<Consumer<IEventBus>> lateActions) implem
     public <T extends CustomPacketPayload> void registerClientboundPlayPayload(CustomPacketPayload.Type<T> type, StreamCodec<RegistryFriendlyByteBuf, T> codec) {
         addLateAction(bus -> bus.addListener(RegisterPayloadHandlersEvent.class, e -> {
             e.registrar("1").playToClient(type, codec);
+        }));
+    }
+
+    @Override
+    public <T extends CustomPacketPayload> void registerServerboundPlayPayload(CustomPacketPayload.Type<T> type, StreamCodec<RegistryFriendlyByteBuf, T> codec, PlayPacketReceiver<T> receiver) {
+        addLateAction(bus -> bus.addListener(RegisterPayloadHandlersEvent.class, e -> {
+            e.registrar("1").playToServer(type, codec, (payload, context) -> {
+                receiver.receive((ServerPlayer) context.player(), payload);
+            });
         }));
     }
 

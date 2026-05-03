@@ -7,6 +7,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.commands.CommandBuildContext;
@@ -31,6 +32,12 @@ public record FabricCommonAbstraction() implements CommonAbstraction {
         for (var r : requires) {
             loader.addListenerOrdering(r, identifier);
         }
+    }
+
+    @Override
+    public <T extends CustomPacketPayload> void registerServerboundPlayPayload(CustomPacketPayload.Type<T> type, StreamCodec<RegistryFriendlyByteBuf, T> codec, PlayPacketReceiver<T> receiver) {
+        PayloadTypeRegistry.serverboundPlay().register(type, codec);
+        ServerPlayNetworking.registerGlobalReceiver(type, (payload, context) -> receiver.receive(context.player(), payload));
     }
 
     @Override

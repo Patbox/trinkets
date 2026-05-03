@@ -17,6 +17,7 @@ import eu.pb4.trinkets.impl.platform.CommonAbstraction;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.commands.arguments.item.ItemInput;
 import net.minecraft.core.Registry;
@@ -35,7 +36,6 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
-import static com.mojang.brigadier.arguments.StringArgumentType.string;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
@@ -64,48 +64,45 @@ public class TrinketsMain implements ModInitializer {
         CommonAbstraction.INSTANCE.registerCommand((dispatcher, registry) ->
                 dispatcher.register(literal("trinkets")
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
-                        .then(
-                                literal("set")
-                                        .then(argument("entity", EntityArgument.entity())
-                                                .suggests((commandContext, suggestionsBuilder) -> {
-                                                    try {
-                                                        var entity = EntityArgument.getEntity(commandContext, "entity");
+                        .then(argument("entity", EntityArgument.entity())
+                                .then(argument("slot", IdentifierArgument.id())
+                                        .suggests((commandContext, suggestionsBuilder) -> {
+                                            try {
+                                                var entity = EntityArgument.getEntity(commandContext, "entity");
 
-                                                        for (var group : TrinketsApi.getEntitySlots(entity).entrySet()) {
-                                                            for (var slot : group.getValue().slots().entrySet()) {
-                                                                var id = group.getKey() + '/' + slot.getKey();
-                                                                if (id.contains(suggestionsBuilder.getRemainingLowerCase())) {
-                                                                    suggestionsBuilder.suggest(id, slot.getValue().getTranslation());
-                                                                }
-                                                            }
+                                                for (var group : TrinketsApi.getEntitySlots(entity).entrySet()) {
+                                                    for (var slot : group.getValue().slots().entrySet()) {
+                                                        var id = group.getKey() + '/' + slot.getKey();
+                                                        if (id.contains(suggestionsBuilder.getRemainingLowerCase())) {
+                                                            suggestionsBuilder.suggest(id, slot.getValue().getTranslation());
                                                         }
-                                                    } catch (Throwable ignored) {
                                                     }
-                                                    return suggestionsBuilder.buildFuture();
-                                                })
-                                                .then(argument("slot", string())
-                                                        .then(argument("offset", integer(0))
-                                                                .then(
-                                                                        argument("stack", ItemArgument.item(registry))
-                                                                                .executes(context -> {
-                                                                                    try {
-                                                                                        return setTrinketSlotCommand(context, 1);
+                                                }
+                                            } catch (Throwable ignored) {
+                                            }
+                                            return suggestionsBuilder.buildFuture();
+                                        })
+                                        .then(literal("set")
+                                                .then(argument("offset", integer(0))
+                                                        .then(argument("stack", ItemArgument.item(registry))
+                                                                .executes(context -> {
+                                                                    try {
+                                                                        return setTrinketSlotCommand(context, 1);
 
-                                                                                    } catch (Exception e) {
-                                                                                        e.printStackTrace();
-                                                                                        return -1;
-                                                                                    }
-                                                                                })
-                                                                                .then(
-                                                                                        argument("count", integer(1))
-                                                                                                .executes(context -> {
-                                                                                                    int amount = context.getArgument("amount", Integer.class);
-                                                                                                    return setTrinketSlotCommand(context, amount);
-                                                                                                }))
-                                                                )
+                                                                    } catch (Exception e) {
+                                                                        e.printStackTrace();
+                                                                        return -1;
+                                                                    }
+                                                                })
+                                                                .then(argument("count", integer(1))
+                                                                        .executes(context -> {
+                                                                            int amount = context.getArgument("count", Integer.class);
+                                                                            return setTrinketSlotCommand(context, amount);
+                                                                        }))
                                                         )
                                                 )
                                         )
+                                )
                         )
 
                 ));
@@ -147,10 +144,9 @@ public class TrinketsMain implements ModInitializer {
         CommonAbstraction.INSTANCE.registerMobConversion(LivingEntityTrinketAttachment::copyData);
     }
 
-
     private static int setTrinketSlotCommand(CommandContext<CommandSourceStack> context, int amount) {
         try {
-            String slot = context.getArgument("slot", String.class);
+            String slot = IdentifierArgument.getId(context, "slot").getPath();
             int offset = context.getArgument("offset", Integer.class);
             ItemInput stack = context.getArgument("stack", ItemInput.class);
             if (EntityArgument.getEntity(context, "entity") instanceof LivingEntity livingEntity) {

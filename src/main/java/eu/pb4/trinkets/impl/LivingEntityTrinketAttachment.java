@@ -460,8 +460,13 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
 
     @Override
     public void forEachVisible(BiConsumer<TrinketSlotAccess, ItemStack> consumer) {
-        // This might change in the future!
-        this.forEach(consumer);
+        for (var inv : this.inventory.values()) {
+            for (int i = 0; i < inv.getContainerSize(); i++) {
+                if (inv.isVisible(i)) {
+                    consumer.accept(inv.getSlotAccess(i), inv.getItem(i));
+                }
+            }
+        }
     }
 
     public void forEachDroppable(BiConsumer<TrinketSlotAccess, ItemStack> consumer) {

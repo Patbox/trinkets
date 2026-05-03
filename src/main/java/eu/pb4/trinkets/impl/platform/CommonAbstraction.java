@@ -8,6 +8,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.ConversionParams;
@@ -30,6 +31,7 @@ public interface CommonAbstraction {
 
     void registerServerReloadListener(Identifier identifier, PreparableReloadListener instance, Identifier... requires);
 
+    <T extends CustomPacketPayload> void registerServerboundPlayPayload(CustomPacketPayload.Type<T> type, StreamCodec<RegistryFriendlyByteBuf, T> codec, PlayPacketReceiver<T> receiver);
     <T extends CustomPacketPayload> void registerClientboundPlayPayload(CustomPacketPayload.Type<T> type, StreamCodec<RegistryFriendlyByteBuf, T> codec);
 
     void registerCommand(BiConsumer<CommandDispatcher<CommandSourceStack>, CommandBuildContext> consumer);
@@ -40,5 +42,9 @@ public interface CommonAbstraction {
 
     interface MobConversion {
         void convert(LivingEntity from, LivingEntity to, ConversionParams params);
+    }
+
+    interface PlayPacketReceiver<T> {
+        void receive(ServerPlayer player, T payload);
     }
 }
