@@ -17,4 +17,8 @@ public interface TrinketInventory extends Container {
     boolean isValidSlot(int index);
 
     TrinketAttachment getAttachment();
+
+    default boolean isVisible(int i) {
+        return true;
+    }
 }
