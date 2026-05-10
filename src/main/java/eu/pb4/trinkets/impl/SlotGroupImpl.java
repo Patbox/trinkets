@@ -8,8 +8,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.inventory.Slot;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public record SlotGroupImpl(String name, int slotId, int order,
                             Map<String, SlotTypeImpl> slotsImpl) implements SlotGroup {
@@ -35,6 +34,11 @@ public record SlotGroupImpl(String name, int slotId, int order,
     @Override
     public Map<String, SlotType> slots() {
         return ImmutableMap.copyOf(this.slotsImpl);
+    }
+
+    @Override
+    public Collection<SlotType> getSlots() {
+        return Collections.unmodifiableCollection(this.slotsImpl.values());
     }
 
     public static class Builder {

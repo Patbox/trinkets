@@ -2,11 +2,7 @@ package eu.pb4.trinkets.impl.data;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
@@ -16,11 +12,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
+import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketsApi;
-import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
-import eu.pb4.trinkets.impl.SlotGroupImpl;
-import eu.pb4.trinkets.impl.TrinketInventoryMenu;
-import eu.pb4.trinkets.impl.TrinketsMain;
+import eu.pb4.trinkets.impl.*;
 import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.impl.data.SlotLoader.GroupData;
 import eu.pb4.trinkets.impl.data.SlotLoader.SlotData;
@@ -48,7 +42,9 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 	private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
 	public static final Identifier ID = Identifier.fromNamespaceAndPath(TrinketsMain.NAMESPACE, "entities");
 
-	private final Map<EntityType<?>, Map<String, SlotGroupImpl>> slots = new HashMap<>();
+	private final Map<EntityType<?>, Map<String, SlotGroupImpl>> groups = new HashMap<>();
+	private final Map<EntityType<?>, Map<String, SlotTypeImpl>> entitySlots = new HashMap<>();
+	private final Map<String, SlotTypeImpl> slots = new HashMap<>();
 
 	@Override
 	protected Map<String, Map<String, Set<String>>> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
@@ -130,6 +126,8 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 	protected void apply(Map<String, Map<String, Set<String>>> loader, ResourceManager manager, ProfilerFiller profiler) {
 		Map<String, GroupData> slots = SlotLoader.INSTANCE.getSlots();
 		Map<EntityType<?>, Map<String, SlotGroupImpl.Builder>> groupBuilders = new HashMap<>();
+		var slotTypes = new HashMap<String, SlotTypeImpl>();
+		var entitySlotTypes = new HashMap<EntityType<?>, Map<String, SlotTypeImpl>>();
 
 		loader.forEach((entityName, groups) -> {
 			Set<EntityType<?>> types = new HashSet<>();
@@ -158,7 +156,10 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
                             SlotData slotData = group.getSlot(slotSubId);
 
                             if (slotData != null) {
-                                builder.addSlot(slotSubId, slotData.create(groupName + '/' + slotSubId, groupName));
+								var slotId = groupName + '/' + slotSubId;
+								var slot = slotTypes.computeIfAbsent(slotId, id -> slotData.create(id, groupName));
+								entitySlotTypes.computeIfAbsent(type, _ -> new HashMap<>()).put(slotId, slot);
+                                builder.addSlot(slotSubId, slot);
                             } else {
                                 TrinketsMain.LOGGER.error("[trinkets] Attempted to assign unknown slot " + slotSubId);
                             }
@@ -169,32 +170,50 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 				});
 			}
 		});
+		this.groups.clear();
+		this.entitySlots.clear();
+		this.entitySlots.putAll(entitySlotTypes);
 		this.slots.clear();
+		this.slots.putAll(slotTypes);
 
 		groupBuilders.forEach((entity, groups) -> {
-			var entitySlots = this.slots.computeIfAbsent(entity, (k) -> new HashMap<>());
+			var entitySlots = this.groups.computeIfAbsent(entity, (k) -> new HashMap<>());
 			groups.forEach((groupName, groupBuilder) -> entitySlots.putIfAbsent(groupName, groupBuilder.build()));
 		});
 	}
 
-	public Map<String, SlotGroup> getEntitySlots(EntityType<?> entityType) {
-		if (this.slots.containsKey(entityType)) {
-			return ImmutableMap.copyOf(this.slots.get(entityType));
+	public Map<String, SlotGroup> getEntityGroups(EntityType<?> entityType) {
+		if (this.groups.containsKey(entityType)) {
+			return ImmutableMap.copyOf(this.groups.get(entityType));
 		}
 		return ImmutableMap.of();
 	}
 
-	public void setSlots(Map<EntityType<?>, Map<String, SlotGroupImpl>> slots) {
+	public void setGroupsLegacy(Map<EntityType<?>, Map<String, SlotGroupImpl>> groups) {
+		this.groups.clear();
+		this.groups.putAll(groups);
 		this.slots.clear();
-		this.slots.putAll(slots);
+		this.entitySlots.clear();
+
+		for (var e : groups.entrySet()) {
+			var map = new HashMap<String, SlotTypeImpl>();
+
+			for (var g : e.getValue().values()) {
+				for (var s : g.slotsImpl().values()) {
+					this.slots.put(s.getId(), s);
+					map.put(s.getId(), s);
+				}
+			}
+			this.entitySlots.put(e.getKey(), map);
+		}
 	}
 
 	public void sync(ServerPlayer playerEntity) {
-		playerEntity.connection.send(new ClientboundCustomPayloadPacket(new SyncSlotsPayload(Map.copyOf(this.slots))));
+		playerEntity.connection.send(new ClientboundCustomPayloadPacket(new SyncSlotsPayload(Map.copyOf(this.groups))));
 	}
 
 	public void sync(List<? extends ServerPlayer> players) {
-		var packet = new ClientboundCustomPayloadPacket(new SyncSlotsPayload(Map.copyOf(this.slots)));
+		var packet = new ClientboundCustomPayloadPacket(new SyncSlotsPayload(Map.copyOf(this.groups)));
 
 		for(ServerPlayer player : players) {
 
@@ -207,5 +226,13 @@ public class EntitySlotLoader extends SimplePreparableReloadListener<Map<String,
 			player.connection.send(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(player.getId(), Map.of(), tag)));
 			player.connection.send(packet);
 		}
+	}
+
+    public Map<String, SlotType> getEntitySlotTypes(EntityType<?> type) {
+    	return Collections.unmodifiableMap(this.entitySlots.getOrDefault(type, Map.of()));
+	}
+
+	public Map<String, SlotType> getSlotTypes() {
+		return Collections.unmodifiableMap(this.slots);
 	}
 }

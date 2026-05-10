@@ -107,7 +107,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     }
 
     public void update() {
-        Map<String, SlotGroup> entitySlots = TrinketsApi.getEntitySlots(this.entity);
+        Map<String, SlotGroup> entitySlots = SlotGroup.getEntityGroups(this.entity);
         int count = 0;
         groups.clear();
         Map<TrinketSlotAccess, ItemStack> droppedItems = new HashMap<>();

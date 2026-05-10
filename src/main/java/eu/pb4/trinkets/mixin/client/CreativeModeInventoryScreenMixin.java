@@ -1,6 +1,7 @@
 package eu.pb4.trinkets.mixin.client;
 
 import eu.pb4.trinkets.impl.TrinketsConfig;
+import net.minecraft.world.item.CreativeModeTabs;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -73,7 +74,7 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 		for (int i = handler.trinkets$getTrinketSlotStart(); i < handler.trinkets$getTrinketSlotEnd(); i++) {
 			Slot slot = this.minecraft.player.inventoryMenu.slots.get(i);
 			if (slot instanceof SurvivalTrinketSlot ts) {
-				SlotGroup group = TrinketsApi.getPlayerSlots(this.minecraft.player).get(ts.getType().group());
+				SlotGroup group = SlotGroup.getEntityGroups(this.minecraft.player).get(ts.getType().group());
 				Rect2i rect = trinkets$getGroupRect(group);
 				Point pos = trinkets$getHandler().trinkets$getGroupPos(group);
 				if (pos == null) {
@@ -84,7 +85,7 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 				((ItemPickerMenu) this.menu).slots.add(new CreativeTrinketSlot(ts, ts.getContainerSlot(), ts.x + xOff, ts.y + yOff));
 			}
 		}
-	}
+    }
 
 	@Inject(at = @At("HEAD"), method = "init")
 	private void init(CallbackInfo info) {
@@ -214,6 +215,12 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 
 	@Override
 	public void trinkets$updateTrinketSlots() {
-		selectTab(selectedTab);
+		if (selectedTab.getType() != CreativeModeTab.Type.INVENTORY) {
+			return;
+		}
+
+		var old = selectedTab;
+		selectTab(CreativeModeTabs.getDefaultTab());
+		selectTab(old);
 	}
 }

@@ -91,9 +91,12 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 
     @Override
     public boolean isValidSlot(int index) {
-        return index < this.accesses.length && this.isValid;
+        return this.isValid && this.isLegalSlot(index);
     }
 
+    private boolean isLegalSlot(int index) {
+        return index < this.accesses.length && index >= 0;
+    }
 
     @Override
     public TrinketAttachment getAttachment() {
@@ -130,23 +133,25 @@ public final class TrinketInventoryImpl implements TrinketInventory {
     @Override
     public ItemStack getItem(int slot) {
         this.update();
-        return stacks.get(slot);
+        return this.isLegalSlot(slot) ? stacks.get(slot) : ItemStack.EMPTY;
     }
 
     @Override
     public ItemStack removeItem(int slot, int amount) {
-        return ContainerHelper.removeItem(stacks, slot, amount);
+        return this.isLegalSlot(slot) ? ContainerHelper.removeItem(stacks, slot, amount) : ItemStack.EMPTY;
     }
 
     @Override
     public ItemStack removeItemNoUpdate(int slot) {
-        return ContainerHelper.takeItem(stacks, slot);
+        return this.isLegalSlot(slot) ? ContainerHelper.takeItem(stacks, slot) : ItemStack.EMPTY;
     }
 
     @Override
     public void setItem(int slot, ItemStack stack) {
         this.update();
-        stacks.set(slot, stack);
+        if (this.isLegalSlot(slot)) {
+            stacks.set(slot, stack);
+        }
     }
 
     @Override
@@ -233,21 +238,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
             this.update = false;
             this.suppressUpdates = true;
             if (this.forcedSlotCount < 0) {
-                double baseSize = this.baseSize;
-                for (AttributeModifier mod : this.getModifiersByOperation(AttributeModifier.Operation.ADD_VALUE)) {
-                    baseSize += mod.amount();
-                }
-
-                double size = baseSize;
-                for (AttributeModifier mod : this.getModifiersByOperation(AttributeModifier.Operation.ADD_MULTIPLIED_BASE)) {
-                    size += this.baseSize * mod.amount();
-                }
-
-                for (AttributeModifier mod : this.getModifiersByOperation(AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)) {
-                    size *= mod.amount();
-                }
-
-                this.size = (int) size;
+                this.size = this.calculateNewSize();
             } else {
                 this.size = this.forcedSlotCount;
             }
@@ -292,6 +283,24 @@ public final class TrinketInventoryImpl implements TrinketInventory {
             this.suppressUpdates = false;
             this.update();
         }
+    }
+
+    private int calculateNewSize() {
+        double baseSize = this.baseSize;
+        for (AttributeModifier mod : this.getModifiersByOperation(AttributeModifier.Operation.ADD_VALUE)) {
+            baseSize += mod.amount();
+        }
+
+        double size = baseSize;
+        for (AttributeModifier mod : this.getModifiersByOperation(AttributeModifier.Operation.ADD_MULTIPLIED_BASE)) {
+            size += this.baseSize * mod.amount();
+        }
+
+        for (AttributeModifier mod : this.getModifiersByOperation(AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)) {
+            size *= mod.amount();
+        }
+
+        return (int) size;
     }
 
     @Override

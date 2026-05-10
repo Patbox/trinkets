@@ -127,7 +127,7 @@ public class TrinketScreenManager {
 
 		if (group == null) {
 			Minecraft client = Minecraft.getInstance();
-			for (SlotGroup g : TrinketsApi.getPlayerSlots(client.player).values()) {
+			for (SlotGroup g : SlotGroup.getEntityGroups(client.player).values()) {
 				Rect2i r = currentScreen.trinkets$getGroupRect(g);
 				if (r.getX() < 0 && currentScreen.trinkets$isRecipeBookOpen()) {
 					continue;

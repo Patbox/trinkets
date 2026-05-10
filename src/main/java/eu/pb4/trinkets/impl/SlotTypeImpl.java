@@ -22,8 +22,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 public record SlotTypeImpl(String id, String group, int order, int amount, Optional<Identifier> optionalIcon,
-                           Condition quickMovePredicates, Condition validatorPredicates,
-                           Condition tooltipPredicates, TrinketDropRule dropRule,
+                           Predicates predicates,
+                           TrinketDropRule dropRule,
                            boolean isVanityOnly,
                            boolean isHidden,
                            int maxStackSize) implements SlotType {
@@ -34,9 +34,13 @@ public record SlotTypeImpl(String id, String group, int order, int amount, Optio
             ByteBufCodecs.VAR_INT, SlotTypeImpl::order,
             ByteBufCodecs.VAR_INT, SlotTypeImpl::amount,
             ByteBufCodecs.optional(Identifier.STREAM_CODEC), SlotTypeImpl::optionalIcon,
-            Condition.STREAM_CODEC, SlotTypeImpl::quickMovePredicates,
-            Condition.STREAM_CODEC, SlotTypeImpl::validatorPredicates,
-            Condition.STREAM_CODEC, SlotTypeImpl::tooltipPredicates,
+            StreamCodec.composite(
+                    Condition.STREAM_CODEC, Predicates::quickMove,
+                    Condition.STREAM_CODEC, Predicates::validator,
+                    Condition.STREAM_CODEC, Predicates::tooltip,
+                    Condition.STREAM_CODEC, Predicates::interactEquipable,
+                    Predicates::new
+            ), SlotTypeImpl::predicates,
             ByteBufCodecs.idMapper(x -> TrinketDropRule.values()[x], TrinketDropRule::ordinal), SlotTypeImpl::dropRule,
             ByteBufCodecs.BOOL, SlotTypeImpl::isVanityOnly,
             ByteBufCodecs.BOOL, SlotTypeImpl::isHidden,
@@ -74,17 +78,22 @@ public record SlotTypeImpl(String id, String group, int order, int amount, Optio
 
     @Override
     public boolean quickMoveCheck(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
-        return this.quickMovePredicates.test(stack, slotRef, entity);
+        return this.predicates.quickMove.test(stack, slotRef, entity);
     }
 
     @Override
     public boolean validatorCheck(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
-        return this.validatorPredicates.test(stack, slotRef, entity);
+        return this.predicates.validator.test(stack, slotRef, entity);
+    }
+
+    @Override
+    public boolean interactEquipableCheck(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
+        return this.predicates.interactEquipable.test(stack, slotRef, entity);
     }
 
     @Override
     public boolean tooltipCheck(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
-        return this.tooltipPredicates.test(stack, slotRef, entity);
+        return this.predicates.tooltip.test(stack, slotRef, entity);
     }
 
     @Override
@@ -95,6 +104,11 @@ public record SlotTypeImpl(String id, String group, int order, int amount, Optio
     @Override
     public String name() {
         return this.id.substring(this.group.length() + 1);
+    }
+
+
+    public record Predicates(Condition quickMove, Condition validator,
+                             Condition tooltip, Condition interactEquipable) {
     }
 
     public interface Condition {

@@ -23,20 +23,18 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 	private final SlotGroup group;
 	private final SlotType type;
 	private final boolean alwaysVisible;
-	private final int slotOffset;
-	private final TrinketInventoryImpl trinketInventory;
 	private final TrinketSlotAccess ref;
 	private final LivingEntity owner;
+	private final int slot;
 
-	public SurvivalTrinketSlot(TrinketInventoryImpl inventory, int index, int x, int y, SlotGroup group, SlotType type, int slotOffset,
+	public SurvivalTrinketSlot(TrinketInventoryImpl inventory, int slot, int x, int y, SlotGroup group, SlotType type,
 							   boolean alwaysVisible, LivingEntity owner) {
-		super(inventory, index, x, y);
+		super(inventory, slot, x, y);
 		this.group = group;
 		this.type = type;
-		this.slotOffset = slotOffset;
+		this.slot = slot;
 		this.alwaysVisible = alwaysVisible;
-		this.trinketInventory = inventory;
-		this.ref = trinketInventory.getSlotAccess(slotOffset);
+		this.ref = inventory.getSlotAccess(this.slot);
 		this.owner = owner;
 	}
 
@@ -58,6 +56,10 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 
 	@Override
 	public boolean isActive() {
+		if (!this.ref.isValid()) {
+			return false;
+		}
+
 		if (alwaysVisible) {
 			if (x < 0) {
 				Level world = this.owner.level();
@@ -80,9 +82,9 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 	public boolean isTrinketFocused() {
 		if (TrinketsMain.IS_CLIENT) {
 			if (TrinketsClient.activeGroup == group) {
-				return slotOffset == 0 || TrinketsClient.activeType == type;
+				return this.slot == 0 || TrinketsClient.activeType == type;
 			} else if (TrinketsClient.quickMoveGroup == group) {
-				return slotOffset == 0 || TrinketsClient.quickMoveType == type && TrinketsClient.quickMoveTimer > 0;
+				return this.slot == 0 || TrinketsClient.quickMoveType == type && TrinketsClient.quickMoveTimer > 0;
 			}
 		}
 		return false;
@@ -90,7 +92,7 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 
 	@Override
 	public boolean renderAfterRegularSlots() {
-		return slotOffset != 0 || !this.alwaysVisible;
+		return this.slot != 0 || !this.alwaysVisible;
 	}
 
 	@Override

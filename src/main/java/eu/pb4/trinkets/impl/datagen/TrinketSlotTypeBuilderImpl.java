@@ -19,6 +19,7 @@ public final class TrinketSlotTypeBuilderImpl implements TrinketSlotTypeBuilder 
     private ConditionBuilderImpl quickMove = null;
     private ConditionBuilderImpl validator = null;
     private ConditionBuilderImpl tooltip = null;
+    private ConditionBuilderImpl interactEquipable = null;
     private TrinketDropRule dropRule = null;
     private Boolean isVanityOnly = null;
     private Boolean isHidden = null;
@@ -98,6 +99,15 @@ public final class TrinketSlotTypeBuilderImpl implements TrinketSlotTypeBuilder 
         return this;
     }
 
+    @Override
+    public TrinketSlotTypeBuilder interactEquipableCondition(Consumer<ConditionBuilder> consumer) {
+        if (this.interactEquipable == null) {
+            this.interactEquipable = new ConditionBuilderImpl();
+        }
+        consumer.accept(this.interactEquipable);
+        return this;
+    }
+
 
     public JsonObject toJson() {
         var object = new JsonObject();
@@ -130,6 +140,7 @@ public final class TrinketSlotTypeBuilderImpl implements TrinketSlotTypeBuilder 
         this.writeCondition(object, "quick_move_predicates", this.quickMove);
         this.writeCondition(object, "validator_predicates", this.validator);
         this.writeCondition(object, "tooltip_predicates", this.tooltip);
+        this.writeCondition(object, "interact_equipable_predicates", this.interactEquipable);
 
         return object;
     }

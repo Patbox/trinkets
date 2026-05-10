@@ -1,8 +1,8 @@
 package eu.pb4.trinkets.impl;
 
 import eu.pb4.trinkets.api.SlotAttributes;
+import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
-import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
 import eu.pb4.trinkets.api.component.TrinketsAttributeModifiersComponent;
@@ -108,7 +108,7 @@ public class TrinketUtilities {
                 for (int i = 0; i < inv.getContainerSize(); i++) {
                     if (inv.getItem(i).isEmpty()) {
                         var ref = inv.getSlotAccess(i);
-                        if (TrinketSlot.canInsert(inHand, ref, user)) {
+                        if (TrinketSlot.canInsert(inHand, ref, user) && inv.slotType().interactEquipableCheck(inHand, ref, user)) {
                             ItemStack newStack = inHand.copy();
                             inv.setItem(i, newStack);
                             TrinketUtilities.playEquipmentSound(newStack, ref, user);
@@ -124,7 +124,7 @@ public class TrinketUtilities {
                     for (int i = 0; i < inv.getContainerSize(); i++) {
                         var current = inv.getItem(i);
                         var ref = inv.getSlotAccess(i);
-                        if (TrinketSlot.mayPickup(current, ref, user) && TrinketSlot.canInsert(inHand, ref, user)) {
+                        if (TrinketSlot.mayPickup(current, ref, user) && TrinketSlot.canInsert(inHand, ref, user) && inv.slotType().interactEquipableCheck(inHand, ref, user)) {
                             TrinketUtilities.playEquipmentSound(inHand, ref, user);
                             if (inHand.getCount() <= 1) {
                                 ItemStack swappedToHand = current.isEmpty() ? inHand : current.copyAndClear();
@@ -159,17 +159,13 @@ public class TrinketUtilities {
     }
 
     public static boolean hasOneOfSlots(LivingEntity entity, List<String> slots) {
-        var ent = TrinketsApi.getEntitySlots(entity);
+        var ent = SlotType.getEntitySlots(entity);
         for (var slot : slots) {
-            var split = slot.split("/", 2);
-            if (split.length < 2) {
-                if (split[0].equals("any") && !ent.isEmpty()) {
-                    return true;
-                }
-                continue;
+            if (slot.equals("any") && !ent.isEmpty()) {
+                return true;
             }
 
-            if (ent.containsKey(split[0]) && ent.get(split[0]).slots().containsKey(split[1])) {
+            if (ent.containsKey(slot)) {
                 return true;
             }
         }

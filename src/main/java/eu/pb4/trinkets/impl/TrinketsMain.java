@@ -70,11 +70,11 @@ public class TrinketsMain implements ModInitializer {
                                             try {
                                                 var entity = EntityArgument.getEntity(commandContext, "entity");
 
-                                                for (var group : TrinketsApi.getEntitySlots(entity).entrySet()) {
-                                                    for (var slot : group.getValue().slots().entrySet()) {
-                                                        var id = group.getKey() + '/' + slot.getKey();
+                                                for (var group : SlotGroup.getEntityGroups(entity).entrySet()) {
+                                                    for (var slot : group.getValue().getSlots()) {
+                                                        var id = slot.getId();
                                                         if (id.contains(suggestionsBuilder.getRemainingLowerCase())) {
-                                                            suggestionsBuilder.suggest(id, slot.getValue().getTranslation());
+                                                            suggestionsBuilder.suggest(id, slot.getTranslation());
                                                         }
                                                     }
                                                 }

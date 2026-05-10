@@ -104,40 +104,6 @@ public class TrinketsApi {
     }
 
     /**
-     * @return A sided map of slot group names to slot groups available for players
-     */
-    public static Map<String, SlotGroup> getPlayerSlots(Level world) {
-        return getEntitySlots(world, EntityType.PLAYER);
-    }
-
-    /**
-     * @return A sided map of slot group names to slot groups available for players
-     */
-    public static Map<String, SlotGroup> getPlayerSlots(Player player) {
-        return getEntitySlots(player);
-    }
-
-    /**
-     * @return A sided map of slot group names to slot groups available for the provided
-     * entity type
-     */
-    public static Map<String, SlotGroup> getEntitySlots(Level world, EntityType<?> type) {
-        EntitySlotLoader loader = world.isClientSide() ? EntitySlotLoader.CLIENT : EntitySlotLoader.SERVER;
-        return loader.getEntitySlots(type);
-    }
-
-    /**
-     * @return A sided map of slot group names to slot groups available for the provided
-     * entity
-     */
-    public static Map<String, SlotGroup> getEntitySlots(Entity entity) {
-        if (entity != null) {
-            return getEntitySlots(entity.level(), entity.getType());
-        }
-        return ImmutableMap.of();
-    }
-
-    /**
      * Registers a predicate to be referenced in slot data
      */
     public static void registerTrinketPredicate(Identifier id, TrinketPredicate predicate) {
@@ -157,5 +123,39 @@ public class TrinketsApi {
 
     public interface TrinketPredicate {
         boolean test(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity);
+    }
+
+    /**
+     * @return A sided map of slot group names to slot groups available for players
+     */
+    @Deprecated
+    public static Map<String, SlotGroup> getPlayerSlots(Level world) {
+        return getEntitySlots(world, EntityType.PLAYER);
+    }
+
+    /**
+     * @return A sided map of slot group names to slot groups available for players
+     */
+    @Deprecated
+    public static Map<String, SlotGroup> getPlayerSlots(Player player) {
+        return SlotGroup.getEntityGroups(player);
+    }
+
+    /**
+     * @return A sided map of slot group names to slot groups available for the provided
+     * entity type
+     */
+    @Deprecated
+    public static Map<String, SlotGroup> getEntitySlots(Level world, EntityType<?> type) {
+        return SlotGroup.getEntityGroups(world, type);
+    }
+
+    /**
+     * @return A sided map of slot group names to slot groups available for the provided
+     * entity
+     */
+    @Deprecated
+    public static Map<String, SlotGroup> getEntitySlots(Entity entity) {
+        return SlotGroup.getEntityGroups(entity);
     }
 }

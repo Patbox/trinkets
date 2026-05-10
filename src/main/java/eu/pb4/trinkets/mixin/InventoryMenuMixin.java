@@ -151,7 +151,7 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
 
                 for (int i = 0; i < stacks.getContainerSize(); i++) {
                     int y = (int) (pos.y() + (slotOffset / 2) * 18 * Math.pow(-1, slotOffset));
-                    this.addSlot(new SurvivalTrinketSlot(stacks, i, x + pos.x(), y, group, stacks.slotType(), i, groupOffset == 1 && i == 0, this.owner));
+                    this.addSlot(new SurvivalTrinketSlot(stacks, i, x + pos.x(), y, group, stacks.slotType(), groupOffset == 1 && i == 0, this.owner));
                     slotOffset++;
                 }
                 groupOffset++;
@@ -268,7 +268,7 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
                             Level world = player.level();
                             if (TrinketsMain.IS_CLIENT && world.isClientSide()) {
                                 TrinketsClient.quickMoveTimer = 20;
-                                TrinketsClient.quickMoveGroup = TrinketsApi.getPlayerSlots(this.owner).get(type.group());
+                                TrinketsClient.quickMoveGroup = SlotGroup.getEntityGroups(this.owner).get(type.group());
                                 if (ref.index() > 0) {
                                     TrinketsClient.quickMoveType = type;
                                 } else {

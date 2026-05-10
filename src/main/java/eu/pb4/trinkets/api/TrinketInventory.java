@@ -6,7 +6,6 @@ import org.jspecify.annotations.Nullable;
 
 @ApiStatus.NonExtendable
 public interface TrinketInventory extends Container {
-    void copyFrom(TrinketInventory value);
     SlotType slotType();
 
     @Nullable
@@ -21,4 +20,7 @@ public interface TrinketInventory extends Container {
     default boolean isVisible(int i) {
         return true;
     }
+
+    @Deprecated(forRemoval = true)
+    void copyFrom(TrinketInventory value);
 }

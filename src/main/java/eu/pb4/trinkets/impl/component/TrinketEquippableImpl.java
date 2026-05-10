@@ -61,7 +61,7 @@ public record TrinketEquippableImpl(
 
     @Override
     public boolean canBeEquippedBy(LivingEntity entity) {
-        return (this.allowedEntities.isEmpty() || this.allowedEntities.get().contains(entity.typeHolder())) && TrinketUtilities.hasOneOfSlots(entity, this.allowedSlots);
+        return (this.allowedEntities.isEmpty() || this.allowedEntities.get().contains(entity.typeHolder()));
     }
 
     @Override

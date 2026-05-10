@@ -1,6 +1,7 @@
 package eu.pb4.trinkets.mixin;
 
 import eu.pb4.trinkets.api.*;
+import eu.pb4.trinkets.api.ext.TrinketsLivingEntityExtension;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.TrinketInventoryImpl;
 import eu.pb4.trinkets.impl.TrinketInventoryMenu;
@@ -37,7 +38,7 @@ import java.util.*;
  * @author Emi
  */
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityMixin extends Entity implements LivingEntityTrinketAttachment.Provider, LivingEntityTrinketAttachment.StackHistory {
+public abstract class LivingEntityMixin extends Entity implements LivingEntityTrinketAttachment.Provider, LivingEntityTrinketAttachment.StackHistory, TrinketsLivingEntityExtension {
     @Unique
     private final Map<String, ItemStack> lastEquippedTrinkets = new HashMap<>();
 
@@ -207,5 +208,10 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
     @Unique
     public void trinkets$resolveOldStack(TrinketSlotAccess access) {
         lastEquippedTrinkets.remove(access.getSerializedName());
+    }
+
+    @Override
+    public TrinketAttachment getTrinkets() {
+        return this.trinketAttachment;
     }
 }

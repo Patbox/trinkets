@@ -48,6 +48,9 @@ public class TrinketsClient implements ClientModInitializer {
 
                 if (entity instanceof Player && ((Player) entity).inventoryMenu instanceof TrinketInventoryMenu screenHandler) {
                     screenHandler.trinkets$updateTrinketSlots(false);
+                    if (client.screen instanceof TrinketScreen trinketScreen) {
+                        trinketScreen.trinkets$updateTrinketSlots();
+                    }
                     TrinketScreenManager.tryUpdateTrinketsSlot();
                 }
 
@@ -60,7 +63,7 @@ public class TrinketsClient implements ClientModInitializer {
             }
         });
         ClientAbstraction.INSTANCE.registerGlobalReceiverPlay(TrinketsNetwork.SYNC_SLOTS, (client, player, payload) -> {
-            EntitySlotLoader.CLIENT.setSlots(payload.map());
+            EntitySlotLoader.CLIENT.setGroupsLegacy(payload.map());
 
             if (player != null) {
                 ((TrinketInventoryMenu) player.inventoryMenu).trinkets$updateTrinketSlots(true);

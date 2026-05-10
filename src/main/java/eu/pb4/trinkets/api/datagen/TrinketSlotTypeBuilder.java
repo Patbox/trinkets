@@ -28,4 +28,5 @@ public interface TrinketSlotTypeBuilder {
     TrinketSlotTypeBuilder validatorCondition(Consumer<ConditionBuilder> consumer);
 
     TrinketSlotTypeBuilder tooltipCondition(Consumer<ConditionBuilder> consumer);
+    TrinketSlotTypeBuilder interactEquipableCondition(Consumer<ConditionBuilder> consumer);
 }
