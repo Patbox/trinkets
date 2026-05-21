@@ -13,7 +13,9 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.storage.ValueInput;
 
+import java.util.Collection;
 import java.util.function.BiConsumer;
 
 public interface CommonAbstraction {
@@ -39,6 +41,8 @@ public interface CommonAbstraction {
     void registerMobConversion(MobConversion conversion);
 
     boolean isClient();
+
+    Collection<String> keys(ValueInput input);
 
     interface MobConversion {
         void convert(LivingEntity from, LivingEntity to, ConversionParams params);

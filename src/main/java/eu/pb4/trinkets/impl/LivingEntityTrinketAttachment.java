@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import eu.pb4.trinkets.api.*;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
+import eu.pb4.trinkets.impl.platform.CommonAbstraction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerLevel;
@@ -33,16 +34,16 @@ import java.util.function.Predicate;
 
 public class LivingEntityTrinketAttachment implements TrinketAttachment {
     private final Set<TrinketInventoryImpl> containerSizeChanged = new HashSet<>();
-    @Deprecated
-    private Map<String, Map<String, TrinketInventoryImpl>> legacyInventory = new HashMap<>();
     public Map<String, TrinketInventoryImpl> inventory = new HashMap<>();
     public Map<String, SlotGroup> groups = new HashMap<>();
     public int size;
     public LivingEntity entity;
+    @Deprecated
+    private Map<String, Map<String, TrinketInventoryImpl>> legacyInventory = new HashMap<>();
 
     public LivingEntityTrinketAttachment(LivingEntity entity) {
         this.entity = entity;
-        this.update();
+        this.rebuild();
     }
 
     public static LivingEntityTrinketAttachment get(LivingEntity livingEntity) {
@@ -106,7 +107,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         return legacyInventory;
     }
 
-    public void update() {
+    public void rebuild() {
         Map<String, SlotGroup> entitySlots = SlotGroup.getEntityGroups(this.entity);
         int count = 0;
         groups.clear();
@@ -290,46 +291,49 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
 
     @SuppressWarnings("removal")
     public void readData(ValueInput view) {
-        Optional<TrinketSaveData> optional = view.read(TrinketSaveData.MAP_CODEC);
         NonNullList<ItemStack> dropped = NonNullList.create();
-        if (optional.isPresent()) {
-            TrinketSaveData data = optional.orElseThrow();
-            for (String groupKey : data.data().keySet()) {
-                Map<String, TrinketSaveData.InventoryData> groupTag = data.data().get(groupKey);
-                if (groupTag != null) {
-                    Map<String, TrinketInventoryImpl> groupSlots = this.legacyInventory.get(groupKey);
-                    if (groupSlots != null) {
-                        for (String slotKey : groupTag.keySet()) {
-                            TrinketSaveData.InventoryData slotTag = groupTag.get(slotKey);
-                            TrinketInventoryImpl inv = groupSlots.get(slotKey);
 
-                            if (inv != null) {
-                                inv.fromMetadata(slotTag.metadata(), slotTag.inventorySize());
-                            }
+        var version = view.getIntOr("__version", 0);
 
-                            for (int i = 0; i < slotTag.items().size(); i++) {
-                                ItemStack stack = slotTag.items().get(i);
-                                if (inv != null && i < inv.getContainerSize()) {
-                                    inv.setItem(i, stack);
-                                } else {
-                                    dropped.add(stack);
-                                }
-                            }
-                        }
+        if (version == 0) {
+            for (var groupKey : CommonAbstraction.INSTANCE.keys(view)) {
+                var groupView = view.childOrEmpty(groupKey);
+                for (var slotKey : CommonAbstraction.INSTANCE.keys(groupView)) {
+                    var inv = this.inventory.get(groupKey + "/" + slotKey);
+                    var value = groupView.childOrEmpty(slotKey);
+
+                    if (inv != null) {
+                        inv.readDataV0(value, dropped::add);
                     } else {
-                        for (String slotKey : groupTag.keySet()) {
-                            dropped.addAll(groupTag.get(slotKey).items());
-                        }
+                        value.listOrEmpty("Items", ItemStack.OPTIONAL_CODEC).stream()
+                                .filter(x -> !x.isEmpty()).forEach(dropped::add);
                     }
                 }
             }
+        } else if (version == 1) {
+            for (var key : CommonAbstraction.INSTANCE.keys(view)) {
+                if (key.equals("__version")) {
+                    continue;
+                }
+
+                var inv = this.inventory.get(key);
+                var value = view.childOrEmpty(key);
+
+                if (inv != null) {
+                    inv.readData(value, dropped::add);
+                } else {
+                    ContainerSavingHelper.loadAllItems(value, dropped::add);
+                }
+            }
         }
+
         if (this.entity.level() instanceof ServerLevel serverWorld) {
             for (ItemStack itemStack : dropped) {
                 this.entity.spawnAtLocation(serverWorld, itemStack);
             }
         }
-        Multimap<String, AttributeModifier> slotMap = HashMultimap.create();
+
+        var slotMap = HashMultimap.<String, AttributeModifier>create();
         this.forEach((ref, stack) -> {
             if (!stack.isEmpty() && ref.canApplyEffects(stack)) {
                 TrinketUtilities.forEachModifier(entity, stack, ref, (entityAttribute, value) -> {
@@ -339,38 +343,28 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                 });
             }
         });
-        for (Map.Entry<String, Map<String, TrinketInventoryImpl>> groupEntry : this.legacyInventory.entrySet()) {
-            for (Map.Entry<String, TrinketInventoryImpl> slotEntry : groupEntry.getValue().entrySet()) {
-                String group = groupEntry.getKey();
-                String slot = slotEntry.getKey();
-                String key = group + "/" + slot;
-                Collection<AttributeModifier> modifiers = slotMap.get(key);
-                TrinketInventoryImpl inventory = slotEntry.getValue();
-                for (AttributeModifier modifier : modifiers) {
-                    inventory.removeCachedModifier(modifier);
-                }
-                inventory.clearCachedModifiers();
+
+        for (var inventory : this.inventory.values()) {
+            var key = inventory.slotType().getId();
+            Collection<AttributeModifier> modifiers = slotMap.get(key);
+            for (AttributeModifier modifier : modifiers) {
+                inventory.removeCachedModifier(modifier);
             }
+            inventory.clearCachedModifiers();
         }
     }
 
     public void writeData(ValueOutput view) {
-        TrinketSaveData data = new TrinketSaveData(new HashMap<>());
-        for (Map.Entry<String, Map<String, TrinketInventoryImpl>> group : this.legacyInventory.entrySet()) {
-            Map<String, TrinketSaveData.InventoryData> groupTag = new HashMap<>();
-            for (Map.Entry<String, TrinketInventoryImpl> slot : group.getValue().entrySet()) {
-                TrinketInventoryImpl inv = slot.getValue();
-
-                List<ItemStack> items = new ArrayList<>();
-                for (int i = 0; i < inv.getContainerSize(); i++) {
-                    items.add(inv.getItem(i).copy());
-                }
-                var metadata = inv.toMetadata();
-                groupTag.put(slot.getKey(), new TrinketSaveData.InventoryData(metadata, items, inv.getSize()));
+        view.putInt("__version", 1);
+        for (var key : this.inventory.keySet()) {
+            var inv = this.inventory.get(key);
+            if (inv.skipSaving()) {
+                continue;
             }
-            data.data().put(group.getKey(), groupTag);
+
+            var value = view.child(key);
+            inv.writeData(value);
         }
-        view.store(TrinketSaveData.MAP_CODEC, data);
     }
 
     @Override

@@ -62,6 +62,6 @@ public interface SlotGroup {
     Collection<SlotType> getSlots();
 
     /// Legacy slots by subId
-    @Deprecated
+    @Deprecated(forRemoval = true)
     Map<String, SlotType> slots();
 }

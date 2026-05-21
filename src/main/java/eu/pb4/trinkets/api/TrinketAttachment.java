@@ -28,14 +28,6 @@ public interface TrinketAttachment {
 	Map<String, SlotGroup> getGroups();
 
 	/**
-	 * @return A map of slot group names, to slot names, to trinket inventories
-	 * for the entity. Inventories will respect EAM slot count modifications for
-	 * the entity.
-	 */
-	@Deprecated
-	Map<String, Map<String, TrinketInventory>> getInventory();
-
-	/**
 	 * @return A map of slot ids to trinket inventories
 	 * for the entity. Inventories will respect EAM slot count modifications for
 	 * the entity.
@@ -213,4 +205,13 @@ public interface TrinketAttachment {
 	 * Intended for grave mods an alike.
 	 */
 	void forEachDroppable(BiConsumer<TrinketSlotAccess, ItemStack> consumer);
+
+	/**
+	 * @return A map of slot group names, to slot names, to trinket inventories
+	 * for the entity. Inventories will respect EAM slot count modifications for
+	 * the entity.
+	 */
+	@Deprecated(forRemoval = true)
+	Map<String, Map<String, TrinketInventory>> getInventory();
+
 }

@@ -66,11 +66,11 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
     }
 
     @Override
-    public void trinkets$updateTrinketSlots(boolean slotsChanged) {
+    public void trinkets$updateTrinketSlots(boolean reinitializeAttachment) {
         var trinkets = LivingEntityTrinketAttachment.get(owner);
 
-        if (slotsChanged) {
-            trinkets.update();
+        if (reinitializeAttachment) {
+            trinkets.rebuild();
         }
         Map<String, SlotGroup> groups = trinkets.getGroups();
         groupPos.clear();

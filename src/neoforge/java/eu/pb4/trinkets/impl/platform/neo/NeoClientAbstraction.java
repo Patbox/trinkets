@@ -43,7 +43,7 @@ public record NeoClientAbstraction() implements ClientAbstraction {
 
     @Override
     public void registerClientTagsLoadedEvent(Runnable afterTagsLoaded) {
-        NeoForge.EVENT_BUS.addListener(TagsUpdatedEvent.class, e -> {
+        NeoForge.EVENT_BUS.addListener(TagsUpdatedEvent.ClientPacketReceived.class, e -> {
             if (e.shouldUpdateStaticData()) {
                 afterTagsLoaded.run();
             }

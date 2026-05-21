@@ -11,6 +11,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -187,7 +189,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
         return this.modifiersByOperation.get(operation);
     }
 
-    public void addModifier(AttributeModifier modifier) {
+    public void addModifierInternal(AttributeModifier modifier) {
         this.modifiers.put(modifier.id(), modifier);
         this.getModifiersByOperation(modifier.operation()).add(modifier);
         this.markUpdate();
@@ -195,7 +197,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 
     // Persistent
     public void addModifiers(AttributeModifier modifier) {
-        this.addModifier(modifier);
+        this.addModifierInternal(modifier);
         this.persistentModifiers.add(modifier);
     }
 
@@ -303,6 +305,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
         return (int) size;
     }
 
+    @SuppressWarnings("removal")
     @Override
     public void copyFrom(TrinketInventory value) {
         this.copyFrom((TrinketInventoryImpl) value);
@@ -312,40 +315,13 @@ public final class TrinketInventoryImpl implements TrinketInventory {
         this.modifiers.clear();
         this.modifiersByOperation.clear();
         this.persistentModifiers.clear();
-        other.modifiers.forEach((uuid, modifier) -> this.addModifier(modifier));
+        other.modifiers.forEach((uuid, modifier) -> this.addModifierInternal(modifier));
         for (AttributeModifier persistentModifier : other.persistentModifiers) {
             this.addModifiers(persistentModifier);
         }
         this.forcedSlotCount = other.forcedSlotCount;
         this.update = true;
         this.update();
-    }
-
-    public TrinketSaveData.Metadata toMetadata() {
-        List<AttributeModifier> cachedModifiers = new ArrayList<>();
-
-        if (!this.modifiers.isEmpty()) {
-            this.modifiers.forEach((uuid, modifier) -> {
-                if (!this.persistentModifiers.contains(modifier)) {
-                    cachedModifiers.add(modifier);
-                }
-            });
-        }
-        return new TrinketSaveData.Metadata(List.copyOf(this.persistentModifiers), cachedModifiers);
-    }
-
-    public void fromMetadata(TrinketSaveData.Metadata tag, int size) {
-        this.size = size;
-        tag.persistentModifiers().forEach(this::addModifiers);
-
-        if (!tag.cachedModifiers().isEmpty()) {
-            for (AttributeModifier modifier : tag.cachedModifiers()) {
-                this.cachedModifiers.add(modifier);
-                this.addModifier(modifier);
-            }
-
-            this.update();
-        }
     }
 
     @Override
@@ -359,6 +335,64 @@ public final class TrinketInventoryImpl implements TrinketInventory {
     @Override
     public int hashCode() {
         return Objects.hash(slotType);
+    }
+
+    public boolean skipSaving() {
+        return this.isEmpty() && this.cachedModifiers.isEmpty() && this.modifiers.isEmpty();
+    }
+
+    public void writeData(ValueOutput value) {
+        ContainerSavingHelper.saveAllItems(value, this.stacks);
+        if (!this.persistentModifiers.isEmpty()) {
+            var list = value.list("persistent_modifiers", AttributeModifier.CODEC);
+            this.persistentModifiers.forEach(list::add);
+        }
+        if (!this.cachedModifiers.isEmpty()) {
+            var list = value.list("cached_modifiers", AttributeModifier.CODEC);
+            this.cachedModifiers.forEach(list::add);
+        }
+
+        if (this.size != this.baseSize) {
+            value.putInt("size", this.size);
+        }
+    }
+
+    public void readData(ValueInput value, Consumer<ItemStack> dropped) {
+        this.clearModifiers();
+
+        value.listOrEmpty("persistent_modifiers", AttributeModifier.CODEC).forEach(this::addModifiers);
+        value.listOrEmpty("cached_modifiers", AttributeModifier.CODEC).forEach(m -> {
+            this.cachedModifiers.add(m);
+            this.addModifierInternal(m);
+        });
+        this.update();
+
+        ContainerSavingHelper.loadAllItems(value, this.stacks, dropped);
+    }
+
+    public void readDataV0(ValueInput value, Consumer<ItemStack> dropped) {
+        this.clearModifiers();
+
+        var metadata = value.child("Metadata");
+        if (metadata.isPresent()) {
+            value.listOrEmpty("PersistentModifiers", AttributeModifier.CODEC).forEach(this::addModifiers);
+            value.listOrEmpty("CachedModifiers", AttributeModifier.CODEC).forEach(m -> {
+                this.cachedModifiers.add(m);
+                this.addModifierInternal(m);
+            });
+        }
+        this.update();
+
+        var items = value.read("Items", ItemStack.OPTIONAL_CODEC.listOf());
+        if (items.isPresent()) {
+            for (int i = 0; i < items.get().size(); i++) {
+                if (i < this.stacks.size()) {
+                    this.setItem(i, items.get().get(i));
+                } else {
+                    dropped.accept(items.get().get(i));
+                }
+            }
+        }
     }
 
     public interface InventorySizeChangedCallback {

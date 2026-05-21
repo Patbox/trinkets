@@ -13,15 +13,18 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.ConversionType;
+import net.minecraft.world.level.storage.ValueInput;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.extensions.ValueInputExtension;
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingConversionEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -74,6 +77,11 @@ public record NeoCommonAbstraction(List<Consumer<IEventBus>> lateActions) implem
     @Override
     public boolean isClient() {
         return FMLEnvironment.getDist().isClient();
+    }
+
+    @Override
+    public Collection<String> keys(ValueInput input) {
+        return ((ValueInputExtension) input).keySet();
     }
 
     public void addLateAction(Consumer<IEventBus> consumer) {

@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
 import java.util.function.Supplier;
+
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.util.datafix.schemas.V1460;
 
@@ -24,43 +25,44 @@ import net.minecraft.util.datafix.schemas.V1460;
  */
 @Mixin(V1460.class)
 public class V1460Mixin {
-	@Unique
-	private static Schema schema;
+    @Unique
+    private static Schema schema;
 
-	/*
-	 * We need to capture schema, so it is available in lambda mixins
-	 */
-	@Inject(method = "registerTypes", at = @At("HEAD"))
-	private void captureSchema(Schema schemax, Map<String, Supplier<TypeTemplate>> entityTypes, Map<String, Supplier<TypeTemplate>> blockEntityTypes, CallbackInfo ci) {
-		schema = schemax;
-	}
+    /*
+     * Inject trinket's schema into player data definition (lambda$registerTypes$2) and generic entity data definition (lambda$registerTypes$6)
+     * Optionals are ignored if it doesn't fit data definitions.
+     */
+    @ModifyReturnValue(method = {"lambda$registerTypes$2", "lambda$registerTypes$6"}, at = @At("RETURN"))
+    private static TypeTemplate attachTrinketFixer(TypeTemplate original) {
+        var trinketData = DSL.optional(DSL.compoundList(
+                // Define it as (optional) compound list / map (Map<String, Further Definition>). Keys are slot types.
+                DSL.and(DSL.optional(DSL.compoundList(
+                                // Define optional Items field, which is an optional list of ITEM_STACK. Other data is just copied over.
+                                DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(schema)))
+                        )),
+                        DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(schema))))
+        ));
 
-	/*
-	 * Inject trinket's schema into player data definition (lambda$registerTypes$2) and generic entity data definition (lambda$registerTypes$6)
-	 * Optionals are ignored if it doesn't fit data definitions.
-	 */
-	@ModifyReturnValue(method = {"lambda$registerTypes$2", "lambda$registerTypes$6"}, at = @At("RETURN"))
-	private static TypeTemplate attachTrinketFixer(TypeTemplate original) {
-		var trinketData = DSL.optional(DSL.compoundList(
-				// Define it as (optional) compound list / map (Map<String, Further Definition>). Keys are slot types.
-				DSL.optional(DSL.compoundList(
-						// Define optional Items field, which is an optional list of ITEM_STACK. Other data is just copied over.
-						DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(schema)))
-				))
-		));
+        // Add schema for trinkets to existing datafixers
+        return DSL.allWithRemainder(
+                // Legacy trinkets data cardinal_components.
+                DSL.optional(DSL.field("cardinal_components",
+                        DSL.optionalFields("trinkets:trinkets",
+                                trinketData
+                        )
+                )),
+                // new trinkets data
+                DSL.optional(DSL.optionalFields("trinkets",
+                        trinketData
+                )), original
+        );
+    }
 
-		// Add schema for trinkets to existing datafixers
-		return DSL.allWithRemainder(
-				// Legacy trinkets data cardinal_components.
-				DSL.optional(DSL.field("cardinal_components",
-						DSL.optionalFields("trinkets:trinkets",
-								trinketData
-						)
-				)),
-				// new trinkets data
-				DSL.optional(DSL.optionalFields("trinkets",
-						trinketData
-				)), original
-		);
-	}
+    /*
+     * We need to capture schema, so it is available in lambda mixins
+     */
+    @Inject(method = "registerTypes", at = @At("HEAD"))
+    private void captureSchema(Schema schemax, Map<String, Supplier<TypeTemplate>> entityTypes, Map<String, Supplier<TypeTemplate>> blockEntityTypes, CallbackInfo ci) {
+        schema = schemax;
+    }
 }

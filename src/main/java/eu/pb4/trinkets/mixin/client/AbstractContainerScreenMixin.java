@@ -125,7 +125,7 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 	@Inject(at = @At("HEAD"), method = "onStopHovering", cancellable = true)
 	private void onStopHovering(Slot slot, CallbackInfo info) {
 		if (slot instanceof TrinketSlot && slot.container instanceof TrinketInventory inventory) {
-			if (slot.index >= inventory.getContainerSize()) {
+			if (slot.getContainerSlot() >= inventory.getContainerSize()) {
 				if (slot != this.hoveredSlot && this.hoveredSlot != null) {
 					this.onStopHovering(this.hoveredSlot);
 				}

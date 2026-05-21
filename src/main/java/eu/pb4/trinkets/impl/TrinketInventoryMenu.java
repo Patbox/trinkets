@@ -15,7 +15,7 @@ public interface TrinketInventoryMenu {
 	/**
 	 * Called to inform the player's slot handler that it needs to remove and re-add its trinket slots to reflect new changes
 	 */
-	void trinkets$updateTrinketSlots(boolean slotsChanged);
+	void trinkets$updateTrinketSlots(boolean reinitializeAttachment);
 
 	int trinkets$getGroupNum(SlotGroup group);
 

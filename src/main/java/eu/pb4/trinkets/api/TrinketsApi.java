@@ -127,6 +127,7 @@ public class TrinketsApi {
 
     /**
      * @return A sided map of slot group names to slot groups available for players
+     * @deprecated Use {@link SlotGroup#getPlayerGroups(Level)}
      */
     @Deprecated
     public static Map<String, SlotGroup> getPlayerSlots(Level world) {
@@ -135,6 +136,7 @@ public class TrinketsApi {
 
     /**
      * @return A sided map of slot group names to slot groups available for players
+     * @deprecated Use {@link SlotGroup#getPlayerGroups(Player)}
      */
     @Deprecated
     public static Map<String, SlotGroup> getPlayerSlots(Player player) {
@@ -144,6 +146,7 @@ public class TrinketsApi {
     /**
      * @return A sided map of slot group names to slot groups available for the provided
      * entity type
+     * @deprecated Use {@link SlotGroup#getEntityGroups(Level, EntityType)}
      */
     @Deprecated
     public static Map<String, SlotGroup> getEntitySlots(Level world, EntityType<?> type) {
@@ -153,6 +156,7 @@ public class TrinketsApi {
     /**
      * @return A sided map of slot group names to slot groups available for the provided
      * entity
+     * @deprecated Use {@link SlotGroup#getEntityGroups(Entity)}
      */
     @Deprecated
     public static Map<String, SlotGroup> getEntitySlots(Entity entity) {
