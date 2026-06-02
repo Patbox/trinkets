@@ -1,4 +1,4 @@
-package eu.pb4.trinkets.mixin;
+package eu.pb4.trinkets.impl;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -6,11 +6,6 @@ import com.google.common.collect.Multimaps;
 import eu.pb4.trinkets.api.SlotAttributes;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
-import eu.pb4.trinkets.api.ext.TrinketsItemStackExtension;
-import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
-import eu.pb4.trinkets.impl.TrinketSlot;
-import eu.pb4.trinkets.impl.TrinketUtilities;
-import eu.pb4.trinkets.impl.TrinketsConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
@@ -19,20 +14,13 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.TooltipDisplay;
-import org.jspecify.annotations.Nullable;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.At.Shift;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -40,31 +28,11 @@ import java.util.function.Consumer;
  *
  * @author Emi
  */
-@Mixin(ItemStack.class)
-public abstract class ItemStackMixin implements TrinketsItemStackExtension {
-    @Inject(method = "addDetailsToTooltip", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/world/item/ItemStack;addAttributeTooltips(Ljava/util/function/Consumer;Lnet/minecraft/world/item/component/TooltipDisplay;Lnet/minecraft/world/entity/player/Player;)V",
-            shift = Shift.BEFORE), require = 0)
-    private void getTooltipVanilla(Item.TooltipContext context, TooltipDisplay display, @Nullable Player player, TooltipFlag tooltipFlag, Consumer<Component> builder, CallbackInfo ci) {
-        getTooltip(display, player, builder);
-    }
-
-    @SuppressWarnings("MixinAnnotationTarget")
-    @Inject(method = "addDetailsToTooltip", at = @At(value = "INVOKE",
-            target = "Lnet/neoforged/neoforge/common/util/AttributeUtil;addAttributeTooltips(Lnet/minecraft/world/item/ItemStack;Ljava/util/function/Consumer;Lnet/minecraft/world/item/component/TooltipDisplay;Lnet/neoforged/neoforge/common/util/AttributeTooltipContext;)V",
-            shift = Shift.BEFORE), require = 0)
-    private void getTooltipNeoForge(Item.TooltipContext context, TooltipDisplay display, @Nullable Player player, TooltipFlag tooltipFlag, Consumer<Component> builder, CallbackInfo ci) {
-        getTooltip(display, player, builder);
-    }
-
-
-    @Unique
-    private void getTooltip(TooltipDisplay displayComponent, Player player, Consumer<Component> textConsumer) {
+public class ItemStackTooltipUtil {
+    public static void getTooltip(ItemStack self, TooltipDisplay displayComponent, Player player, Consumer<Component> textConsumer) {
         if (player == null || !TrinketsConfig.instance.showItemTooltip) return;
 
         var comp = LivingEntityTrinketAttachment.get(player);
-
-        ItemStack self = (ItemStack) (Object) this;
 
         boolean showAttributeTooltip = displayComponent.shows(TrinketDataComponents.ATTRIBUTE_MODIFIERS);
         if (!showAttributeTooltip) {
@@ -176,8 +144,7 @@ public abstract class ItemStackMixin implements TrinketsItemStackExtension {
         }
     }
 
-    @Unique
-    private void addAttributes(Consumer<Component> textConsumer, Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>> map) {
+    private static void addAttributes(Consumer<Component> textConsumer, Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>> map) {
         if (!map.isEmpty()) {
             for (var entry : map.entries()) {
                 Holder<Attribute> attribute = entry.getKey();
@@ -222,8 +189,7 @@ public abstract class ItemStackMixin implements TrinketsItemStackExtension {
     }
 
     // `equals` doesn't test thoroughly
-    @Unique
-    private boolean areMapsEqual(Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>> map1, Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>> map2) {
+    private static boolean areMapsEqual(Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>> map1, Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>> map2) {
         if (map1.size() != map2.size()) {
             return false;
         } else {

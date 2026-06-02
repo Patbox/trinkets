@@ -52,10 +52,11 @@
   },
   "accessWidener": "trinkets.classtweaker",
   "mixins": [
-    "trinkets.mixins.json"
+    "trinkets.mixins.json",
+    "trinkets.fabric.mixins.json"
   ],
   "depends": {
-    "minecraft": ">=26.1-",
+    "minecraft": "26.1.x",
     "fabricloader": ">=0.18.0",
     "fabric-api": "*",
     "yumi_mc_core": ">=1.0.0+26.1"

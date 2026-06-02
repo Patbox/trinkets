@@ -37,7 +37,6 @@ public class TestTrinket extends Item implements TrinketRenderer, TrinketCallbac
 
 	public TestTrinket(Properties settings) {
 		super(settings);
-
 		this.offhandRingAttribute = SlotAttributes.createAttributeForSlot("offhand/ring");
 		this.handGloveAttribute = SlotAttributes.createAttributeForSlot("hand/glove");
 	}

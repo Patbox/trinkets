@@ -12,7 +12,6 @@ public class TrinketsConfig {
     private static final Path CONFIG_PATH = YumiMods.get().getConfigDirectory().resolve("trinkets.json");
     public static TrinketsConfig instance = new TrinketsConfig();
 
-
     @SerializedName("render_trinkers_in_first_person")
     public boolean renderFirstPersonHand = false;
     @SerializedName("sidebar_trinkets_slots")

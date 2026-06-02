@@ -21,10 +21,13 @@ issueTrackerURL = "https://github.com/Patbox/Trinkets/issues"
 [[mixins]]
 	config = "trinkets.mixins.json"
 
+[[mixins]]
+	config = "trinkets.neo.mixins.json"
+
 [[dependencies.trinkets_updated]]
 	modId = "minecraft"
 	type = "required"
-	versionRange = "[26.1,)"
+	versionRange = "[26.1,26.2)"
 	ordering = "NONE"
 	side = "BOTH"
 

@@ -1,12 +1,1 @@
-- Added `interact_equipable_predicates` field to slot defition:
-  - Allows to define whatever an item can be put into slot when using it in hand.
-- Used a new `LivingEntity#getTrinkets()` method via interface injection:
-  - Allows to quickly get the attachment from the entity.
-- Deprecated old TrinketsApi#getEntitySlots/getPlayerSlots methods:
-  - SlotGroup#getEntityGroups / getPlayerGroups can be used as a replacement.
-- Deprecated SlotGroup#slots:
-  - SlotGroups#getSlots can be used as a replaced, if you only care about slots.
-  - SlotType#getEntitySlots can be used to get the string id -> SlotType map, based on full ids.
-- Fixed the trinkets command.
-- Fixed trinkets not being equipable by default.
-- Fixed creative crash when changing Trinket slot count.
+- Fixed game crashing with `-Dmixin.debug=true`
