@@ -385,6 +385,19 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     }
 
     @Override
+    public List<TrinketSlotAccess> equipped(Predicate<ItemStack> predicate, boolean requireActive) {
+        List<TrinketSlotAccess> list = new ArrayList<>();
+        forEach((slotReference, itemStack) -> {
+            if (predicate.test(itemStack) && (!requireActive || TrinketsApi.canApplyEffects(itemStack, slotReference, this.entity))) {
+                list.add(slotReference);
+            }
+        });
+        return list;
+    }
+
+    @SuppressWarnings("removal")
+    @Override
+    @Deprecated(forRemoval = true)
     public List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Predicate<ItemStack> predicate, boolean requireActive) {
         List<Tuple<TrinketSlotAccess, ItemStack>> list = new ArrayList<>();
         forEach((slotReference, itemStack) -> {
