@@ -1,6 +1,5 @@
 package eu.pb4.trinkets.api;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -95,22 +94,26 @@ public interface TrinketAttachment {
 	}
 
 	/**
+	 * @param predicate predicate to check against when searching for item.
+	 * @param requireActive checks if provided trinket is allowed to apply effects
 	 * @return All slots that match the provided predicate
 	 */
-	default List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Predicate<ItemStack> predicate) {
-		return getEquipped(predicate, false);
+	List<TrinketSlotAccess> equipped(Predicate<ItemStack> predicate, boolean requireActive);
+
+	/**
+	 * @param requireActive checks if provided trinket is allowed to apply effects
+	 * @return All slots that contain the provided item
+	 */
+	default List<TrinketSlotAccess> equipped(Item item, boolean requireActive) {
+		return equipped(stack -> stack.is(item), requireActive);
 	}
 
 	/**
-	 * @return All slots that match the provided predicate
+	 * @param requireActive checks if provided trinket is allowed to apply effects
+	 * @return All non-empty slots
 	 */
-	List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Predicate<ItemStack> predicate, boolean requireActive);
-
-	/**
-	 * @return All slots that contain the provided item
-	 */
-	default List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Item item) {
-		return getEquipped(stack -> stack.is(item));
+	default List<TrinketSlotAccess> allEquipped(boolean requireActive) {
+		return equipped(stack -> !stack.isEmpty(), requireActive);
 	}
 
 	/**
@@ -151,20 +154,6 @@ public interface TrinketAttachment {
 	 */
 	default Optional<TrinketSlotAccess> findFirst(TagKey<Item> tag) {
 		return findFirst(stack -> stack.is(tag));
-	}
-
-	/**
-	 * @return All non-empty slots
-	 */
-	default List<Tuple<TrinketSlotAccess, ItemStack>> getAllEquipped() {
-		return getEquipped(stack -> !stack.isEmpty());
-	}
-
-	/**
-	 * @return All non-empty slots
-	 */
-	default List<Tuple<TrinketSlotAccess, ItemStack>> getAllEquipped(boolean requireActive) {
-		return getEquipped(stack -> !stack.isEmpty(), requireActive);
 	}
 
 	/**
@@ -214,4 +203,41 @@ public interface TrinketAttachment {
 	@Deprecated(forRemoval = true)
 	Map<String, Map<String, TrinketInventory>> getInventory();
 
+	/**
+	 * @return All slots that match the provided predicate
+	 */
+	@Deprecated(forRemoval = true)
+	List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Predicate<ItemStack> predicate, boolean requireActive);
+
+	/**
+	 * @return All slots that contain the provided item
+	 */
+	@Deprecated(forRemoval = true)
+	default List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Item item) {
+		return getEquipped(stack -> stack.is(item));
+	}
+
+	/**
+	 * @return All non-empty slots
+	 */
+	@Deprecated(forRemoval = true)
+	default List<Tuple<TrinketSlotAccess, ItemStack>> getAllEquipped() {
+		return getEquipped(stack -> !stack.isEmpty());
+	}
+
+	/**
+	 * @return All non-empty slots
+	 */
+	@Deprecated(forRemoval = true)
+	default List<Tuple<TrinketSlotAccess, ItemStack>> getAllEquipped(boolean requireActive) {
+		return getEquipped(stack -> !stack.isEmpty(), requireActive);
+	}
+
+	/**
+	 * @return All slots that match the provided predicate
+	 */
+	@Deprecated(forRemoval = true)
+	default List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Predicate<ItemStack> predicate) {
+		return getEquipped(predicate, false);
+	}
 }

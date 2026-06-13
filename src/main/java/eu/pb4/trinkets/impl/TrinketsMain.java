@@ -51,8 +51,6 @@ public class TrinketsMain implements ModInitializer {
 
     @Override
     public void onInitialize(ModContainer modContainer) {
-        MixinEnvironment.getCurrentEnvironment().audit();
-
         TrinketsConfig.load();
         CommonAbstraction.INSTANCE.registerServerReloadListener(SlotLoader.ID, SlotLoader.INSTANCE);
         CommonAbstraction.INSTANCE.registerServerReloadListener(EntitySlotLoader.ID, EntitySlotLoader.SERVER, SlotLoader.ID);
