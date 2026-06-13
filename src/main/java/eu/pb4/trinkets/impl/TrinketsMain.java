@@ -30,6 +30,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
+import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -50,6 +51,8 @@ public class TrinketsMain implements ModInitializer {
 
     @Override
     public void onInitialize(ModContainer modContainer) {
+        MixinEnvironment.getCurrentEnvironment().audit();
+
         TrinketsConfig.load();
         CommonAbstraction.INSTANCE.registerServerReloadListener(SlotLoader.ID, SlotLoader.INSTANCE);
         CommonAbstraction.INSTANCE.registerServerReloadListener(EntitySlotLoader.ID, EntitySlotLoader.SERVER, SlotLoader.ID);

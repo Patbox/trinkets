@@ -1,1 +1,3 @@
-- Fixed game crashing with `-Dmixin.debug=true`
+- (Breaking, 26.2) Simplified all methods returning Tuple<TrinketSlotAccess, ItemStack> or variant to just return the TrinketSlotAccess:
+  - Reason for this is Minecraft removing the Tuple class and it no longer being needed, as ItemStack can be accessed from TrinketSlotAccess.
+- NeoForge compatibility is untested and might not work correctly.

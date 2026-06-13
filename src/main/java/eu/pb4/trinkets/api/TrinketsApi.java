@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -50,7 +51,7 @@ public class TrinketsApi {
         }
 
         if (dropRule == TrinketDropRule.DEFAULT) {
-            if (keepInventory && entity.getType() == EntityType.PLAYER) {
+            if (keepInventory && entity.getType() == EntityTypes.PLAYER) {
                 dropRule = TrinketDropRule.KEEP;
             } else if (EnchantmentHelper.has(stack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
                 dropRule = TrinketDropRule.DESTROY;
@@ -131,7 +132,7 @@ public class TrinketsApi {
      */
     @Deprecated
     public static Map<String, SlotGroup> getPlayerSlots(Level world) {
-        return getEntitySlots(world, EntityType.PLAYER);
+        return getEntitySlots(world, EntityTypes.PLAYER);
     }
 
     /**

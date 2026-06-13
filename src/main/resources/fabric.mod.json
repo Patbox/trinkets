@@ -56,10 +56,10 @@
     "trinkets.fabric.mixins.json"
   ],
   "depends": {
-    "minecraft": "26.1.x",
-    "fabricloader": ">=0.18.0",
+    "minecraft": "26.2.x",
+    "fabricloader": ">=0.19.0",
     "fabric-api": "*",
-    "yumi_mc_core": ">=1.0.0+26.1"
+    "yumi_mc_core": ">=1.1.0+26.2"
   },
   "custom": {
     "modmenu": {

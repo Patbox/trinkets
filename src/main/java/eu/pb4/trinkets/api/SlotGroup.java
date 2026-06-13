@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.level.Level;
@@ -18,7 +19,7 @@ public interface SlotGroup {
      * @return A sided map of slot group names to slot groups available for players
      */
     static Map<String, SlotGroup> getPlayerGroups(Level world) {
-        return getEntityGroups(world, EntityType.PLAYER);
+        return getEntityGroups(world, EntityTypes.PLAYER);
     }
 
     /**

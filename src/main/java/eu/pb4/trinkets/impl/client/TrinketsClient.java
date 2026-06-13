@@ -48,7 +48,7 @@ public class TrinketsClient implements ClientModInitializer {
 
                 if (entity instanceof Player && ((Player) entity).inventoryMenu instanceof TrinketInventoryMenu screenHandler) {
                     screenHandler.trinkets$updateTrinketSlots(false);
-                    if (client.screen instanceof TrinketScreen trinketScreen) {
+                    if (client.gui.screen() instanceof TrinketScreen trinketScreen) {
                         trinketScreen.trinkets$updateTrinketSlots();
                     }
                     TrinketScreenManager.tryUpdateTrinketsSlot();
@@ -68,7 +68,7 @@ public class TrinketsClient implements ClientModInitializer {
             if (player != null) {
                 ((TrinketInventoryMenu) player.inventoryMenu).trinkets$updateTrinketSlots(true);
 
-                if (client.screen instanceof TrinketScreen trinketScreen) {
+                if (client.gui.screen() instanceof TrinketScreen trinketScreen) {
                     trinketScreen.trinkets$updateTrinketSlots();
                 }
 

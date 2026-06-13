@@ -65,7 +65,7 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 				Level world = this.owner.level();
 				if (TrinketsMain.IS_CLIENT && world.isClientSide()) {
 					Minecraft client = Minecraft.getInstance();
-					Screen s = client.screen;
+					Screen s = client.gui.screen();
 					if (s instanceof InventoryScreen screen) {
 						if (((RecipeBookScreenAccessor) screen).trinkets$getRecipeBookComponent().isVisible()) {
 							return false;

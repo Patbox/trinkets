@@ -12,7 +12,6 @@ import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
@@ -81,7 +80,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
 
     @Inject(at = @At("HEAD"), method = "canFreeze", cancellable = true)
     private void canFreeze(CallbackInfoReturnable<Boolean> cir) {
-        for (Tuple<TrinketSlotAccess, ItemStack> equipped : this.trinketAttachment.getAllEquipped()) {
+        for (var equipped : this.trinketAttachment.getAllEquipped()) {
             if (equipped.getB().is(ItemTags.FREEZE_IMMUNE_WEARABLES)) {
                 cir.setReturnValue(false);
                 break;

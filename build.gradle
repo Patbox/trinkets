@@ -206,7 +206,7 @@ if (System.getenv("MODRINTH")) {
 }
 
 
-curseforge {
+/*curseforge {
 	if (System.getenv("CURSEFORGE")) {
 		apiKey = System.getenv("CURSEFORGE")
 
@@ -239,7 +239,7 @@ curseforge {
 	jar {
 		finalizedBy project.tasks.curseforge
 	}
-}
+}*/
 
 publishing {
 	publications {

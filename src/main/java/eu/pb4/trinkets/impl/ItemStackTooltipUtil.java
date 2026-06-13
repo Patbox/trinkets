@@ -3,13 +3,13 @@ package eu.pb4.trinkets.impl;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.trinkets.api.SlotAttributes;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -41,9 +41,9 @@ public class ItemStackTooltipUtil {
         }
 
         boolean canEquipAnywhere = true;
-        List<Tuple<SlotType, Boolean>> slots = new ArrayList<>();
-        Map<SlotType, Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>>> modifiers = Maps.newHashMap();
-        Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>> defaultModifier = null;
+        List<Pair<SlotType, Boolean>> slots = new ArrayList<>();
+        Map<SlotType, Multimap<Holder<Attribute>, Pair<AttributeModifier, ItemAttributeModifiers.Display>>> modifiers = Maps.newHashMap();
+        Multimap<Holder<Attribute>, Pair<AttributeModifier, ItemAttributeModifiers.Display>> defaultModifier = null;
         boolean allModifiersSame = true;
         int slotCount = 0;
 
@@ -60,21 +60,22 @@ public class ItemStackTooltipUtil {
 
                 if (res && isValidForSlot) {
                     boolean sameTranslationExists = false;
-                    for (var t : slots) {
-                        if (t.getA().getTranslation().getString().equals(slotType.getTranslation().getString())) {
+                    for (var a = 0; a < slots.size(); a++) {
+                        var t = slots.get(a);
+                        if (t.getFirst().getTranslation().getString().equals(slotType.getTranslation().getString())) {
                             sameTranslationExists = true;
-                            if (canInsert && !t.getB()) {
-                                t.setB(true);
+                            if (canInsert && !t.getSecond()) {
+                                slots.set(a, new Pair<>(t.getFirst(), true));
                             }
                             break;
                         }
                     }
 
                     if (!sameTranslationExists) {
-                        slots.add(new Tuple<>(slotType, canInsert));
+                        slots.add(new Pair<>(slotType, canInsert));
                     }
-                    Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>> map = Multimaps.newMultimap(Maps.newLinkedHashMap(), ArrayList::new);
-                    TrinketUtilities.forEachModifier(player, self, ref, (atr, mod, dis) -> map.put(atr, new Tuple<>(mod, dis)));
+                    Multimap<Holder<Attribute>, Pair<AttributeModifier, ItemAttributeModifiers.Display>> map = Multimaps.newMultimap(Maps.newLinkedHashMap(), ArrayList::new);
+                    TrinketUtilities.forEachModifier(player, self, ref, (atr, mod, dis) -> map.put(atr, new Pair<>(mod, dis)));
 
                     if (defaultModifier == null) {
                         defaultModifier = map;
@@ -112,18 +113,18 @@ public class ItemStackTooltipUtil {
 
                 for (int i = 0; i < 6; i++) {
                     var slotType = slots.get((int) ((t + i) % slots.size()));
-                    textConsumer.accept(slotType.getA().getTranslation().withStyle(slotType.getB() ? ChatFormatting.BLUE : ChatFormatting.DARK_GRAY));
+                    textConsumer.accept(slotType.getFirst().getTranslation().withStyle(slotType.getSecond() ? ChatFormatting.BLUE : ChatFormatting.DARK_GRAY));
                 }
             } else {
                 for (var slotType : slots) {
-                    textConsumer.accept(slotType.getA().getTranslation().withStyle(slotType.getB() ? ChatFormatting.BLUE : ChatFormatting.DARK_GRAY));
+                    textConsumer.accept(slotType.getFirst().getTranslation().withStyle(slotType.getSecond() ? ChatFormatting.BLUE : ChatFormatting.DARK_GRAY));
                 }
             }
         } else if (slots.size() == 1) {
             // Should only run once
             for (var slotType : slots) {
                 textConsumer.accept(Component.translatable("trinkets.tooltip.slots.single",
-                        slotType.getA().getTranslation().withStyle(slotType.getB() ? ChatFormatting.BLUE : ChatFormatting.DARK_GRAY)
+                        slotType.getFirst().getTranslation().withStyle(slotType.getSecond() ? ChatFormatting.BLUE : ChatFormatting.DARK_GRAY)
                 ).withStyle(ChatFormatting.GRAY));
             }
         }
@@ -144,16 +145,16 @@ public class ItemStackTooltipUtil {
         }
     }
 
-    private static void addAttributes(Consumer<Component> textConsumer, Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>> map) {
+    private static void addAttributes(Consumer<Component> textConsumer, Multimap<Holder<Attribute>, Pair<AttributeModifier, ItemAttributeModifiers.Display>> map) {
         if (!map.isEmpty()) {
             for (var entry : map.entries()) {
                 Holder<Attribute> attribute = entry.getKey();
-                var tuple = entry.getValue();
-                if (tuple.getB().type() == ItemAttributeModifiers.Display.Type.HIDDEN) {
+                var Pair = entry.getValue();
+                if (Pair.getSecond().type() == ItemAttributeModifiers.Display.Type.HIDDEN) {
                     continue;
                 }
 
-                AttributeModifier modifier = tuple.getA();
+                AttributeModifier modifier = Pair.getFirst();
                 double g = modifier.amount();
 
                 if (modifier.operation() != AttributeModifier.Operation.ADD_MULTIPLIED_BASE && modifier.operation() != AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
@@ -164,7 +165,7 @@ public class ItemStackTooltipUtil {
                     g *= 100.0D;
                 }
 
-                if (tuple.getB() instanceof ItemAttributeModifiers.Display.OverrideText(var t)) {
+                if (Pair.getSecond() instanceof ItemAttributeModifiers.Display.OverrideText(var t)) {
                     textConsumer.accept(t);
                     continue;
                 }
@@ -189,7 +190,7 @@ public class ItemStackTooltipUtil {
     }
 
     // `equals` doesn't test thoroughly
-    private static boolean areMapsEqual(Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>> map1, Multimap<Holder<Attribute>, Tuple<AttributeModifier, ItemAttributeModifiers.Display>> map2) {
+    private static boolean areMapsEqual(Multimap<Holder<Attribute>, Pair<AttributeModifier, ItemAttributeModifiers.Display>> map1, Multimap<Holder<Attribute>, Pair<AttributeModifier, ItemAttributeModifiers.Display>> map2) {
         if (map1.size() != map2.size()) {
             return false;
         } else {
@@ -207,13 +208,13 @@ public class ItemStackTooltipUtil {
                     var iter = col2.iterator();
 
                     for (var modifier : col1) {
-                        AttributeModifier eam = iter.next().getA();
+                        AttributeModifier eam = iter.next().getFirst();
 
                         //we can't check identifiers. EAMs will have slot-specific identifiers so fail total equality by nature.
-                        if (!modifier.getA().operation().equals(eam.operation())) {
+                        if (!modifier.getFirst().operation().equals(eam.operation())) {
                             return false;
                         }
-                        if (modifier.getA().amount() != eam.amount()) {
+                        if (modifier.getFirst().amount() != eam.amount()) {
                             return false;
                         }
                     }

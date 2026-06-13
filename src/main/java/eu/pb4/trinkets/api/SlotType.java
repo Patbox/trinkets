@@ -6,6 +6,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -20,7 +21,7 @@ public interface SlotType {
      * @return A sided map of slot ids to slots available for players
      */
     static Map<String, SlotType> getPlayerSlots(Level world) {
-        return getEntitySlots(world, EntityType.PLAYER);
+        return getEntitySlots(world, EntityTypes.PLAYER);
     }
 
     /**

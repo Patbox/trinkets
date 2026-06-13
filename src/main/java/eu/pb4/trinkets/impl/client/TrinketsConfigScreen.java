@@ -151,7 +151,7 @@ public class TrinketsConfigScreen extends Screen {
 
     public void onClose() {
         TrinketsConfig.save();
-        this.minecraft.setScreen(this.lastScreen);
+        this.minecraft.setScreenAndShow(this.lastScreen);
         if (this.minecraft.player != null) {
             ((TrinketInventoryMenu) this.minecraft.player.inventoryMenu).trinkets$updateTrinketSlots(false);
         }

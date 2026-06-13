@@ -379,7 +379,7 @@ public class TrinketScreenManager {
 
 	public static boolean isClickInsideTrinketBounds(double mouseX, double mouseY) {
 		TrinketScreen currentScreen = getCurrentScreen();
-		if (currentScreen == null || Minecraft.getInstance().screen != currentScreen) {
+		if (currentScreen == null || Minecraft.getInstance().gui.screen() != currentScreen) {
 			return false;
 		}
 
