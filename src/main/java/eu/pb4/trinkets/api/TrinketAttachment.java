@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -202,42 +201,4 @@ public interface TrinketAttachment {
 	 */
 	@Deprecated(forRemoval = true)
 	Map<String, Map<String, TrinketInventory>> getInventory();
-
-	/**
-	 * @return All slots that match the provided predicate
-	 */
-	@Deprecated(forRemoval = true)
-	List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Predicate<ItemStack> predicate, boolean requireActive);
-
-	/**
-	 * @return All slots that contain the provided item
-	 */
-	@Deprecated(forRemoval = true)
-	default List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Item item) {
-		return getEquipped(stack -> stack.is(item));
-	}
-
-	/**
-	 * @return All non-empty slots
-	 */
-	@Deprecated(forRemoval = true)
-	default List<Tuple<TrinketSlotAccess, ItemStack>> getAllEquipped() {
-		return getEquipped(stack -> !stack.isEmpty());
-	}
-
-	/**
-	 * @return All non-empty slots
-	 */
-	@Deprecated(forRemoval = true)
-	default List<Tuple<TrinketSlotAccess, ItemStack>> getAllEquipped(boolean requireActive) {
-		return getEquipped(stack -> !stack.isEmpty(), requireActive);
-	}
-
-	/**
-	 * @return All slots that match the provided predicate
-	 */
-	@Deprecated(forRemoval = true)
-	default List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Predicate<ItemStack> predicate) {
-		return getEquipped(predicate, false);
-	}
 }

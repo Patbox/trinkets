@@ -10,7 +10,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -390,19 +389,6 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         forEach((slotReference, itemStack) -> {
             if (predicate.test(itemStack) && (!requireActive || TrinketsApi.canApplyEffects(itemStack, slotReference, this.entity))) {
                 list.add(slotReference);
-            }
-        });
-        return list;
-    }
-
-    @SuppressWarnings("removal")
-    @Override
-    @Deprecated(forRemoval = true)
-    public List<Tuple<TrinketSlotAccess, ItemStack>> getEquipped(Predicate<ItemStack> predicate, boolean requireActive) {
-        List<Tuple<TrinketSlotAccess, ItemStack>> list = new ArrayList<>();
-        forEach((slotReference, itemStack) -> {
-            if (predicate.test(itemStack) && (!requireActive || TrinketsApi.canApplyEffects(itemStack, slotReference, this.entity))) {
-                list.add(new Tuple<>(slotReference, itemStack));
             }
         });
         return list;
