@@ -1,5 +1,3 @@
-- Added new equipped and allEquipped methods, as alternative to deprecated methods below. (Will be backported to 26.1)
+- Added new equipped and allEquipped methods, as alternative to deprecated methods below.
   - They require the requireActive argument to be provided (checks if trinket is allowed to apply effects) and return List<TrinketSlotAccess> over a Tuple<TSA, ItemStack>.
-- Deprecated `getEquipped` and `getAllEquipped` methods, as Tuple class they depended on got removed.
-- (26.2) Provided temporary implementation of Tuple to allow some deprecation period before removal of effected methods.
-- NeoForge compatibility is untested and might not work correctly.
+- Deprecated `getEquipped` and `getAllEquipped` methods, as Tuple class they depended on got removed in 26.2 removed.

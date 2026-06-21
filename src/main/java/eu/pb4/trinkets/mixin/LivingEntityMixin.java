@@ -81,8 +81,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
 
     @Inject(at = @At("HEAD"), method = "canFreeze", cancellable = true)
     private void canFreeze(CallbackInfoReturnable<Boolean> cir) {
-        for (Tuple<TrinketSlotAccess, ItemStack> equipped : this.trinketAttachment.getAllEquipped()) {
-            if (equipped.getB().is(ItemTags.FREEZE_IMMUNE_WEARABLES)) {
+        for (var equipped : this.trinketAttachment.allEquipped(true)) {
+            if (equipped.get().is(ItemTags.FREEZE_IMMUNE_WEARABLES)) {
                 cir.setReturnValue(false);
                 break;
             }
