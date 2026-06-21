@@ -176,13 +176,15 @@ public class ItemStackTooltipUtil {
                 }
 
 
+                ChatFormatting color = attribute.value().getStyle(g > 0.0D);
+                
                 if (g > 0.0D) {
                     textConsumer.accept(Component.translatable("attribute.modifier.plus." + modifier.operation().id(),
-                            ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(g), text).withStyle(ChatFormatting.BLUE));
+                            ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(g), text).withStyle(color));
                 } else if (g < 0.0D) {
                     g *= -1.0D;
                     textConsumer.accept(Component.translatable("attribute.modifier.take." + modifier.operation().id(),
-                            ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(g), text).withStyle(ChatFormatting.RED));
+                            ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(g), text).withStyle(color));
                 }
             }
         }
