@@ -140,7 +140,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                                     oldStack = stackHistory.trinkets$getOldStack(ref);
                                 }
                                 droppedItems.put(ref, oldStack);
-                                if (this.entity instanceof Player player) {
+                                if (this.entity instanceof Player player && !player.level().isClientSide()) {
                                     player.getInventory().placeItemBackInInventory(stack.copy());
                                 } else if (this.entity.level() instanceof ServerLevel serverWorld) {
                                     this.entity.spawnAtLocation(serverWorld, stack);
