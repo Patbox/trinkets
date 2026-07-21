@@ -7,6 +7,7 @@
   },
   "mixins": [
     "ItemStackMixin",
+    "ItemTooltipHandlerMixin",
     "behaviour.LivingEntityMixin"
   ],
   "client": [
