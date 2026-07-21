@@ -206,7 +206,7 @@ if (System.getenv("MODRINTH")) {
 }
 
 
-/*curseforge {
+curseforge {
 	if (System.getenv("CURSEFORGE")) {
 		apiKey = System.getenv("CURSEFORGE")
 
@@ -218,6 +218,8 @@ if (System.getenv("MODRINTH")) {
 			addGameVersion((project.minecraft_version.contains("-") ? ((String) project.minecraft_version.split("-")[0] + "-snapshot") : project.minecraft_version))
 			addGameVersion "Fabric"
 			addGameVersion "NeoForge"
+			addGameVersion "Client"
+			addGameVersion "Server"
 
 			for (String a : project.mc_extra_supported.split(",")) {
 				if (!a.strip().isEmpty()) {
@@ -239,7 +241,7 @@ if (System.getenv("MODRINTH")) {
 	jar {
 		finalizedBy project.tasks.curseforge
 	}
-}*/
+}
 
 publishing {
 	publications {
