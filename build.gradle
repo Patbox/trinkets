@@ -218,6 +218,8 @@ curseforge {
 			addGameVersion((project.minecraft_version.contains("-") ? ((String) project.minecraft_version.split("-")[0] + "-snapshot") : project.minecraft_version))
 			addGameVersion "Fabric"
 			addGameVersion "NeoForge"
+			addGameVersion "Client"
+			addGameVersion "Server"
 
 			for (String a : project.mc_extra_supported.split(",")) {
 				if (!a.strip().isEmpty()) {
