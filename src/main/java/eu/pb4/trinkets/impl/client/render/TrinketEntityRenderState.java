@@ -1,14 +1,13 @@
 package eu.pb4.trinkets.impl.client.render;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 
 import java.util.List;
 import java.util.Optional;
 
 import eu.pb4.trinkets.api.client.TrinketRenderer;
-import eu.pb4.trinkets.impl.client.render.types.AttachmentSettings;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import eu.pb4.trinkets.api.client.renderer.AttachmentSettings;
+import eu.pb4.trinkets.api.client.renderer.TrinketRenderContext;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -16,7 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import org.jspecify.annotations.Nullable;
 
-public interface TrinketRenderState {
+public interface TrinketEntityRenderState {
     void trinkets$setCodeRenderers(List<CodeRenderCall> items);
 
     void trinkets$setPartAttachedRenderers(List<PartAttachedRenderer> items);
@@ -35,11 +34,6 @@ public interface TrinketRenderState {
     @Nullable
     EquipmentOverride trinkets$getWingOverride();
 
-
-    interface SubmitCall {
-        void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final int outlineColor);
-    }
-
     ;
 
     record EquipmentOverride(TrinketSlotAccess access, ItemStack stack,
@@ -48,9 +42,7 @@ public interface TrinketRenderState {
                              Optional<EquipmentClientInfo> override) {
     }
 
-    record PartAttachedRenderer(AttachmentSettings settings, SubmitCall call) {
-    }
+    record PartAttachedRenderer(AttachmentSettings settings, TrinketRenderContext.SubmitCall call) {}
 
-    record CodeRenderCall(TrinketSlotAccess access, ItemStack itemStack, TrinketRenderer renderer) {
-    }
+    record CodeRenderCall(TrinketSlotAccess access, ItemStack itemStack, TrinketRenderer renderer) {}
 }

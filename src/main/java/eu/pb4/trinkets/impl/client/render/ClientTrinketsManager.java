@@ -1,7 +1,10 @@
 package eu.pb4.trinkets.impl.client.render;
 
 import com.mojang.serialization.Codec;
+import eu.pb4.trinkets.api.client.renderer.ClientTrinket;
+import eu.pb4.trinkets.api.client.renderer.element.TrinketRenderElement;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
+import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
@@ -12,21 +15,24 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
-public class ClientTrinketsManager extends SimpleJsonResourceReloadListener<ClientTrinket> {
-    public static final ClientTrinketsManager INSTANCE = new ClientTrinketsManager(ClientTrinket.CODEC, FileToIdConverter.json("trinkets"));
-    public CompletableFuture<Map<Identifier, ClientTrinket>> completableFuture = new CompletableFuture<>();
-    private Map<Identifier, ClientTrinket> idMap = Map.of();
-    private Map<Item, ClientTrinket> defaultMap = Map.of();
-    private Map<Identifier, ClientTrinket> futureIdMap = Map.of();
+public class ClientTrinketsManager extends SimpleJsonResourceReloadListener<ClientTrinketsManager.Hold> {
+    public static final ClientTrinketsManager INSTANCE = new ClientTrinketsManager(ClientTrinket.CODEC.xmap(Hold::new, x -> x.clientTrinket), FileToIdConverter.json("trinkets"));
+    public CompletableFuture<Map<Identifier, Hold>> completableFuture = new CompletableFuture<>();
+    private Map<Identifier, Hold> idMap = Map.of();
+    private Map<Item, Hold> defaultMap = Map.of();
 
-    protected ClientTrinketsManager(Codec<ClientTrinket> codec, FileToIdConverter lister) {
+    private Map<Identifier, Hold> futureIdMap = Map.of();
+
+    protected ClientTrinketsManager(Codec<Hold> codec, FileToIdConverter lister) {
         super(codec, lister);
     }
 
-    protected Map<Identifier, ClientTrinket> prepare(ResourceManager manager, ProfilerFiller profiler) {
+    protected Map<Identifier, Hold> prepare(ResourceManager manager, ProfilerFiller profiler) {
         var futureValues = super.prepare(manager, profiler);
         this.futureIdMap = futureValues;
         completableFuture.complete(this.futureIdMap);
@@ -34,29 +40,21 @@ public class ClientTrinketsManager extends SimpleJsonResourceReloadListener<Clie
     }
 
     @Override
-    protected void apply(Map<Identifier, ClientTrinket> preparations, ResourceManager manager, ProfilerFiller profiler) {
+    protected void apply(Map<Identifier, Hold> preparations, ResourceManager manager, ProfilerFiller profiler) {
         this.idMap = preparations;
         this.updateItemMap();
     }
 
-    public Map<Identifier, ClientTrinket> getIdMap() {
-        return this.idMap;
-    }
-
-    public Map<Identifier, ClientTrinket> getFutureIdMap() {
-        return this.futureIdMap;
-    }
-
     public void updateItemMap() {
-        var map = new IdentityHashMap<Item, ClientTrinket>();
+        var map = new IdentityHashMap<Item, Hold>();
         for (var trinket : this.idMap.values()) {
-            for (var key : trinket.target()) {
+            for (var key : trinket.clientTrinket.target()) {
                 if (key.left().isPresent()) {
                     var item = BuiltInRegistries.ITEM.get(key.left().orElseThrow());
                     if (item.isPresent()) {
                         var old = map.get(item.get().value());
 
-                        if (old == null || old.priority() <= trinket.priority()) {
+                        if (old == null || old.clientTrinket.priority() <= trinket.clientTrinket.priority()) {
                             map.put(item.get().value(), trinket);
                         }
                     }
@@ -66,7 +64,7 @@ public class ClientTrinketsManager extends SimpleJsonResourceReloadListener<Clie
                         for (var item : tag.get()) {
                             var old = map.get(item.value());
 
-                            if (old == null || old.priority() <= trinket.priority()) {
+                            if (old == null || old.clientTrinket.priority() <= trinket.clientTrinket.priority()) {
                                 map.put(item.value(), trinket);
                             }
                         }
@@ -82,15 +80,36 @@ public class ClientTrinketsManager extends SimpleJsonResourceReloadListener<Clie
         this.defaultMap = Map.of();
     }
 
-    public ClientTrinket get(ItemStack stack) {
+    public List<TrinketRenderElement.Baked> getResolved(ItemStack stack) {
         var trinket = stack.get(TrinketDataComponents.EQUIPMENT);
         if (trinket != null) {
             var id = trinket.assetId().map(this.idMap::get);
             if (id.isPresent()) {
-                return id.get();
+                return id.get().baked;
             }
         }
 
-        return this.defaultMap.getOrDefault(stack.getItem(), ClientTrinket.EMPTY);
+        var x = this.defaultMap.get(stack.getItem());
+
+        return x != null ? x.baked : List.of();
+    }
+
+    public void bake(BakingContextImpl baker) {
+        for (var hold : this.futureIdMap.values()) {
+            hold.baked = hold.clientTrinket.render().stream().map(x -> x.bake(baker)).toList();
+        }
+    }
+
+    public void resolveModels(Consumer<ResolvableModel> model) {
+        this.futureIdMap.values().forEach(x -> x.clientTrinket.render().forEach(model));
+    }
+
+    public static final class Hold {
+        final ClientTrinket clientTrinket;
+        List<TrinketRenderElement.Baked> baked = List.of();
+
+        public Hold(ClientTrinket clientTrinket) {
+            this.clientTrinket = clientTrinket;
+        }
     }
 }

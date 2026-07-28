@@ -18,7 +18,7 @@ public class ModelManagerMixin {
     @Inject(method = "discoverModelDependencies*", at = @At(value = "INVOKE", target = "Ljava/util/Collection;forEach(Ljava/util/function/Consumer;)V", ordinal = 0), require = 0)
     private static void resolveTrinketModels(CallbackInfoReturnable<Object> cir, @Local(name = "result") ModelDiscovery result) {
         ClientTrinketsManager.INSTANCE.completableFuture = new CompletableFuture<>();
-        ClientTrinketsManager.INSTANCE.getFutureIdMap().values().forEach(result::addRoot);
+        ClientTrinketsManager.INSTANCE.resolveModels(result::addRoot);
     }
 
     @ModifyExpressionValue(method = "reload", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/CompletableFuture;allOf([Ljava/util/concurrent/CompletableFuture;)Ljava/util/concurrent/CompletableFuture;", ordinal = 0))

@@ -1,7 +1,7 @@
 package eu.pb4.trinkets.mixin.client.render;
 
 import eu.pb4.trinkets.impl.client.render.LivingEntityRendererExt;
-import eu.pb4.trinkets.impl.client.render.TrinketRenderState;
+import eu.pb4.trinkets.impl.client.render.TrinketEntityRenderState;
 import eu.pb4.trinkets.impl.client.render.TrinketRenderLayer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -42,8 +42,8 @@ public abstract class LivingEntityRendererMixin implements LivingEntityRendererE
 
     @Inject(method = "extractRenderState(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;F)V", at = @At("TAIL"))
     private void updateTrinketsRenderState(LivingEntity livingEntity, LivingEntityRenderState livingEntityRenderState, float f, CallbackInfo ci) {
-        var state = (TrinketRenderState) livingEntityRenderState;
-        TrinketRenderLayer.extract(livingEntity, livingEntityRenderState, f, state);
+        var state = (TrinketEntityRenderState) livingEntityRenderState;
+        this.trinketsLayer.extract(livingEntity, livingEntityRenderState, f, state);
     }
 
     @Override

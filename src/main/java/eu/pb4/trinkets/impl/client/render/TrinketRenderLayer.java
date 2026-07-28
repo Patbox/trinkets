@@ -1,48 +1,56 @@
 package eu.pb4.trinkets.impl.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.client.TrinketRendererRegistry;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.TrinketsConfig;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartNames;
-import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.BlockModelResolver;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
-import org.joml.Vector3fc;
-import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends EntityModel<T>> extends RenderLayer<T, M> {
+    private final ItemModelResolver itemModelResolver;
+    private final BlockModelResolver blockModelResolver;
+
     public TrinketRenderLayer(RenderLayerParent<T, M> context, EntityRendererProvider.Context ctx) {
         super(context);
+        this.itemModelResolver = ctx.getItemModelResolver();
+        this.blockModelResolver = ctx.getBlockModelResolver();
     }
 
-    public static void extract(LivingEntity livingEntity, LivingEntityRenderState entityState, float tickDelta, TrinketRenderState state) {
+    public void extract(LivingEntity livingEntity, LivingEntityRenderState entityState, float tickDelta, TrinketEntityRenderState state) {
         var component = LivingEntityTrinketAttachment.get(livingEntity);
-        var items = new ArrayList<TrinketRenderState.CodeRenderCall>();
-        var attached = new ArrayList<TrinketRenderState.PartAttachedRenderer>();
+        var items = new ArrayList<TrinketEntityRenderState.CodeRenderCall>();
+        var attached = new ArrayList<TrinketEntityRenderState.PartAttachedRenderer>();
         state.trinkets$setCodeRenderers(items);
         state.trinkets$setPartAttachedRenderers(attached);
+
+        var trinketRendererState = new TrinketRenderStateFullImpl(Minecraft.getInstance(), this.itemModelResolver, this.blockModelResolver, state);
+
         component.forEachVisible((slotReference, stack) -> {
             var renderer = TrinketRendererRegistry.getRenderer(stack.getItem());
             if (renderer.isPresent()) {
-                items.add(new TrinketRenderState.CodeRenderCall(slotReference, stack, renderer.get()));
+                items.add(new TrinketEntityRenderState.CodeRenderCall(slotReference, stack, renderer.get()));
             } else {
-                ClientTrinketsManager.INSTANCE.get(stack).apply(livingEntity, stack, slotReference, state, attached::add);
+                for (var baked : ClientTrinketsManager.INSTANCE.getResolved(stack)) {
+                    baked.apply(livingEntity, stack, slotReference, trinketRendererState.minecraft().level, trinketRendererState, entityState);
+                }
             }
         });
     }
@@ -51,25 +59,26 @@ public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends Ent
     public void submit(PoseStack poseStack, SubmitNodeCollector queue, int light, T state, float limbAngle, float limbDistance) {
         var parent = this.getParentModel();
 
-        for (var pair : ((TrinketRenderState) state).trinkets$getCodeRenderers()) {
+        for (var pair : ((TrinketEntityRenderState) state).trinkets$getCodeRenderers()) {
             poseStack.pushPose();
             pair.renderer()
                     .submit(pair.itemStack(), pair.access(), parent, poseStack, queue, light, state, limbAngle, limbDistance);
             poseStack.popPose();
         }
 
-        for (var o : ((TrinketRenderState) state).trinkets$getPartAttachedRenderers()) {
+        for (var o : ((TrinketEntityRenderState) state).trinkets$getPartAttachedRenderers()) {
             submitAttached(parent, "", poseStack, queue, light, state.outlineColor, o);
         }
     }
 
-    private static void submitAttached(Model<?> parent, String startingPart, PoseStack poseStack, SubmitNodeCollector queue, int light, int outlineColor, TrinketRenderState.PartAttachedRenderer o) {
+    private static void submitAttached(Model<?> parent, String startingPart, PoseStack poseStack, SubmitNodeCollector queue, int light, int outlineColor, TrinketEntityRenderState.PartAttachedRenderer o) {
         var settings = o.settings();
         var parts = ((ModelExt) parent).trinkets$findPart(settings.modelPart());
 
         if (parts.isEmpty() || (!startingPart.isEmpty() && !parts.contains(startingPart))) {
             return;
         }
+
         poseStack.pushPose();
 
         ModelAttachementImpl.translateToModelPart(parent, startingPart, settings.modelPart(), parts, settings.offset(), poseStack);
@@ -92,6 +101,9 @@ public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends Ent
         if (TrinketsConfig.instance.renderFirstPersonHand && this.getParentModel() instanceof HumanoidModel<?> model) {
             var component = LivingEntityTrinketAttachment.get(player);
             var isMainHand = player.getMainArm() == HumanoidArm.RIGHT;
+            var trinketRendererState = new TrinketRenderStateHandImpl(Minecraft.getInstance(), this.itemModelResolver, this.blockModelResolver,
+                    o -> submitAttached(model, PartNames.RIGHT_ARM, poseStack, submitNodeCollector, light, 0, o));
+            var mc = Minecraft.getInstance();
 
             component.forEachVisible((slotReference, stack) -> {
                 var renderer = TrinketRendererRegistry.getRenderer(stack.getItem());
@@ -99,8 +111,9 @@ public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends Ent
                     renderer.get().submitFirstPersonRightArm(stack, slotReference, model, model.rightArm,
                             poseStack, submitNodeCollector, light, player, isMainHand);
                 } else {
-                    ClientTrinketsManager.INSTANCE.get(stack).apply(player, stack, slotReference, null,
-                            o -> submitAttached(model, PartNames.RIGHT_ARM, poseStack, submitNodeCollector, light, 0, o));
+                    for (var baked : ClientTrinketsManager.INSTANCE.getResolved(stack)) {
+                        baked.apply(player, stack, slotReference, trinketRendererState.minecraft().level, trinketRendererState, null);
+                    }
                 }
             });
         }
@@ -110,15 +123,17 @@ public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends Ent
         if (TrinketsConfig.instance.renderFirstPersonHand && this.getParentModel() instanceof HumanoidModel<?> model) {
             var component = LivingEntityTrinketAttachment.get(player);
             var isMainHand = player.getMainArm() == HumanoidArm.LEFT;
-
+            var trinketRendererState = new TrinketRenderStateHandImpl(Minecraft.getInstance(), this.itemModelResolver, this.blockModelResolver,
+                    o -> submitAttached(model, PartNames.LEFT_ARM, poseStack, submitNodeCollector, light, 0, o));
             component.forEachVisible((slotReference, stack) -> {
                 var renderer = TrinketRendererRegistry.getRenderer(stack.getItem());
                 if (renderer.isPresent()) {
                     renderer.get().submitFirstPersonLeftArm(stack, slotReference, model, model.leftArm,
                             poseStack, submitNodeCollector, light, player, isMainHand);
                 } else {
-                    ClientTrinketsManager.INSTANCE.get(stack).apply(player, stack, slotReference, null,
-                            o -> submitAttached(model, PartNames.LEFT_ARM, poseStack, submitNodeCollector, light, 0, o));
+                    for (var baked : ClientTrinketsManager.INSTANCE.getResolved(stack)) {
+                        baked.apply(player, stack, slotReference, trinketRendererState.minecraft().level, trinketRendererState, null);
+                    }
                 }
             });
         }
