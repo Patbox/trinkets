@@ -1,6 +1,7 @@
 package eu.pb4.trinkets.mixin.client.render;
 
-import eu.pb4.trinkets.impl.client.render.TrinketRenderState;
+import eu.pb4.trinkets.api.client.renderer.TrinketRenderContext;
+import eu.pb4.trinkets.impl.client.render.TrinketEntityRenderState;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -14,11 +15,13 @@ import java.util.List;
 
 @Environment(EnvType.CLIENT)
 @Mixin(LivingEntityRenderState.class)
-public class LivingEntityStateRenderMixin implements TrinketRenderState {
+public class LivingEntityStateRenderMixin implements TrinketEntityRenderState {
     @Unique
-    private List<TrinketRenderState.CodeRenderCall> codeRenderCalls = List.of();
+    private List<TrinketEntityRenderState.CodeRenderCall> codeRenderCalls = List.of();
     @Unique
-    private List<TrinketRenderState.PartAttachedRenderer> partAttachedRenderers = List.of();
+    private List<TrinketEntityRenderState.PartAttachedRenderer> partAttachedRenderers = List.of();
+    @Unique
+    private List<TrinketRenderContext.SubmitCall> standaloneRenderers = List.of();
 
     @Unique
     private final EnumMap<EquipmentSlot, EquipmentOverride> equipmentOverride = new EnumMap<>(EquipmentSlot.class);
@@ -26,7 +29,7 @@ public class LivingEntityStateRenderMixin implements TrinketRenderState {
     private EquipmentOverride wingsOverride;
 
     @Override
-    public void trinkets$setCodeRenderers(List<TrinketRenderState.CodeRenderCall> items) {
+    public void trinkets$setCodeRenderers(List<TrinketEntityRenderState.CodeRenderCall> items) {
         this.codeRenderCalls = items;
     }
 
@@ -36,7 +39,7 @@ public class LivingEntityStateRenderMixin implements TrinketRenderState {
     }
 
     @Override
-    public List<TrinketRenderState.CodeRenderCall> trinkets$getCodeRenderers() {
+    public List<TrinketEntityRenderState.CodeRenderCall> trinkets$getCodeRenderers() {
         return this.codeRenderCalls;
     }
 

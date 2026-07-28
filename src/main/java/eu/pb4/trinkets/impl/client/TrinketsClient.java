@@ -10,7 +10,7 @@ import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.TrinketsMain;
 import eu.pb4.trinkets.impl.TrinketsNetwork;
 import eu.pb4.trinkets.impl.client.render.ClientTrinketsManager;
-import eu.pb4.trinkets.impl.client.render.types.TrinketRenderElements;
+import eu.pb4.trinkets.api.client.renderer.element.TrinketRenderElements;
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
 import eu.pb4.trinkets.impl.platform.ClientAbstraction;
 import net.fabricmc.api.EnvType;
@@ -32,7 +32,7 @@ public class TrinketsClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient(ModContainer modContainer) {
-        TrinketRenderElements.bootstrap();
+        TrinketRenderElements.ID_MAPPER.getClass();
 
         ClientAbstraction.INSTANCE.registerGlobalReceiverPlay(TrinketsNetwork.SYNC_INVENTORY, (client, player, payload) -> {
             Entity entity = client.level.getEntity(payload.entityId());

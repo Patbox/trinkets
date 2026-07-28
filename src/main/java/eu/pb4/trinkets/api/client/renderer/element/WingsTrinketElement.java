@@ -1,25 +1,21 @@
-package eu.pb4.trinkets.impl.client.render.types;
+package eu.pb4.trinkets.api.client.renderer.element;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import eu.pb4.trinkets.api.TrinketSlotAccess;
-import eu.pb4.trinkets.impl.client.render.TrinketRenderState;
-import eu.pb4.trinkets.impl.client.render.ClientRenderPasshack;
 import eu.pb4.trinkets.mixin.client.accessor.EquipmentClientInfoAccessor;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
-import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 
+@Environment(EnvType.CLIENT)
 public record WingsTrinketElement(Optional<Either<ResourceKey<EquipmentAsset>, EquipmentClientInfo>> asset,
                                   boolean force) implements TrinketRenderElement {
     public static final MapCodec<WingsTrinketElement> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -33,28 +29,22 @@ public record WingsTrinketElement(Optional<Either<ResourceKey<EquipmentAsset>, E
     ).apply(instance, WingsTrinketElement::new));
 
     @Override
-    public MapCodec<? extends TrinketRenderElement> codec() {
+    public MapCodec<? extends TrinketRenderElement> type() {
         return CODEC;
     }
 
     @Override
-    public void apply(LivingEntity livingEntity, ItemStack stack, TrinketSlotAccess access, @Nullable TrinketRenderState state, Consumer<TrinketRenderState.PartAttachedRenderer> consumer) {
-        if (state == null) return;
-
-        Optional<ResourceKey<EquipmentAsset>> assetId;
-        Optional<EquipmentClientInfo> override;
-
-        if (this.asset.isPresent()) {
-            assetId = this.asset.get().left();
-            if (assetId.isEmpty()) {
-                assetId = ClientRenderPasshack.FAKE_ASSET_OPT;
+    public Baked bake(BakingContext bakingContext) {
+        return (owner, item, access, level, context, state) -> {
+            if (this.asset.isPresent()) {
+                var assetId = this.asset.get().left();
+                if (assetId.isEmpty()) {
+                    context.wingsOverride(access, item, this.force, this.asset.get().right().orElseThrow());
+                }
+                context.wingsOverride(access, item, this.force, assetId.orElseThrow());
+            } else {
+                context.wingsOverride(access, item, this.force, (ResourceKey<EquipmentAsset>) null);
             }
-            override = this.asset.get().right();
-        } else {
-            assetId = Optional.empty();
-            override = Optional.empty();
-        }
-
-        state.trinkets$setWingOverride(new TrinketRenderState.EquipmentOverride(access, stack, this.force, assetId, override));
+        };
     }
 }

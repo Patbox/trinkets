@@ -1,0 +1,43 @@
+{
+  "priority": -1000,
+  "target": ["#lanterns"],
+  "render": [
+    {
+      "type": "minecraft:if_slot",
+      "slot": "legs/belt",
+      "then": {
+        "type": "minecraft:item/block",
+        "model_part": "left_leg",
+        "offset": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "transformation": {
+          "left_rotation": [
+            0.0,
+            0.0,
+            0.25881904,
+            0.9659259
+          ],
+          "right_rotation": [
+            -0.0,
+            -0.0,
+            -0.0,
+            1.0
+          ],
+          "scale": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "translation": [
+            -0.0625,
+            -0.375,
+            -0.375
+          ]
+        }
+      }
+    }
+  ]
+}

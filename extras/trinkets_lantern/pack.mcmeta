@@ -1,0 +1,10 @@
+{
+  "pack": {
+    "description": "Enables Lanters to be equipped in Trinkets slots. Best used with LambDynamicLights.",
+    "min_format": [
+      101,
+      1
+    ],
+    "max_format": 999
+  }
+}
