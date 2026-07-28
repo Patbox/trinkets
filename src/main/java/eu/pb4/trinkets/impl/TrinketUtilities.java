@@ -13,6 +13,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -55,7 +56,7 @@ public class TrinketUtilities {
 
         EnchantmentHelper.runIterationOnItem(stack, (enchantment, level) -> enchantment.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES).forEach((effect) -> {
             if (isEnchantmentTrinketCompatible(enchantment, slot)) {
-                consumer.accept(effect.attribute(), effect.getModifier(level, slot));
+                consumer.accept(effect.attribute(), effect.getModifier(level, slot::getAsIdentifierPath));
             }
         }));
     }
@@ -69,7 +70,7 @@ public class TrinketUtilities {
 
         EnchantmentHelper.runIterationOnItem(stack, (enchantment, level) -> enchantment.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES).forEach((effect) -> {
             if (isEnchantmentTrinketCompatible(enchantment, slot)) {
-                consumer.accept(effect.attribute(), effect.getModifier(level, slot), ItemAttributeModifiers.Display.attributeModifiers());
+                consumer.accept(effect.attribute(), effect.getModifier(level, slot::getAsIdentifierPath), ItemAttributeModifiers.Display.attributeModifiers());
             }
         }));
     }
@@ -85,7 +86,7 @@ public class TrinketUtilities {
         if (!piece.isEmpty()) {
             ItemEnchantments itemEnchantments = piece.get(DataComponents.ENCHANTMENTS);
             if (itemEnchantments != null && !itemEnchantments.isEmpty()) {
-                EnchantedItemInUse itemInUse = new EnchantedItemInUse(piece, null, owner);
+                EnchantedItemInUse itemInUse = new EnchantedItemInUse(piece, EquipmentSlot.BODY, owner);
 
                 for (Object2IntMap.Entry<Holder<Enchantment>> entry : itemEnchantments.entrySet()) {
                     Holder<Enchantment> enchantment = entry.getKey();
