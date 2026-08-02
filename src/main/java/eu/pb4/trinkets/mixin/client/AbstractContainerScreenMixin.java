@@ -16,7 +16,6 @@ import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.CreativeModeTab;
 import org.jspecify.annotations.Nullable;
@@ -28,7 +27,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import eu.pb4.trinkets.impl.TrinketSlot;
+import eu.pb4.trinkets.impl.slots.TrinketSlot;
 import eu.pb4.trinkets.impl.client.TrinketsClient;
 import eu.pb4.trinkets.mixin.client.accessor.CreativeSlotAccessor;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -154,22 +153,8 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 
 		if ((this.menu instanceof ItemPickerMenuAccessor accessor ? accessor.trinkets$getInventoryMenu() : this.menu) instanceof TrinketInventoryMenu trinketMenu
 				&& TrinketsConfig.instance.showSlotsIndicator) {
-			for (int i = 0; i < this.menu.slots.size(); i++) {
-				Slot slot = this.menu.slots.get(i);
-				if (slot instanceof TrinketSlot trinketSlot) {
-					var g = trinketMenu.trinkets$getGroupAtSlot(i);
-					if (!trinketSlot.renderAfterRegularSlots() && slot.isActive() && trinketSlot.getAccess().index() == 0 && TrinketsClient.activeGroup != g && g != null) {
-						context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR_HORIZONTAL, slot.x - 8, slot.y - 8, 32, 32);
-					}
-					if (!trinketSlot.renderAfterRegularSlots() && slot.isActive() && trinketSlot.getAccess().inventory().getContainerSize() > 1 && trinketSlot.getAccess().index() == 0 && TrinketsClient.activeType != trinketSlot.getType()) {
-						context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR_VERTICAL_STANDALONE, slot.x - 8, slot.y - 8, 32, 32);
-					}
-				} else {
-					var g = trinketMenu.trinkets$getGroupAtSlot(i);
-					if (g != null && TrinketScreenManager.group != g) {
-						context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR_HORIZONTAL, slot.x - 8, slot.y - 8, 32, 32);
-					}
-				}
+			for (var i = 0; i < this.menu.slots.size(); i++) {
+				TrinketScreenManager.drawSlotExtrasFirstDraw(i, this.menu.slots.get(i), trinketMenu, context);
 			}
 		}
 	}

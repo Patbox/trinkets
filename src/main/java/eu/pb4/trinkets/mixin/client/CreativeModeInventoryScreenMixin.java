@@ -1,6 +1,7 @@
 package eu.pb4.trinkets.mixin.client;
 
 import eu.pb4.trinkets.impl.TrinketsConfig;
+import eu.pb4.trinkets.impl.slots.TrinketSlotState;
 import net.minecraft.world.item.CreativeModeTabs;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -14,14 +15,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import eu.pb4.trinkets.impl.client.CreativeTrinketScreen;
 import eu.pb4.trinkets.impl.client.CreativeTrinketSlot;
 import eu.pb4.trinkets.impl.Point;
-import eu.pb4.trinkets.impl.SurvivalTrinketSlot;
+import eu.pb4.trinkets.impl.slots.SurvivalTrinketSlot;
 import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.client.TrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
-import eu.pb4.trinkets.impl.TrinketSlot;
+import eu.pb4.trinkets.impl.slots.TrinketSlot;
 import eu.pb4.trinkets.impl.client.TrinketsClient;
 import eu.pb4.trinkets.api.SlotGroup;
-import eu.pb4.trinkets.api.TrinketsApi;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -75,13 +75,13 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 			Slot slot = this.minecraft.player.inventoryMenu.slots.get(i);
 			if (slot instanceof SurvivalTrinketSlot ts) {
 				SlotGroup group = SlotGroup.getEntityGroups(this.minecraft.player).get(ts.getType().group());
-				Rect2i rect = trinkets$getGroupRect(group);
-				Point pos = trinkets$getHandler().trinkets$getGroupPos(group);
+				var rect = trinkets$getSlotState().getGroupRect(group);
+				Point pos = trinkets$getHandler().trinkets$getSlotState().getGroupPos(group);
 				if (pos == null) {
 					return;
 				}
-				int xOff = rect.getX() + 1 - pos.x();
-				int yOff = rect.getY() + 1 - pos.y();
+				int xOff = rect.x() + 1 - pos.x();
+				int yOff = rect.y() + 1 - pos.y();
 				((ItemPickerMenu) this.menu).slots.add(new CreativeTrinketSlot(ts, ts.getContainerSlot(), ts.x + xOff, ts.y + yOff));
 			}
 		}
@@ -134,9 +134,8 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 					if (slot == this.hoveredSlot && slot.isHighlightable()) {
 						context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_FRONT_TEXTURE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
 					}
-					if (TrinketsConfig.instance.showSlotsIndicator && trinketSlot.getAccess().inventory().getContainerSize() > 1 && trinketSlot.getAccess().index() == 0 && TrinketsClient.activeType != trinketSlot.getType()) {
-						context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR_VERTICAL, slot.x - 8, slot.y - 8, 32, 32);
-					}
+
+					TrinketScreenManager.drawSlotExtrasLateDraw(slot, trinketSlot, context);
 				}
 			}
 			context.pose().popMatrix();
@@ -169,28 +168,10 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 		return (TrinketInventoryMenu) this.minecraft.player.inventoryMenu;
 	}
 
+
 	@Override
-	public Rect2i trinkets$getGroupRect(SlotGroup group) {
-		int groupNum = trinkets$getHandler().trinkets$getGroupNum(group);
-		if (groupNum <= 3) {
-			// Look what else do you want me to do
-			return switch (groupNum) {
-				case 1 -> new Rect2i(15, 19, 17, 17);
-				case 2 -> new Rect2i(126, 19, 17, 17);
-				case 3 -> new Rect2i(145, 19, 17, 17);
-				case -5 -> new Rect2i(53, 5, 17, 17);
-				case -6 -> new Rect2i(53, 32, 17, 17);
-				case -7 -> new Rect2i(107, 5, 17, 17);
-				case -8 -> new Rect2i(107, 32, 17, 17);
-				case -45 -> new Rect2i(34, 19, 17, 17);
-				default -> new Rect2i(0, 0, 0, 0);
-			};
-		}
-		Point pos = trinkets$getHandler().trinkets$getGroupPos(group);
-		if (pos != null) {
-			return new Rect2i(pos.x() - 1, pos.y() - 1, 17, 17);
-		}
-		return new Rect2i(0, 0, 0, 0);
+	public TrinketSlotState trinkets$getSlotState() {
+		return trinkets$getHandler().trinkets$getSlotState().asCreativeState();
 	}
 
 	@Override

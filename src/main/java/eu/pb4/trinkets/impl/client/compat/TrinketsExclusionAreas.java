@@ -27,7 +27,7 @@ public class TrinketsExclusionAreas {
 			int x = trinketScreen.trinkets$getX();
 			int y = trinketScreen.trinkets$getY();
 			TrinketInventoryMenu handler = trinketScreen.trinkets$getHandler();
-			int groupCount = handler.trinkets$getGroupCount();
+			int groupCount = handler.trinkets$getSlotState().groupCount();
 			if (groupCount <= 0 || trinketScreen.trinkets$isRecipeBookOpen()) {
 				return List.of();
 			}

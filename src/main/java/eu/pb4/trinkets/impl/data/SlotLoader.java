@@ -9,9 +9,8 @@ import com.google.gson.*;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.JsonOps;
-import eu.pb4.trinkets.impl.SlotTypeImpl;
+import eu.pb4.trinkets.impl.slots.SlotTypeImpl;
 import eu.pb4.trinkets.impl.TrinketsMain;
-import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketDropRule;
 import eu.pb4.trinkets.impl.data.SlotLoader.GroupData;
 import net.minecraft.resources.Identifier;

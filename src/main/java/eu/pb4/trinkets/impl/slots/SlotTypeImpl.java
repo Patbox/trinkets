@@ -1,4 +1,4 @@
-package eu.pb4.trinkets.impl;
+package eu.pb4.trinkets.impl.slots;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
@@ -7,6 +7,7 @@ import com.mojang.serialization.DynamicOps;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketDropRule;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.impl.TrinketsMain;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;

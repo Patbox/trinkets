@@ -2,6 +2,7 @@ package eu.pb4.trinkets.impl.client;
 
 import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.impl.TrinketInventoryMenu;
+import eu.pb4.trinkets.impl.slots.TrinketSlotState;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.Rect2i;
@@ -12,7 +13,7 @@ public interface TrinketScreen {
 
     TrinketInventoryMenu trinkets$getHandler();
 
-    Rect2i trinkets$getGroupRect(SlotGroup group);
+    TrinketSlotState trinkets$getSlotState();
 
     Slot trinkets$getFocusedSlot();
 

@@ -3,7 +3,7 @@ package eu.pb4.trinkets.mixin;
 import com.llamalad7.mixinextras.sugar.Local;
 import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
-import eu.pb4.trinkets.impl.TrinketSlotTarget;
+import eu.pb4.trinkets.impl.slots.TrinketSlotTarget;
 import eu.pb4.trinkets.impl.TrinketUtilities;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.Holder;

@@ -5,7 +5,7 @@ import java.util.List;
 
 import eu.pb4.trinkets.impl.Point;
 import eu.pb4.trinkets.impl.TrinketInventoryMenu;
-import eu.pb4.trinkets.impl.TrinketSlot;
+import eu.pb4.trinkets.impl.slots.TrinketSlot;
 import eu.pb4.trinkets.impl.TrinketsConfig;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -18,7 +18,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.Slot;
 import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.api.SlotType;
-import eu.pb4.trinkets.api.TrinketsApi;
 
 @Environment(EnvType.CLIENT)
 public class TrinketScreenManager {
@@ -56,7 +55,7 @@ public class TrinketScreenManager {
 			return;
 		}
 
-		TrinketInventoryMenu handler = currentScreen.trinkets$getHandler();
+		var handler = currentScreen.trinkets$getHandler().trinkets$getSlotState();
 		Slot focusedSlot = currentScreen.trinkets$getFocusedSlot();
 		int x = currentScreen.trinkets$getX();
 		int y = currentScreen.trinkets$getY();
@@ -64,12 +63,12 @@ public class TrinketScreenManager {
 			if (TrinketsClient.activeType != null) {
 				if (!typeBounds.contains(Math.round(mouseX) - x, Math.round(mouseY) - y)) {
 					// Attempt to refresh the typeBounds, in case the slot count has changed.
-					int i = handler.trinkets$getSlotTypes(group).indexOf(TrinketsClient.activeType);
+					int i = handler.getSlotTypes(group).indexOf(TrinketsClient.activeType);
 					if (i >= 0) {
-						Rect2i r = currentScreen.trinkets$getGroupRect(group);
-						Point slotHeight = handler.trinkets$getSlotHeight(group, i);
+						var r = currentScreen.trinkets$getSlotState().getGroupRect(group);
+						Point slotHeight = handler.getSlotHeight(group, i);
 						int height = slotHeight.y();
-						typeBounds = new Rect2i(r.getX() + slotHeight.x() - 2, r.getY() - (height - 1) / 2 * 18 - 3, 23, height * 18 + 5);
+						typeBounds = new Rect2i(r.x() + slotHeight.x() - 2, r.y() - (height - 1) / 2 * 18 - 3, 23, height * 18 + 5);
 					}
 					if (!typeBounds.contains(Math.round(mouseX) - x, Math.round(mouseY) - y)) {
 						TrinketsClient.activeType = null;
@@ -86,15 +85,15 @@ public class TrinketScreenManager {
 					group = null;
 				} else {
 					if (focusedSlot instanceof TrinketSlot ts) {
-						int i = handler.trinkets$getSlotTypes(group).indexOf(ts.getType());
+						int i = handler.getSlotTypes(group).indexOf(ts.getType());
 						if (i >= 0) {
-							Point slotHeight = handler.trinkets$getSlotHeight(group, i);
+							Point slotHeight = handler.getSlotHeight(group, i);
 							if (slotHeight != null) {
-								Rect2i r = currentScreen.trinkets$getGroupRect(group);
+								var r = currentScreen.trinkets$getSlotState().getGroupRect(group);
 								int height = slotHeight.y();
 								if (height > 1) {
 									TrinketsClient.activeType = ts.getType();
-									typeBounds = new Rect2i(r.getX() + slotHeight.x() - 2, r.getY() - (height - 1) / 2 * 18 - 3, 23, height * 18 + 5);
+									typeBounds = new Rect2i(r.x() + slotHeight.x() - 2, r.y() - (height - 1) / 2 * 18 - 3, 23, height * 18 + 5);
 								}
 							}
 						}
@@ -107,14 +106,14 @@ public class TrinketScreenManager {
 			if (quickMoveTypeBounds.contains(Math.round(mouseX) - x, Math.round(mouseY) - y)) {
 				TrinketsClient.activeGroup = quickMoveGroup;
 				TrinketsClient.activeType = TrinketsClient.quickMoveType;
-				int i = handler.trinkets$getSlotTypes(TrinketsClient.activeGroup).indexOf(TrinketsClient.activeType);
+				int i = handler.getSlotTypes(TrinketsClient.activeGroup).indexOf(TrinketsClient.activeType);
 				if (i >= 0) {
-					Point slotHeight = handler.trinkets$getSlotHeight(TrinketsClient.activeGroup, i);
+					Point slotHeight = handler.getSlotHeight(TrinketsClient.activeGroup, i);
 					if (slotHeight != null) {
-						Rect2i r = currentScreen.trinkets$getGroupRect(TrinketsClient.activeGroup);
+						var r = currentScreen.trinkets$getSlotState().getGroupRect(TrinketsClient.activeGroup);
 						int height = slotHeight.y();
 						if (height > 1) {
-							typeBounds = new Rect2i(r.getX() + slotHeight.x() - 2, r.getY() - (height - 1) / 2 * 18 - 3, 23, height * 18 + 5);
+							typeBounds = new Rect2i(r.x() + slotHeight.x() - 2, r.y() - (height - 1) / 2 * 18 - 3, 23, height * 18 + 5);
 						}
 					}
 				}
@@ -128,8 +127,8 @@ public class TrinketScreenManager {
 		if (group == null) {
 			Minecraft client = Minecraft.getInstance();
 			for (SlotGroup g : SlotGroup.getEntityGroups(client.player).values()) {
-				Rect2i r = currentScreen.trinkets$getGroupRect(g);
-				if (r.getX() < 0 && currentScreen.trinkets$isRecipeBookOpen()) {
+				var r = currentScreen.trinkets$getSlotState().getGroupRect(g);
+				if (r.x() < 0 && currentScreen.trinkets$isRecipeBookOpen()) {
 					continue;
 				}
 				if (r.contains(Math.round(mouseX) - x, Math.round(mouseY) - y)) {
@@ -146,29 +145,29 @@ public class TrinketScreenManager {
 			group = TrinketsClient.activeGroup;
 
 			if (group != null) {
-				int slotsWidth = handler.trinkets$getSlotWidth(group) + 1;
+				int slotsWidth = handler.getSlotWidth(group) + 1;
 				if (!group.hasSlotAttachment()) slotsWidth -= 1;
-				Rect2i r = currentScreen.trinkets$getGroupRect(group);
+				var r = currentScreen.trinkets$getSlotState().getGroupRect(group);
 				currentBounds = new Rect2i(0, 0, 0, 0);
 
 				if (r != null) {
 					int l = (slotsWidth - 1) / 2 * 18;
 
 					if (slotsWidth > 1) {
-						currentBounds = new Rect2i(r.getX() - l - 3, r.getY() - 3, slotsWidth * 18 + 5, 23);
+						currentBounds = new Rect2i(r.x() - l - 3, r.y() - 3, slotsWidth * 18 + 5, 23);
 					} else {
-						currentBounds = r;
+						currentBounds = new Rect2i(r.x(), r.y(), r.width(), r.height());
 					}
 
 					if (focusedSlot instanceof TrinketSlot ts) {
-						int i = handler.trinkets$getSlotTypes(group).indexOf(ts.getType());
+						int i = handler.getSlotTypes(group).indexOf(ts.getType());
 						if (i >= 0) {
-							Point slotHeight = handler.trinkets$getSlotHeight(group, i);
+							Point slotHeight = handler.getSlotHeight(group, i);
 							if (slotHeight != null) {
 								int height = slotHeight.y();
 								if (height > 1) {
 									TrinketsClient.activeType = ts.getType();
-									typeBounds = new Rect2i(r.getX() + slotHeight.x() - 2, r.getY() - (height - 1) / 2 * 18 - 3, 23, height * 18 + 5);
+									typeBounds = new Rect2i(r.x() + slotHeight.x() - 2, r.y() - (height - 1) / 2 * 18 - 3, 23, height * 18 + 5);
 								}
 							}
 						}
@@ -181,22 +180,22 @@ public class TrinketScreenManager {
 			quickMoveGroup = TrinketsClient.quickMoveGroup;
 
 			if (quickMoveGroup != null) {
-				int slotsWidth = handler.trinkets$getSlotWidth(quickMoveGroup) + 1;
+				int slotsWidth = handler.getSlotWidth(quickMoveGroup) + 1;
 
 				if (!quickMoveGroup.hasSlotAttachment()) slotsWidth -= 1;
-				Rect2i r = currentScreen.trinkets$getGroupRect(quickMoveGroup);
+				var r = currentScreen.trinkets$getSlotState().getGroupRect(quickMoveGroup);
 				quickMoveBounds = new Rect2i(0, 0, 0, 0);
 
 				if (r != null) {
 					int l = (slotsWidth - 1) / 2 * 18;
-					quickMoveBounds = new Rect2i(r.getX() - l - 5, r.getY() - 5, slotsWidth * 18 + 8, 26);
+					quickMoveBounds = new Rect2i(r.x() - l - 5, r.y() - 5, slotsWidth * 18 + 8, 26);
 					if (TrinketsClient.quickMoveType != null) {
-						int i = handler.trinkets$getSlotTypes(quickMoveGroup).indexOf(TrinketsClient.quickMoveType);
+						int i = handler.getSlotTypes(quickMoveGroup).indexOf(TrinketsClient.quickMoveType);
 						if (i >= 0) {
-							Point slotHeight = handler.trinkets$getSlotHeight(quickMoveGroup, i);
+							Point slotHeight = handler.getSlotHeight(quickMoveGroup, i);
 							if (slotHeight != null) {
 								int height = slotHeight.y();
-								quickMoveTypeBounds = new Rect2i(r.getX() + slotHeight.x() - 2, r.getY() - (height - 1) / 2 * 18 - 3, 23, height * 18 + 5);
+								quickMoveTypeBounds = new Rect2i(r.x() + slotHeight.x() - 2, r.y() - (height - 1) / 2 * 18 - 3, 23, height * 18 + 5);
 							}
 						}
 					}
@@ -221,15 +220,15 @@ public class TrinketScreenManager {
 			return;
 		}
 
-		TrinketInventoryMenu handler = currentScreen.trinkets$getHandler();
+		var handler = currentScreen.trinkets$getHandler().trinkets$getSlotState();
 		context.pose().pushMatrix();
-		Rect2i r = currentScreen.trinkets$getGroupRect(group);
-		int slotsWidth = handler.trinkets$getSlotWidth(group) + 1;
-		List<Point> slotHeights = handler.trinkets$getSlotHeights(group);
-		List<SlotType> slotTypes = handler.trinkets$getSlotTypes(group);
+		var r = currentScreen.trinkets$getSlotState().getGroupRect(group);
+		int slotsWidth = handler.getSlotWidth(group) + 1;
+		List<Point> slotHeights = handler.getSlotHeights(group);
+		List<SlotType> slotTypes = handler.getSlotTypes(group);
 		if (!group.hasSlotAttachment()) slotsWidth -= 1;
-		int x = r.getX() - 4 - (slotsWidth - 1) / 2 * 18;
-		int y = r.getY() - 4;
+		int x = r.x() - 4 - (slotsWidth - 1) / 2 * 18;
+		int y = r.y() - 4;
 		if (slotsWidth > 1 || type != null) {
 			drawTexture(context, MORE_SLOTS, x, y, 0, 0, 4, 26);
 
@@ -247,7 +246,7 @@ public class TrinketScreenManager {
 				if (height > 1) {
 					int top = (height - 1) / 2;
 					int bottom = height / 2;
-					int slotX = slotHeight.x() - 4 + r.getX();
+					int slotX = slotHeight.x() - 4 + r.x();
 					if (height > 2) {
 						drawTexture(context, MORE_SLOTS, slotX, y - top * 18, 0, 0, 26, 4);
 					}
@@ -273,7 +272,7 @@ public class TrinketScreenManager {
 				if (slotTypes.get(s) != type) {
 					height = 1;
 				}
-				int slotX = slotHeight.x() + r.getX() + 1;
+				int slotX = slotHeight.x() + r.x() + 1;
 				int top = (height - 1) / 2;
 				int bottom = height / 2;
 				drawTexture(context, MORE_SLOTS, slotX, y - top * 18 + 1, 4, 1, 16, 3);
@@ -282,8 +281,8 @@ public class TrinketScreenManager {
 
 			// Because pre-existing slots are not part of the slotHeights list
 			if (group.hasSlotAttachment()) {
-				drawTexture(context, MORE_SLOTS, r.getX() + 1, y + 1, 4, 1, 16, 3);
-				drawTexture(context, MORE_SLOTS, r.getX() + 1, y + 22, 4, 22, 16, 3);
+				drawTexture(context, MORE_SLOTS, r.x() + 1, y + 1, 4, 1, 16, 3);
+				drawTexture(context, MORE_SLOTS, r.x() + 1, y + 22, 4, 22, 16, 3);
 			}
 		} else {
 			drawTexture(context, MORE_SLOTS, x + 4, y + 4, 4, 4, 18, 18);
@@ -323,7 +322,7 @@ public class TrinketScreenManager {
 			}
 		}
 
-		int groupCount = handler.trinkets$getGroupCount();
+		int groupCount = handler.trinkets$getSlotState().groupCount();
 		if (groupCount <= 0 || currentScreen.trinkets$isRecipeBookOpen()) {
 			return;
 		}
@@ -395,7 +394,7 @@ public class TrinketScreenManager {
 		if (TrinketScreenManager.currentBounds.contains(mx, my)) {
 			return true;
 		}
-		int groupCount = handler.trinkets$getGroupCount();
+		int groupCount = handler.trinkets$getSlotState().groupCount();
 		if (groupCount <= 0 || currentScreen.trinkets$isRecipeBookOpen()) {
 			return false;
 		}
@@ -442,5 +441,28 @@ public class TrinketScreenManager {
 
 
 		graphics.setTooltipForNextFrame(text, slotX, slotY);
+	}
+
+	public static void drawSlotExtrasFirstDraw(int slotId, Slot slot, TrinketInventoryMenu trinketMenu, GuiGraphicsExtractor context) {
+		if (slot instanceof TrinketSlot trinketSlot) {
+			var g = trinketMenu.trinkets$getSlotState().getGroupAtSlot(slotId);
+			if (!trinketSlot.renderAfterRegularSlots() && slot.isActive() && trinketSlot.getAccess().index() == 0 && TrinketsClient.activeGroup != g && g != null) {
+				context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR_HORIZONTAL, slot.x - 8, slot.y - 8, 32, 32);
+			}
+			if (!trinketSlot.renderAfterRegularSlots() && slot.isActive() && trinketSlot.getAccess().inventory().getContainerSize() > 1 && trinketSlot.getAccess().index() == 0 && TrinketsClient.activeType != trinketSlot.getType()) {
+				context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR_VERTICAL_STANDALONE, slot.x - 8, slot.y - 8, 32, 32);
+			}
+		} else {
+			var g = trinketMenu.trinkets$getSlotState().getGroupAtSlot(slotId);
+			if (g != null && TrinketScreenManager.group != g) {
+				context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR_HORIZONTAL, slot.x - 8, slot.y - 8, 32, 32);
+			}
+		}
+	}
+
+	public static void drawSlotExtrasLateDraw(Slot slot, TrinketSlot trinketSlot, GuiGraphicsExtractor context) {
+		if (TrinketsConfig.instance.showSlotsIndicator && trinketSlot.getAccess().inventory().getContainerSize() > 1 && trinketSlot.getAccess().index() == 0 && TrinketsClient.activeType != trinketSlot.getType()) {
+			context.blitSprite(RenderPipelines.GUI_TEXTURED, TrinketScreenManager.MORE_SLOTS_INDICATOR_VERTICAL, slot.x - 8, slot.y - 8, 32, 32);
+		}
 	}
 }

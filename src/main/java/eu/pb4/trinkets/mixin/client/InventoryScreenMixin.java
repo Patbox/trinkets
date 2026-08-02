@@ -1,5 +1,6 @@
 package eu.pb4.trinkets.mixin.client;
 
+import eu.pb4.trinkets.impl.slots.TrinketSlotState;
 import eu.pb4.trinkets.mixin.client.accessor.RecipeBookScreenAccessor;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractRecipeBookScreen;
@@ -54,14 +55,10 @@ public abstract class InventoryScreenMixin extends AbstractRecipeBookScreen<Inve
 	public TrinketInventoryMenu trinkets$getHandler() {
 		return (TrinketInventoryMenu) this.menu;
 	}
-	
+
 	@Override
-	public Rect2i trinkets$getGroupRect(SlotGroup group) {
-		Point pos = ((TrinketInventoryMenu) menu).trinkets$getGroupPos(group);
-		if (pos != null) {
-			return new Rect2i(pos.x() - 1, pos.y() - 1, 17, 17);
-		}
-		return new Rect2i(0, 0, 0, 0);
+	public TrinketSlotState trinkets$getSlotState() {
+		return trinkets$getHandler().trinkets$getSlotState();
 	}
 
 	@Override

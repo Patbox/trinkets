@@ -1,4 +1,4 @@
-package eu.pb4.trinkets.impl;
+package eu.pb4.trinkets.impl.slots;
 
 import java.util.Set;
 
