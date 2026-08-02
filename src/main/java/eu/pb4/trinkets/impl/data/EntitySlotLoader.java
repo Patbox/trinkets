@@ -20,6 +20,8 @@ import eu.pb4.trinkets.impl.data.SlotLoader.GroupData;
 import eu.pb4.trinkets.impl.data.SlotLoader.SlotData;
 import eu.pb4.trinkets.impl.payload.SyncInventoryPayload;
 import eu.pb4.trinkets.impl.payload.SyncSlotsPayload;
+import eu.pb4.trinkets.impl.slots.SlotGroupImpl;
+import eu.pb4.trinkets.impl.slots.SlotTypeImpl;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;

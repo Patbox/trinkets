@@ -6,6 +6,7 @@ import com.google.common.collect.Multimaps;
 import eu.pb4.trinkets.api.SlotAttributes;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
+import eu.pb4.trinkets.impl.slots.TrinketSlot;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;

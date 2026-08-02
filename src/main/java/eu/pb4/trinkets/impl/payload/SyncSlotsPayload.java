@@ -1,6 +1,6 @@
 package eu.pb4.trinkets.impl.payload;
 
-import eu.pb4.trinkets.impl.SlotGroupImpl;
+import eu.pb4.trinkets.impl.slots.SlotGroupImpl;
 import eu.pb4.trinkets.impl.TrinketsNetwork;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;

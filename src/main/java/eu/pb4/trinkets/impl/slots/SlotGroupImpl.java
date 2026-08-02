@@ -1,8 +1,9 @@
-package eu.pb4.trinkets.impl;
+package eu.pb4.trinkets.impl.slots;
 
 import com.google.common.collect.ImmutableMap;
 import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.api.SlotType;
+import eu.pb4.trinkets.impl.TrinketsConfig;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;

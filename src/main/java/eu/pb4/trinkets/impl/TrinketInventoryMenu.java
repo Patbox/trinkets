@@ -4,6 +4,7 @@ import java.util.List;
 
 import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.api.SlotType;
+import eu.pb4.trinkets.impl.slots.TrinketSlotState;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 
@@ -17,28 +18,9 @@ public interface TrinketInventoryMenu {
 	 */
 	void trinkets$updateTrinketSlots(boolean reinitializeAttachment);
 
-	int trinkets$getGroupNum(SlotGroup group);
-
-	@Nullable
-	Point trinkets$getGroupPos(SlotGroup group);
-
-	@Nullable
-	SlotGroup trinkets$getGroupAtSlot(int slotIndex);
-
-	@NotNull
-	List<Point> trinkets$getSlotHeights(SlotGroup group);
-
-	@Nullable
-	Point trinkets$getSlotHeight(SlotGroup group, int i);
-
-	@NotNull
-	List<SlotType> trinkets$getSlotTypes(SlotGroup group);
-
-	int trinkets$getSlotWidth(SlotGroup group);
-
-	int trinkets$getGroupCount();
-
 	int trinkets$getTrinketSlotStart();
 
 	int trinkets$getTrinketSlotEnd();
+
+	TrinketSlotState trinkets$getSlotState();
 }

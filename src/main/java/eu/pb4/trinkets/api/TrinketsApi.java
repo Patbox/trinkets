@@ -1,14 +1,12 @@
 package eu.pb4.trinkets.api;
 
-import com.google.common.collect.ImmutableMap;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
 import eu.pb4.trinkets.api.component.TrinketEquippable;
 import eu.pb4.trinkets.api.event.TrinketDropCallback;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
-import eu.pb4.trinkets.impl.TrinketSlotTarget;
+import eu.pb4.trinkets.impl.slots.TrinketSlotTarget;
 import eu.pb4.trinkets.impl.TrinketsMain;
-import eu.pb4.trinkets.impl.data.EntitySlotLoader;
 import eu.pb4.trinkets.impl.payload.BreakPayload;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.resources.Identifier;

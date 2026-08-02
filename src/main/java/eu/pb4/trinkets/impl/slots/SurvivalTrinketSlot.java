@@ -1,8 +1,11 @@
-package eu.pb4.trinkets.impl;
+package eu.pb4.trinkets.impl.slots;
 
 import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.SlotType;
+import eu.pb4.trinkets.impl.TrinketInventoryImpl;
+import eu.pb4.trinkets.impl.TrinketUtilities;
+import eu.pb4.trinkets.impl.TrinketsMain;
 import eu.pb4.trinkets.impl.client.TrinketsClient;
 import eu.pb4.trinkets.mixin.client.accessor.RecipeBookScreenAccessor;
 import net.minecraft.client.Minecraft;
@@ -28,7 +31,7 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 	private final int slot;
 
 	public SurvivalTrinketSlot(TrinketInventoryImpl inventory, int slot, int x, int y, SlotGroup group, SlotType type,
-							   boolean alwaysVisible, LivingEntity owner) {
+                               boolean alwaysVisible, LivingEntity owner) {
 		super(inventory, slot, x, y);
 		this.group = group;
 		this.type = type;

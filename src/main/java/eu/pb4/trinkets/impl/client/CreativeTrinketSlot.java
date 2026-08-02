@@ -2,8 +2,8 @@ package eu.pb4.trinkets.impl.client;
 
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
-import eu.pb4.trinkets.impl.SurvivalTrinketSlot;
-import eu.pb4.trinkets.impl.TrinketSlot;
+import eu.pb4.trinkets.impl.slots.SurvivalTrinketSlot;
+import eu.pb4.trinkets.impl.slots.TrinketSlot;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.SlotWrapper;

@@ -9,6 +9,8 @@ import eu.pb4.trinkets.api.component.TrinketsAttributeModifiersComponent;
 import eu.pb4.trinkets.api.event.TrinketEquipCallback;
 import eu.pb4.trinkets.api.event.TrinketEquipmentChangedCallback;
 import eu.pb4.trinkets.api.event.TrinketUnequipCallback;
+import eu.pb4.trinkets.impl.slots.TrinketSlot;
+import eu.pb4.trinkets.impl.slots.TrinketSlotTarget;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;

@@ -5,7 +5,7 @@ import com.mojang.serialization.JsonOps;
 import eu.pb4.trinkets.api.TrinketDropRule;
 import eu.pb4.trinkets.api.datagen.ConditionBuilder;
 import eu.pb4.trinkets.api.datagen.TrinketSlotTypeBuilder;
-import eu.pb4.trinkets.impl.SlotTypeImpl;
+import eu.pb4.trinkets.impl.slots.SlotTypeImpl;
 import net.minecraft.resources.Identifier;
 
 import java.util.function.Consumer;

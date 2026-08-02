@@ -1,8 +1,7 @@
 package eu.pb4.trinkets.mixin.client;
 
-import eu.pb4.trinkets.impl.client.TrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
-import eu.pb4.trinkets.impl.TrinketSlot;
+import eu.pb4.trinkets.impl.slots.TrinketSlot;
 import eu.pb4.trinkets.impl.TrinketsConfig;
 import eu.pb4.trinkets.impl.client.TrinketsClient;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
