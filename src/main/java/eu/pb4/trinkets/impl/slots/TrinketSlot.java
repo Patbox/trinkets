@@ -1,11 +1,13 @@
 package eu.pb4.trinkets.impl.slots;
 
+import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.event.TrinketCanEquipCallback;
 import eu.pb4.trinkets.api.event.TrinketSlotCompatibilityCallback;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public interface TrinketSlot {
@@ -41,4 +43,10 @@ public interface TrinketSlot {
     SlotType getType();
 
     TrinketSlotAccess getAccess();
+
+    SlotGroup getGroup();
+
+    default Slot asSlot() {
+        return (Slot) this;
+    }
 }

@@ -1,0 +1,6 @@
+- Reworked Trinket slot logic to no split the slot ids from visual position of slots:
+  - This allows more flexibility / future changes, while preventing slot id desyncs.
+  - Additionally reworked the sidebar slot option to always flatten the resulting slots, rather than still using groups.
+- The data driven rendering is now part of the api, allowing data-generation of related files as well as easy way to add custom logic to it.
+- Lanterns now have a default visuals when put in Belt slot.
+- Bunch of bugfixes, including a crash™

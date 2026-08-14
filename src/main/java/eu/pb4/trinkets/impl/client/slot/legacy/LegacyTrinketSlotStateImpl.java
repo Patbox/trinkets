@@ -1,13 +1,17 @@
-package eu.pb4.trinkets.impl.slots;
+package eu.pb4.trinkets.impl.client.slot.legacy;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketAttachment;
-import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
-import eu.pb4.trinkets.impl.Point;
-import eu.pb4.trinkets.impl.TrinketInventoryImpl;
-import eu.pb4.trinkets.impl.TrinketsConfig;
+import eu.pb4.trinkets.api.TrinketInventory;
+import eu.pb4.trinkets.impl.*;
+import eu.pb4.trinkets.impl.client.TrinketsClient;
+import eu.pb4.trinkets.impl.client.slot.ClientTrinketSlotState;
+import eu.pb4.trinkets.impl.client.slot.TrinketScreenManagerBackend;
+import eu.pb4.trinkets.impl.slots.SurvivalTrinketSlot;
+import eu.pb4.trinkets.impl.slots.TrinketSlot;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,9 +21,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.Consumer;
 
-public class TrinketSlotStateImpl implements TrinketSlotState {
+public class LegacyTrinketSlotStateImpl implements LegacyTrinketSlotState, ClientTrinketSlotState {
     private final Map<SlotGroup, Integer> groupNums = new HashMap<>();
     private final Map<SlotGroup, Point> groupPos = new HashMap<>();
     private final Int2ObjectMap<SlotGroup> slotToGroup = new Int2ObjectOpenHashMap<>();
@@ -28,23 +31,18 @@ public class TrinketSlotStateImpl implements TrinketSlotState {
     private final Map<SlotGroup, Integer> slotWidths = new HashMap<>();
     private final LivingEntity owner;
 
+    private final Map<SlotType, List<SlotInfo>> slotInfo = new HashMap<>();
+
     private int groupCount = 0;
 
     private final AbstractContainerMenu menu;
     private final LivingEntityTrinketAttachment trinkets;
 
-    public TrinketSlotStateImpl(LivingEntity owner, AbstractContainerMenu menu, LivingEntityTrinketAttachment trinkets) {
+    public LegacyTrinketSlotStateImpl(LivingEntity owner, AbstractContainerMenu menu, LivingEntityTrinketAttachment trinkets, List<TrinketInventory> sortedInventories) {
         this.owner = owner;
         this.menu = menu;
         this.trinkets = trinkets;
-    }
 
-    public static TrinketSlotState create(LivingEntity owner, AbstractContainerMenu menu, LivingEntityTrinketAttachment trinkets) {
-        return new TrinketSlotStateImpl(owner, menu, trinkets);
-    }
-
-    @Override
-    public void createSlots(Consumer<Slot> slotConsumer) {
         Map<String, SlotGroup> groups = trinkets.getGroups();
         groupPos.clear();
         slotToGroup.clear();
@@ -117,7 +115,10 @@ public class TrinketSlotStateImpl implements TrinketSlotState {
 
                 for (int i = 0; i < stacks.getContainerSize(); i++) {
                     int y = (int) (pos.y() + (slotOffset / 2) * 18 * Math.pow(-1, slotOffset));
-                    slotConsumer.accept(new SurvivalTrinketSlot(stacks, i, x + pos.x(), y, group, stacks.slotType(), groupOffset == 1 && i == 0, this.owner));
+
+                    this.slotInfo.computeIfAbsent(slot.getValue().slotType(), _ -> new ArrayList<>()).add(
+                            new SlotInfo(x + pos.x(), y, i != 0 || groupOffset != 1, groupOffset == 1 && i == 0 ? Predicates.alwaysTrue() : this::isSlotVisible)
+                    );
                     slotOffset++;
                 }
                 groupOffset++;
@@ -125,6 +126,20 @@ public class TrinketSlotStateImpl implements TrinketSlotState {
             }
             slotWidths.put(group, width);
         }
+    }
+
+    private boolean isSlotVisible(TrinketSlot trinketSlot) {
+        if (TrinketsMain.IS_CLIENT) {
+            if (TrinketsClient.activeGroup == trinketSlot.getGroup()) {
+                return trinketSlot.asSlot().getContainerSlot() == 0 || TrinketsClient.activeType == trinketSlot.getType();
+            } else if (TrinketsClient.quickMoveGroup == trinketSlot.getGroup()) {
+                return trinketSlot.asSlot().getContainerSlot() == 0 || TrinketsClient.quickMoveType == trinketSlot.getType() && TrinketsClient.quickMoveTimer > 0;
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     private boolean hasSlots(TrinketAttachment comp, SlotGroup group) {
@@ -167,7 +182,6 @@ public class TrinketSlotStateImpl implements TrinketSlotState {
         return slotTypes.getOrDefault(group, ImmutableList.of());
     }
 
-    @Override
     public int getSlotWidth(SlotGroup group) {
         return slotWidths.getOrDefault(group, 0);
     }
@@ -178,25 +192,34 @@ public class TrinketSlotStateImpl implements TrinketSlotState {
     }
 
     @Override
-    public TrinketSlotState asCreativeState() {
+    public LegacyTrinketSlotState asCreativeState() {
         return new Creative();
     }
 
-
-    private class Creative implements TrinketSlotState {
-        @Override
-        public void createSlots(Consumer<Slot> slotConsumer) {
-            TrinketSlotStateImpl.this.createSlots(slotConsumer);
+    @Override
+    public SlotInfo getSlotConfig(int slotIndex, TrinketInventory inventory, int index) {
+        var list = this.slotInfo.get(inventory.slotType());
+        if (list == null || list.size() <= index) {
+            return null;
         }
 
+        return list.get(index);
+    }
+
+    @Override
+    public TrinketScreenManagerBackend getScreenBackend() {
+        return LegacyTrinketScreenManager.INSTANCE;
+    }
+
+    private class Creative implements LegacyTrinketSlotState, ClientTrinketSlotState {
         @Override
         public int getGroupNum(SlotGroup group) {
-            return TrinketSlotStateImpl.this.getGroupNum(group);
+            return LegacyTrinketSlotStateImpl.this.getGroupNum(group);
         }
 
         @Override
         public @Nullable Point getGroupPos(SlotGroup group) {
-            int groupNum = TrinketSlotStateImpl.this.getGroupNum(group);
+            int groupNum = LegacyTrinketSlotStateImpl.this.getGroupNum(group);
             if (groupNum <= 3) {
                 // Look what else do you want me to do
                 return switch (groupNum) {
@@ -212,42 +235,57 @@ public class TrinketSlotStateImpl implements TrinketSlotState {
                 };
             }
             
-            return TrinketSlotStateImpl.this.getGroupPos(group);
+            return LegacyTrinketSlotStateImpl.this.getGroupPos(group);
         }
 
         @Override
         public @Nullable SlotGroup getGroupAtSlot(int slotIndex) {
-            return TrinketSlotStateImpl.this.getGroupAtSlot(slotIndex);
+            return LegacyTrinketSlotStateImpl.this.getGroupAtSlot(slotIndex);
         }
 
         @Override
         public @NotNull List<Point> getSlotHeights(SlotGroup group) {
-            return TrinketSlotStateImpl.this.getSlotHeights(group);
+            return LegacyTrinketSlotStateImpl.this.getSlotHeights(group);
         }
 
         @Override
         public @Nullable Point getSlotHeight(SlotGroup group, int i) {
-            return TrinketSlotStateImpl.this.getSlotHeight(group, i);
+            return LegacyTrinketSlotStateImpl.this.getSlotHeight(group, i);
         }
 
         @Override
         public @NotNull List<SlotType> getSlotTypes(SlotGroup group) {
-            return TrinketSlotStateImpl.this.getSlotTypes(group);
+            return LegacyTrinketSlotStateImpl.this.getSlotTypes(group);
         }
 
         @Override
         public int getSlotWidth(SlotGroup group) {
-            return TrinketSlotStateImpl.this.getSlotWidth(group);
+            return LegacyTrinketSlotStateImpl.this.getSlotWidth(group);
         }
 
         @Override
         public int groupCount() {
-            return TrinketSlotStateImpl.this.groupCount();
+            return LegacyTrinketSlotStateImpl.this.groupCount();
         }
 
         @Override
-        public TrinketSlotState asCreativeState() {
+        public LegacyTrinketSlotState asCreativeState() {
             return this;
+        }
+
+        @Override
+        public SlotInfo getSlotConfig(int slotIndex, TrinketInventory inventory, int index) {
+            var info = LegacyTrinketSlotStateImpl.this.getSlotConfig(slotIndex, inventory, index);
+            var posA = LegacyTrinketSlotStateImpl.this.getGroupPos(SlotGroup.getEntityGroups(owner).get(inventory.slotType().group()));
+            var posB = getGroupPos(SlotGroup.getEntityGroups(owner).get(inventory.slotType().group()));
+
+
+            return info != null ? info.reposition(posB.x() - posA.x(), posB.y() - posA.y()) : null;
+        }
+
+        @Override
+        public TrinketScreenManagerBackend getScreenBackend() {
+            return LegacyTrinketScreenManager.INSTANCE;
         }
     }
 }
