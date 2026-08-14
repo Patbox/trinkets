@@ -5,20 +5,22 @@ import dev.yumi.mc.core.api.entrypoint.client.ClientModInitializer;
 import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
-import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
-import eu.pb4.trinkets.impl.TrinketInventoryMenu;
-import eu.pb4.trinkets.impl.TrinketsMain;
-import eu.pb4.trinkets.impl.TrinketsNetwork;
+import eu.pb4.trinkets.impl.*;
 import eu.pb4.trinkets.impl.client.render.ClientTrinketsManager;
 import eu.pb4.trinkets.api.client.renderer.element.TrinketRenderElements;
+import eu.pb4.trinkets.impl.client.slot.legacy.LegacyTrinketSlotStateImpl;
+import eu.pb4.trinkets.impl.client.slot.sidebar.SidebarTrinketSlotStateImpl;
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
 import eu.pb4.trinkets.impl.platform.ClientAbstraction;
+import eu.pb4.trinkets.impl.slots.TrinketSlotState;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -94,5 +96,11 @@ public class TrinketsClient implements ClientModInitializer {
         ClientAbstraction.INSTANCE.registerClientReloadListener(Identifier.fromNamespaceAndPath(TrinketsMain.NAMESPACE, "client_trinkets"), ClientTrinketsManager.INSTANCE, List.of(),
                 List.of(ClientAbstraction.INSTANCE.getClientModelResourceReloaderId()));
         ClientAbstraction.INSTANCE.registerClientTagsLoadedEvent(ClientTrinketsManager.INSTANCE::updateItemMap);
+
+        updateSlotVisualHandlers();
+    }
+
+    public static void updateSlotVisualHandlers() {
+        TrinketSlotState.CLIENT_CONSTRUCTOR.setValue(TrinketsConfig.instance.sidebarTrinketsSlots ? SidebarTrinketSlotStateImpl::new : LegacyTrinketSlotStateImpl::new);
     }
 }

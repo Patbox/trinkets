@@ -5,7 +5,6 @@ import eu.pb4.trinkets.impl.*;
 import eu.pb4.trinkets.impl.client.TrinketsClient;
 import eu.pb4.trinkets.impl.slots.SurvivalTrinketSlot;
 import eu.pb4.trinkets.impl.slots.TrinketSlotState;
-import eu.pb4.trinkets.impl.slots.TrinketSlotStateImpl;
 import eu.pb4.trinkets.mixin.accessor.AbstractedContainerMenuAccessor;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -22,6 +21,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Function;
 
 /**
  * Adds trinket slots to the player's screen handler
@@ -58,7 +61,16 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
             trinkets.rebuild();
         }
 
-        this.trinketsSlotState = TrinketSlotStateImpl.create(this.owner, this, trinkets);
+        var sortedInventories = trinkets.inventory.values().stream().sorted(
+                // First by group order, then by group name, then by group name, then by slot type order and then by id.
+                Comparator.<TrinketInventoryImpl>comparingInt(inv -> SlotGroup.getPlayerGroups(owner).get(inv.slotType().group()).order())
+                        .thenComparing(inv -> inv.slotType().group())
+                        .thenComparingInt(inv -> inv.slotType().order())
+                        .thenComparing(inv -> inv.slotType().getId())
+        ).toList();
+
+        //noinspection unchecked
+        this.trinketsSlotState = TrinketSlotState.create(this.owner, this, trinkets, (List<TrinketInventory>) (Object) sortedInventories);
 
         while (trinketSlotStart < trinketSlotEnd) {
             slots.remove(trinketSlotStart);
@@ -67,7 +79,19 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
             trinketSlotEnd--;
         }
         trinketSlotStart = slots.size();
-        this.trinketsSlotState.createSlots(this::addSlot);
+
+        int baseIndex = 0;
+        for (var inv : sortedInventories) {
+            for (int i = 0; i < inv.getContainerSize(); i++) {
+                var info = this.trinketsSlotState.getSlotConfig(baseIndex, inv, i);
+                if (info != null) {
+                    baseIndex++;
+                    this.addSlot(new SurvivalTrinketSlot(inv, i, info.x(), info.y(), info.isVisible(), info.renderAfterRegularSlots(), owner));
+                }
+            }
+        }
+
+
         trinketSlotEnd = slots.size();
     }
 

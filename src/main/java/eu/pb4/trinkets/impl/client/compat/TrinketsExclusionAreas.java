@@ -8,6 +8,7 @@ import eu.pb4.trinkets.impl.client.TrinketsClient;
 import java.util.ArrayList;
 import java.util.List;
 
+import eu.pb4.trinkets.impl.client.slot.ClientTrinketSlotState;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screens.Screen;
@@ -18,38 +19,8 @@ import net.minecraft.client.renderer.Rect2i;
 public class TrinketsExclusionAreas {
 
 	public static List<Rect2i> create(Screen screen) {
-		if (screen instanceof TrinketScreen trinketScreen) {
-			if (screen instanceof CreativeModeInventoryScreen creativeInventoryScreen &&
-				!creativeInventoryScreen.isInventoryOpen()) {
-				return List.of();
-			}
-			List<Rect2i> rects = new ArrayList<>();
-			int x = trinketScreen.trinkets$getX();
-			int y = trinketScreen.trinkets$getY();
-			TrinketInventoryMenu handler = trinketScreen.trinkets$getHandler();
-			int groupCount = handler.trinkets$getSlotState().groupCount();
-			if (groupCount <= 0 || trinketScreen.trinkets$isRecipeBookOpen()) {
-				return List.of();
-			}
-
-			if (TrinketsClient.activeGroup != null) {
-				Rect2i rect = TrinketScreenManager.currentBounds;
-				rects.add(
-					new Rect2i(rect.getX() + x, rect.getY() + y, rect.getWidth(),
-						rect.getHeight()));
-			}
-			var maxHeight = TrinketsConfig.instance.sidebarHeight;
-
-			int width = groupCount / maxHeight;
-			int height = groupCount % maxHeight;
-			if (width > 0) {
-				rects.add(new Rect2i(-4 - 18 * width + x, y, 7 + 18 * width, 14 + 18 * maxHeight));
-			}
-
-			if (height > 0) {
-				rects.add(new Rect2i(-22 - 18 * width + x, y, 25, 14 + 18 * height));
-			}
-			return rects;
+		if (screen instanceof TrinketScreen trinketScreen && trinketScreen.trinkets$getSlotState() instanceof ClientTrinketSlotState state) {
+			return state.getScreenBackend().getExclusionAreas(trinketScreen);
 		}
 		return List.of();
 	}

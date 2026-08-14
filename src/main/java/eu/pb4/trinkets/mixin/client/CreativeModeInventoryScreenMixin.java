@@ -1,5 +1,6 @@
 package eu.pb4.trinkets.mixin.client;
 
+import eu.pb4.trinkets.api.TrinketInventory;
 import eu.pb4.trinkets.impl.TrinketsConfig;
 import eu.pb4.trinkets.impl.slots.TrinketSlotState;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -74,15 +75,12 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 		for (int i = handler.trinkets$getTrinketSlotStart(); i < handler.trinkets$getTrinketSlotEnd(); i++) {
 			Slot slot = this.minecraft.player.inventoryMenu.slots.get(i);
 			if (slot instanceof SurvivalTrinketSlot ts) {
-				SlotGroup group = SlotGroup.getEntityGroups(this.minecraft.player).get(ts.getType().group());
-				var rect = trinkets$getSlotState().getGroupRect(group);
-				Point pos = trinkets$getHandler().trinkets$getSlotState().getGroupPos(group);
-				if (pos == null) {
-					return;
+				var slotInfo = trinkets$getHandler().trinkets$getSlotState().getSlotConfig(i - handler.trinkets$getTrinketSlotStart(),
+						(TrinketInventory) ts.container, ts.getContainerSlot());
+				if (slotInfo == null) {
+					continue;
 				}
-				int xOff = rect.x() + 1 - pos.x();
-				int yOff = rect.y() + 1 - pos.y();
-				((ItemPickerMenu) this.menu).slots.add(new CreativeTrinketSlot(ts, ts.getContainerSlot(), ts.x + xOff, ts.y + yOff));
+				((ItemPickerMenu) this.menu).slots.add(new CreativeTrinketSlot(ts, ts.getContainerSlot(), slotInfo.x(), slotInfo.y()));
 			}
 		}
     }

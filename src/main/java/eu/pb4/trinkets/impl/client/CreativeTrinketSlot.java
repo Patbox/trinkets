@@ -1,5 +1,6 @@
 package eu.pb4.trinkets.impl.client;
 
+import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.impl.slots.SurvivalTrinketSlot;
@@ -41,6 +42,11 @@ public class CreativeTrinketSlot extends SlotWrapper implements TrinketSlot {
 	@Override
 	public TrinketSlotAccess getAccess() {
 		return this.original.getAccess();
+	}
+
+	@Override
+	public SlotGroup getGroup() {
+		return this.original.getGroup();
 	}
 
 	@Override

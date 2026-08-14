@@ -162,7 +162,7 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 	@Inject(method = "extractTooltip", at = @At("HEAD"), require = 0)
 	private void extractSlotNameTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY, CallbackInfo ci) {
 		var slot = this.getHoveredSlot(mouseX, mouseY);
-		if (TrinketsConfig.instance.showSlotTooltip && slot instanceof TrinketSlot trinketSlot && slot.isActive() && slot.getItem().isEmpty() && trinketSlot.isTrinketFocused() && this.menu.getCarried().isEmpty()) {
+		if (TrinketsConfig.instance.showSlotTooltip && slot instanceof TrinketSlot trinketSlot && slot.isActive() && slot.getItem().isEmpty() && this.menu.getCarried().isEmpty()) {
 			TrinketScreenManager.setupSlotTooltip(graphics, (AbstractContainerScreen) (Object) this, this.leftPos, this.topPos, slot, trinketSlot, mouseX, mouseY);
 		}
 	}

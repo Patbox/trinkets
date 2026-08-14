@@ -19,24 +19,30 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
+import java.util.function.Predicate;
+
 /**
  * A gui slot for a trinket slot, used in the survival inventory, but suited for any case
  */
 public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 	private final SlotGroup group;
 	private final SlotType type;
-	private final boolean alwaysVisible;
 	private final TrinketSlotAccess ref;
 	private final LivingEntity owner;
 	private final int slot;
+	private final Predicate<TrinketSlot> visibilityPredicate;
+	private final boolean renderAfterRegularSlots;
 
-	public SurvivalTrinketSlot(TrinketInventoryImpl inventory, int slot, int x, int y, SlotGroup group, SlotType type,
-                               boolean alwaysVisible, LivingEntity owner) {
+	public SurvivalTrinketSlot(TrinketInventoryImpl inventory, int slot, int x, int y,
+							   Predicate<TrinketSlot> visibilityPredicate,
+							   boolean renderAfterRegularSlots,
+							   LivingEntity owner) {
 		super(inventory, slot, x, y);
-		this.group = group;
-		this.type = type;
+		this.group = SlotGroup.getEntityGroups(owner).get(inventory.slotType().group());
+		this.type = inventory.slotType();
 		this.slot = slot;
-		this.alwaysVisible = alwaysVisible;
+		this.visibilityPredicate = visibilityPredicate;
+		this.renderAfterRegularSlots = renderAfterRegularSlots;
 		this.ref = inventory.getSlotAccess(this.slot);
 		this.owner = owner;
 	}
@@ -63,7 +69,7 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 			return false;
 		}
 
-		if (alwaysVisible) {
+		if (!this.renderAfterRegularSlots && this.visibilityPredicate.test(this)) {
 			if (x < 0) {
 				Level world = this.owner.level();
 				if (TrinketsMain.IS_CLIENT && world.isClientSide()) {
@@ -78,24 +84,18 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 			}
 			return true;
 		}
-		return isTrinketFocused();
+
+		return this.visibilityPredicate.test(this);
 	}
 
 	@Override
 	public boolean isTrinketFocused() {
-		if (TrinketsMain.IS_CLIENT) {
-			if (TrinketsClient.activeGroup == group) {
-				return this.slot == 0 || TrinketsClient.activeType == type;
-			} else if (TrinketsClient.quickMoveGroup == group) {
-				return this.slot == 0 || TrinketsClient.quickMoveType == type && TrinketsClient.quickMoveTimer > 0;
-			}
-		}
-		return false;
+		return this.visibilityPredicate.test(this);
 	}
 
 	@Override
 	public boolean renderAfterRegularSlots() {
-		return this.slot != 0 || !this.alwaysVisible;
+		return this.renderAfterRegularSlots;
 	}
 
 	@Override
@@ -111,5 +111,10 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 	@Override
 	public TrinketSlotAccess getAccess() {
 		return this.ref;
+	}
+
+	@Override
+	public SlotGroup getGroup() {
+		return this.group;
 	}
 }
