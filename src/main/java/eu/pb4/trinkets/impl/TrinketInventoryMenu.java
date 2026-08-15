@@ -1,12 +1,6 @@
 package eu.pb4.trinkets.impl;
 
-import java.util.List;
-
-import eu.pb4.trinkets.api.SlotGroup;
-import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.impl.slots.TrinketSlotState;
-import org.jetbrains.annotations.NotNull;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Interface for putting methods onto the player's screen handler
@@ -23,4 +17,7 @@ public interface TrinketInventoryMenu {
 	int trinkets$getTrinketSlotEnd();
 
 	TrinketSlotState trinkets$getSlotState();
+
+	boolean trinkets$isCosmeticMode();
+	void trinkets$setCosmeticMode(boolean value);
 }

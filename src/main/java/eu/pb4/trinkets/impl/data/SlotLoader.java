@@ -123,6 +123,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 		private String dropRule = TrinketDropRule.DEFAULT.toString();
 
 		private boolean isVanityOnly = false;
+		private boolean cosmeticSlots = true;
 		private boolean isHidden = false;
 
 		SlotTypeImpl create(String id, String group) {
@@ -154,7 +155,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 					new SlotTypeImpl.Predicates(
 							finalQuickMovePredicates, finalValidatorPredicates,
 							finalTooltipPredicates, finalInteractEquipablePredicates
-					), TrinketDropRule.valueOf(dropRule), isVanityOnly, isHidden, maxStackSize);
+					), TrinketDropRule.valueOf(dropRule), isVanityOnly, isHidden, cosmeticSlots, maxStackSize);
 		}
 
 		void read(JsonObject jsonObject) {
@@ -179,6 +180,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 
 			isVanityOnly = GsonHelper.getAsBoolean(jsonObject, "is_vanity", this.isVanityOnly && !replace);
 			isHidden = GsonHelper.getAsBoolean(jsonObject, "is_hidden", this.isHidden && !replace);
+			cosmeticSlots = GsonHelper.getAsBoolean(jsonObject, "cosmetic_slots", this.cosmeticSlots || replace);
 
 			if (TrinketDropRule.has(jsonDropRule)) {
 				dropRule = jsonDropRule;

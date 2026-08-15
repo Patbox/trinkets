@@ -27,6 +27,7 @@ public record SlotTypeImpl(String id, String group, int order, int amount, Optio
                            TrinketDropRule dropRule,
                            boolean isVanityOnly,
                            boolean isHidden,
+                           boolean supportsCosmeticSlots,
                            int maxStackSize) implements SlotType {
 
     public static StreamCodec<FriendlyByteBuf, SlotTypeImpl> STREAM_CODEC = StreamCodec.composite(
@@ -45,6 +46,7 @@ public record SlotTypeImpl(String id, String group, int order, int amount, Optio
             ByteBufCodecs.idMapper(x -> TrinketDropRule.values()[x], TrinketDropRule::ordinal), SlotTypeImpl::dropRule,
             ByteBufCodecs.BOOL, SlotTypeImpl::isVanityOnly,
             ByteBufCodecs.BOOL, SlotTypeImpl::isHidden,
+            ByteBufCodecs.BOOL, SlotTypeImpl::supportsCosmeticSlots,
             ByteBufCodecs.VAR_INT, SlotTypeImpl::maxStackSize,
             SlotTypeImpl::new
     );

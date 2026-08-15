@@ -18,6 +18,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -197,10 +198,10 @@ public class LegacyTrinketSlotStateImpl implements LegacyTrinketSlotState, Clien
     }
 
     @Override
-    public SlotInfo getSlotConfig(int slotIndex, TrinketInventory inventory, int index) {
+    public @NonNull SlotInfo getSlotConfig(int slotIndex, TrinketInventory inventory, int index) {
         var list = this.slotInfo.get(inventory.slotType());
         if (list == null || list.size() <= index) {
-            return null;
+            return SlotInfo.FALLBACK;
         }
 
         return list.get(index);
@@ -274,13 +275,16 @@ public class LegacyTrinketSlotStateImpl implements LegacyTrinketSlotState, Clien
         }
 
         @Override
-        public SlotInfo getSlotConfig(int slotIndex, TrinketInventory inventory, int index) {
+        public @NonNull SlotInfo getSlotConfig(int slotIndex, TrinketInventory inventory, int index) {
             var info = LegacyTrinketSlotStateImpl.this.getSlotConfig(slotIndex, inventory, index);
-            var posA = LegacyTrinketSlotStateImpl.this.getGroupPos(SlotGroup.getEntityGroups(owner).get(inventory.slotType().group()));
-            var posB = getGroupPos(SlotGroup.getEntityGroups(owner).get(inventory.slotType().group()));
+            if (info == null) {
+                return SlotInfo.FALLBACK;
+            }
+            var group = SlotGroup.getEntityGroups(owner).get(inventory.slotType().group());
+            var posA = LegacyTrinketSlotStateImpl.this.getGroupPos(group);
+            var posB = this.getGroupPos(group);
 
-
-            return info != null ? info.reposition(posB.x() - posA.x(), posB.y() - posA.y()) : null;
+            return info.reposition(info.x() + posB.x() - posA.x(), info.y() + posB.y() - posA.y());
         }
 
         @Override

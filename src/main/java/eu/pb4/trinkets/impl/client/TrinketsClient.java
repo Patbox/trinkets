@@ -15,12 +15,10 @@ import eu.pb4.trinkets.impl.platform.ClientAbstraction;
 import eu.pb4.trinkets.impl.slots.TrinketSlotState;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -97,6 +95,17 @@ public class TrinketsClient implements ClientModInitializer {
                     var trinket = TrinketCallback.getCallback(stack);
                     trinket.onBreak(stack, ref, livingEntity);
                 }
+            }
+        });
+
+        ClientAbstraction.INSTANCE.registerGlobalReceiverPlay(TrinketsNetwork.SYNC_CONFIG, (client, player, payload) -> {
+            TrinketsConfig.serverSyncedGameplay = payload.gameplay();
+            if (player.inventoryMenu instanceof TrinketInventoryMenu screenHandler) {
+                screenHandler.trinkets$updateTrinketSlots(true);
+                if (client.gui.screen() instanceof TrinketScreen trinketScreen) {
+                    trinketScreen.trinkets$updateTrinketSlots();
+                }
+                TrinketScreenManager.tryUpdateTrinketsSlot();
             }
         });
 

@@ -35,6 +35,9 @@ public final class DefaultTrinketSlotTags {
     public static final TagKey<Item> ANY_GLOVE = of("any_glove");
     public static final TagKey<Item> ANY_RING = of("any_ring");
 
+    // Should contain all trinkets
+    public static final TagKey<Item> TRINKETS = of("trinkets");
+
     private DefaultTrinketSlotTags() {}
 
     private static TagKey<Item> of(String slot) {

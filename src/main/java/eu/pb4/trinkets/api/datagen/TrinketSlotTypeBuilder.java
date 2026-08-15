@@ -23,6 +23,8 @@ public interface TrinketSlotTypeBuilder {
 
     TrinketSlotTypeBuilder isHidden(boolean value);
 
+    TrinketSlotTypeBuilder cosmeticSlots(boolean value);
+
     TrinketSlotTypeBuilder quickMoveCondition(Consumer<ConditionBuilder> consumer);
 
     TrinketSlotTypeBuilder validatorCondition(Consumer<ConditionBuilder> consumer);

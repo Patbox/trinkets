@@ -11,6 +11,11 @@ import java.nio.file.StandardOpenOption;
 public class TrinketsConfig {
     private static final Path CONFIG_PATH = YumiMods.get().getConfigDirectory().resolve("trinkets.json");
     public static TrinketsConfig instance = new TrinketsConfig();
+    public static TrinketsConfig.Gameplay serverSyncedGameplay = new TrinketsConfig.Gameplay();
+
+    public static TrinketsConfig.Gameplay getGameplay(boolean isClient) {
+        return isClient ? serverSyncedGameplay : instance.gameplay;
+    }
 
     @SerializedName("render_trinkers_in_first_person")
     public boolean renderFirstPersonHand = false;
@@ -24,6 +29,20 @@ public class TrinketsConfig {
     public boolean showSlotTooltip = false;
     @SerializedName("show_item_tooltip")
     public boolean showItemTooltip = true;
+    @SerializedName("highlight_compatible_slots")
+    public boolean highlightCompatibleSlots = false;
+
+    @SerializedName("gameplay")
+    public Gameplay gameplay = new Gameplay();
+
+
+    public static class Gameplay {
+        @SerializedName("equipment_hiding")
+        public boolean equipmentHiding = false;
+
+        @SerializedName("cosmetic_slots")
+        public boolean cosmeticSlots = false;
+    }
 
     public static void load() {
         try {

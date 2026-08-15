@@ -39,6 +39,8 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     public LivingEntity entity;
     @Deprecated
     private Map<String, Map<String, TrinketInventoryImpl>> legacyInventory = new HashMap<>();
+    @Nullable
+    private NonNullList<ItemStack> delayedDropped;
 
     public LivingEntityTrinketAttachment(LivingEntity entity) {
         this.entity = entity;
@@ -147,6 +149,42 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                                 }
                             }
                         }
+
+                        if (inv.cosmeticItemsEnabled()) {
+                            for (int i = 0; i < oldInv.cosmeticStacks.size(); i++) {
+                                ItemStack stack = oldInv.cosmeticStacks.get(i).copy();
+                                oldInv.cosmeticStacks.set(i, ItemStack.EMPTY);
+                                if (i < inv.getContainerSize()) {
+                                    inv.setCosmeticItem(i, stack);
+                                } else {
+                                    TrinketSlotAccess ref = oldInv.getOrCreateCosmeticSlotAccess(i);
+                                    if (ref == null) {
+                                        continue;
+                                    }
+                                    ItemStack oldStack = stack;
+                                    if (entity instanceof LivingEntityTrinketAttachment.StackHistory stackHistory && !stackHistory.trinkets$getOldStack(ref).isEmpty()) {
+                                        oldStack = stackHistory.trinkets$getOldStack(ref);
+                                    }
+                                    droppedItems.put(ref, oldStack);
+                                    if (this.entity instanceof Player player && !player.level().isClientSide()) {
+                                        player.getInventory().placeItemBackInInventory(stack.copy());
+                                    } else if (this.entity.level() instanceof ServerLevel serverWorld) {
+                                        this.entity.spawnAtLocation(serverWorld, stack);
+                                    }
+                                }
+                            }
+                        } else {
+                            for (int i = 0; i < oldInv.cosmeticStacks.size(); i++) {
+                                var oldStack = oldInv.cosmeticStacks.get(i);
+                                droppedItems.put(oldInv.getOrCreateCosmeticSlotAccess(i), oldStack);
+                                if (this.entity instanceof Player player && !player.level().isClientSide()) {
+                                    player.getInventory().placeItemBackInInventory(oldStack.copy());
+                                } else if (this.entity.level() instanceof ServerLevel serverWorld) {
+                                    this.entity.spawnAtLocation(serverWorld, oldStack);
+                                }
+                            }
+                            oldInv.cosmeticStacks.clear();
+                        }
                         oldInv.isValid = false;
                     }
                 }
@@ -157,21 +195,6 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                 count += inv.getContainerSize();
             }
         }
-
-        // Handle dropping newly slotless items.
-        forEach((ref, itemStack) -> {
-            if (ref != null && (!groups.containsKey(ref.slotType().group()) || !groups.get(ref.slotType().group()).slots().containsKey(ref.slotType().name()))) {
-                droppedItems.put(ref, itemStack);
-                if (this.entity instanceof Player player && !this.entity.level().isClientSide()) {
-                    player.getInventory().placeItemBackInInventory(itemStack.copy());
-                } else if (this.entity.level() instanceof ServerLevel serverWorld) {
-                    this.entity.spawnAtLocation(serverWorld, itemStack);
-                }
-            }
-            if (ref != null && ref.inventory() instanceof TrinketInventoryImpl implemented) {
-                implemented.isValid = false;
-            }
-        });
 
         size = count;
         this.legacyInventory = legacyInventory;
@@ -322,14 +345,13 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                     inv.readData(value, dropped::add);
                 } else {
                     ContainerSavingHelper.loadAllItems(value, dropped::add);
+                    ContainerSavingHelper.loadAllItems("cosmetic", value, dropped::add);
                 }
             }
         }
 
         if (this.entity.level() instanceof ServerLevel serverWorld) {
-            for (ItemStack itemStack : dropped) {
-                this.entity.spawnAtLocation(serverWorld, itemStack);
-            }
+            this.delayedDropped = dropped;
         }
 
         var slotMap = HashMultimap.<String, AttributeModifier>create();
@@ -407,6 +429,15 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                     return Optional.of(access);
                 }
             }
+
+            if (!requireActive && inv.hasCosmeticItems()) {
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    var access = inv.getOrCreateCosmeticSlotAccess(i);
+                    if (predicate.test(access.get())) {
+                        return Optional.of(access);
+                    }
+                }
+            }
         }
         return Optional.empty();
     }
@@ -416,6 +447,12 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         for (var inv : this.inventory.values()) {
             for (int i = 0; i < inv.getContainerSize(); i++) {
                 consumer.accept(inv.getSlotAccess(i), inv.getItem(i));
+            }
+
+            if (inv.hasCosmeticItems()) {
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    consumer.accept(inv.getCosmeticSlotAccess(i), inv.getCosmeticItem(i));
+                }
             }
         }
     }
@@ -428,6 +465,14 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                     return;
                 }
             }
+
+            if (inv.hasCosmeticItems()) {
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    if (!consumer.test(inv.getCosmeticSlotAccess(i), inv.getCosmeticItem(i))) {
+                        return;
+                    }
+                }
+            }
         }
     }
 
@@ -436,6 +481,12 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         for (var inv : this.inventory.values()) {
             for (int i = 0; i < inv.getContainerSize(); i++) {
                 consumer.accept(inv.getSlotAccess(i));
+            }
+
+            if (inv.hasCosmeticItems()) {
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    consumer.accept(inv.getCosmeticSlotAccess(i));
+                }
             }
         }
     }
@@ -448,6 +499,14 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                     return;
                 }
             }
+
+            if (inv.hasCosmeticItems()) {
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    if (!consumer.test(inv.getCosmeticSlotAccess(i))) {
+                        return;
+                    }
+                }
+            }
         }
     }
 
@@ -456,6 +515,14 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         for (var inv : this.inventory.values()) {
             for (int i = 0; i < inv.getContainerSize(); i++) {
                 if (inv.isVisible(i)) {
+                    if (inv.hasCosmeticItems()) {
+                        var deco = inv.getCosmeticItem(i);
+                        if (!deco.isEmpty()) {
+                            consumer.accept(inv.getCosmeticSlotAccess(i), deco);
+                            continue;
+                        }
+                    }
+
                     consumer.accept(inv.getSlotAccess(i), inv.getItem(i));
                 }
             }
@@ -476,6 +543,16 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                     consumer.accept(access, stack);
                 }
             }
+
+            if (inv.hasCosmeticItems()) {
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    var access = inv.getCosmeticSlotAccess(i);
+                    var stack = inv.getCosmeticItem(i);
+                    if (TrinketsApi.getDropRule(stack, access, this.entity, keepInventory) == TrinketDropRule.DROP) {
+                        consumer.accept(access, stack);
+                    }
+                }
+            }
         }
     }
 
@@ -485,6 +562,18 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     }
 
     public void tick() {
+        if (this.delayedDropped != null) {
+            for (var stack : this.delayedDropped) {
+                if (this.entity instanceof Player player && !player.level().isClientSide()) {
+                    player.getInventory().placeItemBackInInventory(stack);
+                } else if (this.entity.level() instanceof ServerLevel serverWorld) {
+                    this.entity.spawnAtLocation(serverWorld, stack);
+                }
+            }
+
+            this.delayedDropped = null;
+        }
+
         for (var inv : this.inventory.values()) {
             for (int i = 0; i < inv.getContainerSize(); i++) {
                 var stack = inv.getItem(i);

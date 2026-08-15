@@ -62,7 +62,7 @@ public class TrinketsApi {
     }
 
     public static boolean canApplyEffects(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
-        if (slot.slotType().isVanityOnly()) {
+        if (slot.slotType().isVanityOnly() || slot.cosmetic()) {
             return false;
         }
 

@@ -1,6 +1,17 @@
+- Added support for toggling visibility of Trinkets:
+  - It's disabled by default and needs to be enabled by the server to work. Toggling it on client alone (when not in singleplayer) will do nothing.
+  - Trinkets will be disabled both locally and for any other player seeing you.
+  - This was a requested feature, and while I originally though about making it an addon, decided to just add it direct as default disabled thing.
+- Added support for decorative / cosmetic slots:
+  - It's disabled by default and needs to be enabled by the server to work. Toggling it on client alone (when not in singleplayer) will do nothing.
+  - Trinkets in this slot won't apply any gameplay effect, instead being just visual.
+  - Trinkets in cosmetic slots will override rendering of the one in regular slot.
+  - This was a requested feature, and while I originally though about making it an addon, decided to just add it direct as default disabled thing.
 - Reworked Trinket slot logic to no split the slot ids from visual position of slots:
   - This allows more flexibility / future changes, while preventing slot id desyncs.
   - Additionally reworked the sidebar slot option to always flatten the resulting slots, rather than still using groups.
+- Added `trinkets:any_trinket` predicate type for slot definitions.
+- Added option to highlight compatible slots (disabled by default).
 - The data driven rendering is now part of the api, allowing data-generation of related files as well as easy way to add custom logic to it.
 - Lanterns now have a default visuals when put in Belt slot.
 - Bunch of bugfixes, including a crash™

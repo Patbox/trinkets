@@ -23,6 +23,7 @@ public final class TrinketSlotTypeBuilderImpl implements TrinketSlotTypeBuilder 
     private TrinketDropRule dropRule = null;
     private Boolean isVanityOnly = null;
     private Boolean isHidden = null;
+    private Boolean cosmeticSlots = null;
 
     @Override
     public TrinketSlotTypeBuilder replace(boolean replace) {
@@ -73,6 +74,12 @@ public final class TrinketSlotTypeBuilderImpl implements TrinketSlotTypeBuilder 
     }
 
     @Override
+    public TrinketSlotTypeBuilder cosmeticSlots(boolean value) {
+        this.cosmeticSlots = value;
+        return this;
+    }
+
+    @Override
     public TrinketSlotTypeBuilder quickMoveCondition(Consumer<ConditionBuilder> consumer) {
         if (this.quickMove == null) {
             this.quickMove = new ConditionBuilderImpl();
@@ -108,7 +115,6 @@ public final class TrinketSlotTypeBuilderImpl implements TrinketSlotTypeBuilder 
         return this;
     }
 
-
     public JsonObject toJson() {
         var object = new JsonObject();
 
@@ -135,6 +141,9 @@ public final class TrinketSlotTypeBuilderImpl implements TrinketSlotTypeBuilder 
         }
         if (this.isHidden != null) {
             object.addProperty("is_hidden", this.isHidden);
+        }
+        if (this.cosmeticSlots != null) {
+            object.addProperty("cosmetic_slots", this.cosmeticSlots);
         }
 
         this.writeCondition(object, "quick_move_predicates", this.quickMove);

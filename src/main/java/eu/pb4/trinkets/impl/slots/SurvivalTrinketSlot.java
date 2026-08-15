@@ -4,9 +4,9 @@ import eu.pb4.trinkets.api.SlotGroup;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.impl.TrinketInventoryImpl;
+import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.TrinketUtilities;
 import eu.pb4.trinkets.impl.TrinketsMain;
-import eu.pb4.trinkets.impl.client.TrinketsClient;
 import eu.pb4.trinkets.mixin.client.accessor.RecipeBookScreenAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -19,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 
 /**
@@ -32,12 +33,15 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 	private final int slot;
 	private final Predicate<TrinketSlot> visibilityPredicate;
 	private final boolean renderAfterRegularSlots;
+	private final TrinketInventoryImpl trinket;
+	private final BooleanSupplier isDecorative;
 
 	public SurvivalTrinketSlot(TrinketInventoryImpl inventory, int slot, int x, int y,
 							   Predicate<TrinketSlot> visibilityPredicate,
 							   boolean renderAfterRegularSlots,
 							   LivingEntity owner) {
 		super(inventory, slot, x, y);
+		this.trinket = inventory;
 		this.group = SlotGroup.getEntityGroups(owner).get(inventory.slotType().group());
 		this.type = inventory.slotType();
 		this.slot = slot;
@@ -45,12 +49,50 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 		this.renderAfterRegularSlots = renderAfterRegularSlots;
 		this.ref = inventory.getSlotAccess(this.slot);
 		this.owner = owner;
+		this.isDecorative = owner instanceof Player player ? () -> ((TrinketInventoryMenu) player.inventoryMenu).trinkets$isCosmeticMode() && inventory.hasCosmeticItems() : () -> false;
 	}
 
 	@Override
 	public void setByPlayer(ItemStack itemStack, ItemStack previous) {
 		super.setByPlayer(itemStack, previous);
 		TrinketUtilities.playEquipmentSound(itemStack, ref, owner);
+	}
+
+	@Override
+	public ItemStack getItem() {
+		if (this.isDecorativeMode()) {
+			return this.trinket.getCosmeticItem(this.slot);
+		} else {
+			return this.trinket.getItem(this.slot);
+		}
+	}
+
+	@Override
+	public void set(ItemStack itemStack) {
+		if (this.isDecorativeMode()) {
+			this.trinket.setCosmeticItem(this.slot, itemStack);
+		} else {
+			this.trinket.setItem(this.slot, itemStack);
+		}
+		this.setChanged();
+	}
+
+	@Override
+	public ItemStack remove(int amount) {
+		if (this.isDecorativeMode()) {
+			return this.trinket.removeCosmeticItem(this.slot, amount);
+		}
+
+		return this.container.removeItem(this.slot, amount);
+	}
+
+	@Override
+	public ItemStack getTrinketGhostItem() {
+		if (!this.isDecorativeMode()) {
+			return this.trinket.getCosmeticItem(this.slot);
+		} else {
+			return this.trinket.getItem(this.slot);
+		}
 	}
 
 	@Override
@@ -116,5 +158,15 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 	@Override
 	public SlotGroup getGroup() {
 		return this.group;
+	}
+
+	@Override
+	public LivingEntity getOwner() {
+		return this.owner;
+	}
+
+	@Override
+	public boolean isDecorativeMode() {
+		return this.isDecorative.getAsBoolean();
 	}
 }

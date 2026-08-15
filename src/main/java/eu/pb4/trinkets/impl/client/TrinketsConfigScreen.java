@@ -2,7 +2,7 @@ package eu.pb4.trinkets.impl.client;
 
 import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.TrinketsConfig;
-import net.minecraft.ChatFormatting;
+import eu.pb4.trinkets.impl.TrinketsMain;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -52,7 +52,23 @@ public class TrinketsConfigScreen extends Screen {
     protected void addContents() {
         var list = LinearLayout.vertical().spacing(4);
         list.addChild(new SpacerElement(0, 0));
-        this.createButtons(list::addChild);
+        this.createButtonsMainSection(list::addChild);
+
+        list.addChild(new SpacerElement(0, 3));
+        var t = list.addChild(new SpruceSeparatorWidget(Component.translatable("config.trinkets.category.gameplay"), this.font), list.defaultCellSetting().copy().alignHorizontallyCenter());
+        t.setWidth(300);
+
+        if (this.minecraft.isMultiplayerServer()) {
+            this.createButtonsGameplaySection(x -> {
+                x.visitWidgets(y -> {
+                    y.active = false;
+                });
+                list.addChild(x);
+            }, TrinketsConfig.serverSyncedGameplay);
+        } else {
+            this.createButtonsGameplaySection(list::addChild, TrinketsConfig.instance.gameplay);
+        }
+
         list.addChild(new SpacerElement(0, 0));
 
         list.arrangeElements();
@@ -62,59 +78,58 @@ public class TrinketsConfigScreen extends Screen {
         this.layout.addToContents(scrl);
     }
 
-    private void createButtons(Consumer<LayoutElement> consumer) {
-        {
-            var buttons = LinearLayout.horizontal().spacing(4);
+    private void doubleButtons(Consumer<LayoutElement> consumer, LayoutElement left, LayoutElement right) {
+        var buttons = LinearLayout.horizontal().spacing(4);
+        buttons.addChild(left);
+        buttons.addChild(right);
+        consumer.accept(buttons);
+    }
 
-            buttons.addChild(
-                    CycleButton.onOffBuilder(TrinketsConfig.instance.renderFirstPersonHand)
-                            .withTooltip(_ -> Tooltip.create(Component.translatable("config.trinkets.render_first_person_hand.desc")))
-                            .create(Component.translatable("config.trinkets.render_first_person_hand"), (_, v) -> TrinketsConfig.instance.renderFirstPersonHand = v)
-            );
+    private void createButtonsMainSection(Consumer<LayoutElement> consumer) {
+        doubleButtons(consumer,
+                CycleButton.onOffBuilder(TrinketsConfig.instance.renderFirstPersonHand)
+                        .withTooltip(_ -> Tooltip.create(Component.translatable("config.trinkets.render_first_person_hand.desc")))
+                        .create(Component.translatable("config.trinkets.render_first_person_hand"), (_, v) -> TrinketsConfig.instance.renderFirstPersonHand = v),
 
-            buttons.addChild(
-                    CycleButton.onOffBuilder(TrinketsConfig.instance.showSlotsIndicator)
-                            .withTooltip(_ -> Tooltip.create(Component.translatable("config.trinkets.show_slots_indicator.desc")))
-                            .create(Component.translatable("config.trinkets.show_slots_indicator"), (_, v) -> TrinketsConfig.instance.showSlotsIndicator = v)
-            );
+                CycleButton.onOffBuilder(TrinketsConfig.instance.showSlotsIndicator)
+                        .withTooltip(_ -> Tooltip.create(Component.translatable("config.trinkets.show_slots_indicator.desc")))
+                        .create(Component.translatable("config.trinkets.show_slots_indicator"), (_, v) -> TrinketsConfig.instance.showSlotsIndicator = v)
+        );
 
-            consumer.accept(buttons);
-        }
+        doubleButtons(consumer,
+                CycleButton.onOffBuilder(TrinketsConfig.instance.sidebarTrinketsSlots)
+                        .withTooltip(_ -> Tooltip.create(Component.translatable("config.trinkets.sidebar_slots.desc")))
+                        .create(Component.translatable("config.trinkets.sidebar_slots"), (_, v) -> TrinketsConfig.instance.sidebarTrinketsSlots = v),
 
-        {
-            var buttons = LinearLayout.horizontal().spacing(4);
+                new IntSlider(Component.translatable("config.trinkets.sidebar_heigth"), 3, 8, TrinketsConfig.instance.sidebarHeight, (v) -> TrinketsConfig.instance.sidebarHeight = v,
+                        Tooltip.create(Component.translatable("config.trinkets.sidebar_heigth.desc")))
+        );
 
-            buttons.addChild(
-                    CycleButton.onOffBuilder(TrinketsConfig.instance.sidebarTrinketsSlots)
-                            .withTooltip(_ -> Tooltip.create(Component.translatable("config.trinkets.sidebar_slots.desc")))
-                            .create(Component.translatable("config.trinkets.sidebar_slots"), (_, v) -> TrinketsConfig.instance.sidebarTrinketsSlots = v)
-            );
+        doubleButtons(consumer,
+                CycleButton.onOffBuilder(TrinketsConfig.instance.showSlotTooltip)
+                        .withTooltip(_ -> Tooltip.create(Component.translatable("config.trinkets.show_slot_tooltip.desc")))
+                        .create(Component.translatable("config.trinkets.show_slot_tooltip"), (_, v) -> TrinketsConfig.instance.showSlotTooltip = v),
 
-            buttons.addChild(
-                    new IntSlider(Component.translatable("config.trinkets.sidebar_heigth"), 3, 8, TrinketsConfig.instance.sidebarHeight, (v) -> TrinketsConfig.instance.sidebarHeight = v,
-                            Tooltip.create(Component.translatable("config.trinkets.sidebar_heigth.desc")))
-            );
+                CycleButton.onOffBuilder(TrinketsConfig.instance.showItemTooltip)
+                        .withTooltip(_ -> Tooltip.create(Component.translatable("config.trinkets.show_item_tooltip.desc")))
+                        .create(Component.translatable("config.trinkets.show_item_tooltip"), (_, v) -> TrinketsConfig.instance.showItemTooltip = v)
+        );
 
-            consumer.accept(buttons);
-        }
+        consumer.accept(
+                CycleButton.onOffBuilder(TrinketsConfig.instance.highlightCompatibleSlots)
+                        .withTooltip(_ -> Tooltip.create(Component.translatable("config.trinkets.highlight_compatible_slot.desc")))
+                        .create(Component.translatable("config.trinkets.highlight_compatible_slot"), (_, v) -> TrinketsConfig.instance.highlightCompatibleSlots = v)
+        );
 
-        {
-            var buttons = LinearLayout.horizontal().spacing(4);
+    }
 
-            buttons.addChild(
-                    CycleButton.onOffBuilder(TrinketsConfig.instance.showSlotTooltip)
-                            .withTooltip(_ -> Tooltip.create(Component.translatable("config.trinkets.show_slot_tooltip.desc")))
-                            .create(Component.translatable("config.trinkets.show_slot_tooltip"), (_, v) -> TrinketsConfig.instance.showSlotTooltip = v)
-            );
-
-            buttons.addChild(
-                    CycleButton.onOffBuilder(TrinketsConfig.instance.showItemTooltip)
-                            .withTooltip(_ -> Tooltip.create(Component.translatable("config.trinkets.show_item_tooltip.desc")))
-                            .create(Component.translatable("config.trinkets.show_item_tooltip"), (_, v) -> TrinketsConfig.instance.showItemTooltip = v)
-            );
-
-            consumer.accept(buttons);
-        }
+    private void createButtonsGameplaySection(Consumer<LayoutElement> consumer, TrinketsConfig.Gameplay gameplay) {
+        doubleButtons(consumer, CycleButton.onOffBuilder(gameplay.equipmentHiding)
+                .withTooltip(_ -> Tooltip.create(Component.translatable("config.trinkets.equipment_hiding.desc")))
+                .create(Component.translatable("config.trinkets.equipment_hiding"), (_, v) -> gameplay.equipmentHiding = v),
+                CycleButton.onOffBuilder(gameplay.cosmeticSlots)
+                        .withTooltip(_ -> Tooltip.create(Component.translatable("config.trinkets.cosmetic_slots.desc")))
+                        .create(Component.translatable("config.trinkets.cosmetic_slots"), (_, v) -> gameplay.cosmeticSlots = v));
     }
 
     protected void addFooter() {
@@ -153,8 +168,8 @@ public class TrinketsConfigScreen extends Screen {
         TrinketsConfig.save();
         this.minecraft.setScreenAndShow(this.lastScreen);
         TrinketsClient.updateSlotVisualHandlers();
-        if (this.minecraft.player != null) {
-            ((TrinketInventoryMenu) this.minecraft.player.inventoryMenu).trinkets$updateTrinketSlots(false);
+        if (this.minecraft.hasSingleplayerServer()) {
+            TrinketsMain.syncConfigChanges(this.minecraft.getSingleplayerServer());
         }
     }
 

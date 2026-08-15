@@ -18,6 +18,10 @@
 	"trinkets.slot.hand.ring": "Ring",
 	"trinkets.slot.offhand.ring": "Ring",
 
+	"button.trinkets.toggle_visiblity": "Toggle Visibility",
+	"button.trinkets.toggle_cosmetic_slot": "Toggle Cosmetic Slots",
+	"text.trinkets.slot.decorative": "(Decorative)",
+
 	"screen.trinkets.config": "Trinkets Updated Settings",
 	"config.trinkets.render_first_person_hand": "First Person Trinkets",
 	"config.trinkets.render_first_person_hand.desc": "Toggles visibility of trinkets in first person hand.",
@@ -30,5 +34,14 @@
 	"config.trinkets.sidebar_heigth": "Sidebar Max Height",
 	"config.trinkets.sidebar_heigth.desc": "Controls maximum height sidebar-placed slots can take before moving to a next column.",
 	"config.trinkets.show_item_tooltip": "Show Item Tooltip",
-	"config.trinkets.show_item_tooltip.desc": "Toggles visibility of a tooltip indicating slot an item can be put in."
+	"config.trinkets.show_item_tooltip.desc": "Toggles visibility of a tooltip indicating slot an item can be put in.",
+	"config.trinkets.highlight_compatible_slot": "Highlight Compatible Slot",
+	"config.trinkets.highlight_compatible_slot.desc": "Adds simple highlight to Trinkets slots if item player holds in a cursor slot is compatible with them.",
+
+	"config.trinkets.category.gameplay": "Gameplay (Server Controlled)",
+
+	"config.trinkets.equipment_hiding": "Equipment Hiding",
+	"config.trinkets.equipment_hiding.desc": "Toggles ability to hide equipment visually without changing how it works otherwise",
+	"config.trinkets.cosmetic_slots": "Cosmetic Slots",
+	"config.trinkets.cosmetic_slots.desc": "Adds extra cosmetic slots for all regular Trinket slots. They are visual only and won't apply any effects."
 }

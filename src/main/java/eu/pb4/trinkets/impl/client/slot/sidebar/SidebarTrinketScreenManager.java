@@ -50,7 +50,7 @@ public class SidebarTrinketScreenManager implements TrinketScreenManagerBackend 
 
     @Override
     public void drawBackground(TrinketScreen currentScreen, GuiGraphicsExtractor context) {
-        var handler = (SidebarTrinketSlotStateImpl) currentScreen.trinkets$getHandler().trinkets$getSlotState();
+        var handler = (SidebarTrinketSlotStateImpl) currentScreen.trinkets$getSlotState();
         int x = currentScreen.trinkets$getX();
         int y = currentScreen.trinkets$getY();
 
@@ -119,7 +119,7 @@ public class SidebarTrinketScreenManager implements TrinketScreenManagerBackend 
 
     @Override
     public boolean isClickInsideTrinketBounds(TrinketScreen currentScreen, double mouseX, double mouseY) {
-        var handler = (SidebarTrinketSlotStateImpl) currentScreen.trinkets$getHandler().trinkets$getSlotState();
+        var handler = (SidebarTrinketSlotStateImpl) currentScreen.trinkets$getSlotState();
         if (currentScreen.trinkets$getFocusedSlot() instanceof TrinketSlot) {
             return true;
         }
@@ -152,18 +152,6 @@ public class SidebarTrinketScreenManager implements TrinketScreenManagerBackend 
     }
 
     @Override
-    public void setupSlotTooltip(GuiGraphicsExtractor graphics, AbstractContainerScreen menu, int leftPos, int topPos, Slot slot, TrinketSlot trinketSlot, int mouseX, int mouseY) {
-        var text = trinketSlot.getType().getTranslation();
-        //var slotX = slot.x + leftPos - mc.font.width(text) / 2 - 4;
-        //var slotY = slot.y + topPos - 2;
-        var slotX = mouseX;
-        var slotY = mouseY;
-
-
-        graphics.setTooltipForNextFrame(text, slotX, slotY);
-    }
-
-    @Override
     public void drawSlotExtrasFirstDraw(int slotId, Slot slot, TrinketInventoryMenu trinketMenu, GuiGraphicsExtractor context) {
 
     }
@@ -182,7 +170,7 @@ public class SidebarTrinketScreenManager implements TrinketScreenManagerBackend 
         List<Rect2i> rects = new ArrayList<>();
         int x = trinketScreen.trinkets$getX();
         int y = trinketScreen.trinkets$getY();
-        var handler = (SidebarTrinketSlotStateImpl) trinketScreen.trinkets$getHandler().trinkets$getSlotState();
+        var handler = (SidebarTrinketSlotStateImpl) trinketScreen.trinkets$getSlotState();
         if (trinketScreen.trinkets$isRecipeBookOpen()) {
             return List.of();
         }

@@ -5,7 +5,10 @@ import com.llamalad7.mixinextras.sugar.Local;
 import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.TrinketInventoryMenu;
+import eu.pb4.trinkets.impl.TrinketsConfig;
+import eu.pb4.trinkets.impl.TrinketsMain;
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
+import eu.pb4.trinkets.impl.payload.SyncConfigPayload;
 import eu.pb4.trinkets.impl.payload.SyncInventoryPayload;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
@@ -39,30 +42,18 @@ public abstract class PlayerListMixin {
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/players/PlayerList;sendLevelInfo(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/server/level/ServerLevel;)V"), method = "placeNewPlayer")
     private void onPlayerConnect(Connection connection, ServerPlayer player, CommonListenerCookie clientData, CallbackInfo ci) {
+        connection.send(new ClientboundCustomPayloadPacket(new SyncConfigPayload(TrinketsConfig.instance.gameplay)));
         EntitySlotLoader.SERVER.sync(player);
-        this.syncSlots(player);
+        TrinketsMain.syncSlots(player, false);
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;addRespawnedPlayer(Lnet/minecraft/server/level/ServerPlayer;)V"), method = "respawn")
     private void onPlayerRespawn(ServerPlayer player, boolean alive, Entity.RemovalReason removalReason, CallbackInfoReturnable<ServerPlayer> cir, @Local(ordinal = 1) ServerPlayer newServerPlayer) {
-        this.syncSlots(newServerPlayer);
+        TrinketsMain.syncSlots(newServerPlayer, false);
     }
 
     @Inject(at = @At("TAIL"), method = "reloadResources")
     private void onReloadResource(CallbackInfo ci) {
         EntitySlotLoader.SERVER.sync(this.getPlayers());
-    }
-
-    @Unique
-    private void syncSlots(ServerPlayer player) {
-        ((TrinketInventoryMenu) player.inventoryMenu).trinkets$updateTrinketSlots(false);
-        var trinkets = TrinketsApi.getAttachment(player);
-        Map<String, Integer> tag = new HashMap<>();
-        var hidden = new HashMap<String, BitSet>();
-        ((LivingEntityTrinketAttachment) trinkets).inventory.forEach((id, v) -> {
-            tag.put(id, v.getContainerSize());
-            hidden.put(id, v.copyHiddenSlots());
-        });
-        player.connection.send(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(player.getId(), Map.of(), tag, hidden)));
     }
 }

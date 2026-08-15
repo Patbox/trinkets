@@ -1,0 +1,56 @@
+{
+  "values": [
+    {
+      "required": false,
+      "id": "#trinkets:head/face"
+    },
+    {
+      "required": false,
+      "id": "#trinkets:head/hat"
+    },
+    {
+      "required": false,
+      "id": "#trinkets:chest/back"
+    },
+    {
+      "required": false,
+      "id": "#trinkets:chest/cape"
+    },
+    {
+      "required": false,
+      "id": "#trinkets:chest/necklace"
+    },
+    {
+      "required": false,
+      "id": "#trinkets:hand/glove"
+    },
+    {
+      "required": false,
+      "id": "#trinkets:hand/ring"
+    },
+    {
+      "required": false,
+      "id": "#trinkets:offhand/glove"
+    },
+    {
+      "required": false,
+      "id": "#trinkets:offhand/ring"
+    },
+    {
+      "required": false,
+      "id": "#trinkets:legs/belt"
+    },
+    {
+      "required": false,
+      "id": "#trinkets:feet/shoes"
+    },
+    {
+      "required": false,
+      "id": "#trinkets:feet/aglet"
+    },
+    {
+      "required": false,
+      "id": "#trinkets:all"
+    }
+  ]
+}
