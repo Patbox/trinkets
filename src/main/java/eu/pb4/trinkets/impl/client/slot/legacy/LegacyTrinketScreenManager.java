@@ -38,7 +38,7 @@ public class LegacyTrinketScreenManager implements TrinketScreenManagerBackend {
 
     @Override
     public void update(TrinketScreen currentScreen, float mouseX, float mouseY) {
-        var handler = (LegacyTrinketSlotState) currentScreen.trinkets$getHandler().trinkets$getSlotState();
+        var handler = (LegacyTrinketSlotState) currentScreen.trinkets$getSlotState();
         Slot focusedSlot = currentScreen.trinkets$getFocusedSlot();
         int x = currentScreen.trinkets$getX();
         int y = currentScreen.trinkets$getY();
@@ -199,7 +199,7 @@ public class LegacyTrinketScreenManager implements TrinketScreenManagerBackend {
     }
 
     public void drawGroup(TrinketScreen currentScreen, GuiGraphicsExtractor context, SlotGroup group, SlotType type) {
-        var handler = (LegacyTrinketSlotState) currentScreen.trinkets$getHandler().trinkets$getSlotState();
+        var handler = (LegacyTrinketSlotState) currentScreen.trinkets$getSlotState();
         context.pose().pushMatrix();
         var r = handler.getGroupRect(group);
         int slotsWidth = handler.getSlotWidth(group) + 1;
@@ -392,20 +392,6 @@ public class LegacyTrinketScreenManager implements TrinketScreenManagerBackend {
         typeBounds = new Rect2i(0, 0, 0, 0);
         currentScreen.trinkets$updateTrinketSlots();
 
-    }
-
-    @Override
-    public void setupSlotTooltip(GuiGraphicsExtractor graphics, AbstractContainerScreen menu, int leftPos, int topPos, Slot slot, TrinketSlot trinketSlot, int mouseX, int mouseY) {
-        var mc = Minecraft.getInstance();
-
-        var text = trinketSlot.getType().getTranslation();
-        //var slotX = slot.x + leftPos - mc.font.width(text) / 2 - 4;
-        //var slotY = slot.y + topPos - 2;
-        var slotX = mouseX;
-        var slotY = mouseY;
-
-
-        graphics.setTooltipForNextFrame(text, slotX, slotY);
     }
 
     @Override

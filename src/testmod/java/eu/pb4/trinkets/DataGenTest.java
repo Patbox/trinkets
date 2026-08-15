@@ -41,6 +41,7 @@ public class DataGenTest implements DataGeneratorEntrypoint {
                         .validatorCondition(x -> x.orAnyOf(BuiltInTrinketConditions.ALL))
                         .tooltipCondition(x -> x.andAllOf(BuiltInTrinketConditions.NONE))
                         .interactEquipableCondition(x -> x.andAllOf(BuiltInTrinketConditions.NONE))
+                        .cosmeticSlots(false)
                         .dropRule(TrinketDropRule.KEEP)
                 ;
                 output.slotType("datagen/test_2")
@@ -51,6 +52,7 @@ public class DataGenTest implements DataGeneratorEntrypoint {
                         .validatorCondition(x -> x.orAnyOf(BuiltInTrinketConditions.ALL))
                         .tooltipCondition(x -> x.andAllOf(BuiltInTrinketConditions.NONE))
                         .interactEquipableCondition(x -> x.andAllOf(BuiltInTrinketConditions.NONE))
+                        .cosmeticSlots(false)
                         .dropRule(TrinketDropRule.DESTROY)
                 ;
 

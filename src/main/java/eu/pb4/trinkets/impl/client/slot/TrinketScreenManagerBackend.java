@@ -25,8 +25,6 @@ public interface TrinketScreenManagerBackend {
 
     void tryUpdateTrinketsSlot(TrinketScreen currentScreen);
 
-    void setupSlotTooltip(GuiGraphicsExtractor graphics, AbstractContainerScreen menu, int leftPos, int topPos, Slot slot, TrinketSlot trinketSlot, int mouseX, int mouseY);
-
     void drawSlotExtrasFirstDraw(int slotId, Slot slot, TrinketInventoryMenu trinketMenu, GuiGraphicsExtractor context);
 
     void drawSlotExtrasLateDraw(Slot slot, TrinketSlot trinketSlot, GuiGraphicsExtractor context);

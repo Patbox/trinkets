@@ -82,6 +82,8 @@ public interface SlotType {
 
     boolean isVanityOnly();
 
+    boolean supportsCosmeticSlots();
+
     boolean isHidden();
 
     int maxStackSize(ItemStack stack);

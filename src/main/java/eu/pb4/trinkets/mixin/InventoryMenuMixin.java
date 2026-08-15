@@ -24,7 +24,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * Adds trinket slots to the player's screen handler
@@ -44,6 +43,9 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
     @Unique
     private TrinketSlotState trinketsSlotState;
 
+    @Unique
+    private boolean decorativeMode = false;
+
     private InventoryMenuMixin() {
         super(null, 0);
     }
@@ -61,7 +63,9 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
             trinkets.rebuild();
         }
 
-        var sortedInventories = trinkets.inventory.values().stream().sorted(
+        var sortedInventories = trinkets.inventory.values().stream()
+                .filter(x -> !x.slotType().isHidden())
+                .sorted(
                 // First by group order, then by group name, then by group name, then by slot type order and then by id.
                 Comparator.<TrinketInventoryImpl>comparingInt(inv -> SlotGroup.getPlayerGroups(owner).get(inv.slotType().group()).order())
                         .thenComparing(inv -> inv.slotType().group())
@@ -84,10 +88,8 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
         for (var inv : sortedInventories) {
             for (int i = 0; i < inv.getContainerSize(); i++) {
                 var info = this.trinketsSlotState.getSlotConfig(baseIndex, inv, i);
-                if (info != null) {
-                    baseIndex++;
-                    this.addSlot(new SurvivalTrinketSlot(inv, i, info.x(), info.y(), info.isVisible(), info.renderAfterRegularSlots(), owner));
-                }
+                baseIndex++;
+                this.addSlot(new SurvivalTrinketSlot(inv, i, info.x(), info.y(), info.isVisible(), info.renderAfterRegularSlots(), owner));
             }
         }
 
@@ -120,6 +122,16 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
         return this.trinketsSlotState;
     }
 
+    @Override
+    public boolean trinkets$isCosmeticMode() {
+        return this.decorativeMode && TrinketsConfig.getGameplay(this.owner.level().isClientSide()).cosmeticSlots;
+    }
+
+    @Override
+    public void trinkets$setCosmeticMode(boolean value) {
+        this.decorativeMode = value;
+    }
+
     @Inject(at = @At("HEAD"), method = "quickMoveStack", cancellable = true)
     private void quickMove(Player player, int index, CallbackInfoReturnable<ItemStack> info) {
         Slot slot = slots.get(index);
@@ -140,7 +152,7 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
                     }
 
                     SlotType type = ts.getType();
-                    TrinketSlotAccess ref = new TrinketSlotAccess((TrinketInventory) ts.container, ts.getContainerSlot());
+                    TrinketSlotAccess ref = ts.getAccess();
 
                     boolean res = type.quickMoveCheck(stack, ref, player);
 

@@ -1,12 +1,12 @@
 package eu.pb4.trinkets.mixin.client;
 
+import eu.pb4.trinkets.impl.TrinketsConfig;
 import eu.pb4.trinkets.impl.slots.TrinketSlotState;
 import eu.pb4.trinkets.mixin.client.accessor.RecipeBookScreenAccessor;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractRecipeBookScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
-import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,11 +14,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import eu.pb4.trinkets.impl.Point;
 import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.client.TrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
-import eu.pb4.trinkets.api.SlotGroup;
 
 /**
  * Delegates drawing and slot group selection logic
@@ -34,6 +32,13 @@ public abstract class InventoryScreenMixin extends AbstractRecipeBookScreen<Inve
 	@Inject(at = @At("HEAD"), method = "init")
 	private void init(CallbackInfo info) {
 		TrinketScreenManager.init(this);
+	}
+
+	@Inject(at = @At("TAIL"), method = "init")
+	private void addButton(CallbackInfo info) {
+		if (TrinketsConfig.serverSyncedGameplay.cosmeticSlots) {
+			this.addRenderableWidget(TrinketScreenManager.createToggleDecorativeModeButton(this, () -> this.leftPos, this.topPos));
+		}
 	}
 
 	@Inject(at = @At("TAIL"), method = "containerTick")

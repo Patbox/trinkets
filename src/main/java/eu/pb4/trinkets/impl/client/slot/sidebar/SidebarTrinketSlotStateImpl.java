@@ -9,6 +9,7 @@ import eu.pb4.trinkets.impl.client.slot.TrinketScreenManagerBackend;
 import eu.pb4.trinkets.impl.slots.TrinketSlotState;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
@@ -63,10 +64,10 @@ public class SidebarTrinketSlotStateImpl implements TrinketSlotState, ClientTrin
     }
 
     @Override
-    public SlotInfo getSlotConfig(int slotIndex, TrinketInventory inventory, int index) {
+    public @NonNull SlotInfo getSlotConfig(int slotIndex, TrinketInventory inventory, int index) {
         var list = this.slotInfo.get(inventory.slotType());
         if (list == null || list.size() <= index) {
-            return null;
+            return SlotInfo.FALLBACK;
         }
 
         return list.get(index);

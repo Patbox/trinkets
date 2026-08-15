@@ -4,13 +4,17 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.item.ItemStack;
 
-public record TrinketSlotAccess(TrinketInventory inventory, int index) implements SlotAccess, StringRepresentable {
+public record TrinketSlotAccess(TrinketInventory inventory, int index, boolean cosmetic) implements SlotAccess, StringRepresentable {
+    public TrinketSlotAccess(TrinketInventory inventory, int index) {
+        this(inventory, index, false);
+    }
+
     public String getSerializedName() {
-        return this.slotType().getId() + "@" + index;
+        return this.slotType().getId() + "@" + index + (cosmetic ? "?cosmetic" : "");
     }
 
     public String getAsIdentifierPath() {
-        return this.slotType().getId() + "/" + index;
+        return this.slotType().getId() + "/" + index + (cosmetic ? "/_/cosmetic" : "");
     }
 
     public SlotType slotType() {
@@ -20,7 +24,7 @@ public record TrinketSlotAccess(TrinketInventory inventory, int index) implement
     @Override
     public ItemStack get() {
         if (this.isValid()) {
-            return inventory.getItem(index);
+            return this.cosmetic ? inventory.getCosmeticItem(index) : inventory.getItem(index);
         }
         return ItemStack.EMPTY;
     }
@@ -28,7 +32,11 @@ public record TrinketSlotAccess(TrinketInventory inventory, int index) implement
     @Override
     public boolean set(ItemStack itemStack) {
         if (this.isValid()) {
-            inventory.setItem(index, itemStack);
+            if (this.cosmetic) {
+                inventory.setCosmeticItem(index, itemStack);
+            } else {
+                inventory.setItem(index, itemStack);
+            }
             return true;
         }
         return false;
@@ -39,19 +47,19 @@ public record TrinketSlotAccess(TrinketInventory inventory, int index) implement
     }
 
     public TrinketSlotReference reference() {
-        return new TrinketSlotReference(this.slotType(), index);
+        return new TrinketSlotReference(this.slotType().getId(), index, cosmetic);
     }
 
     public boolean isValid() {
-        return inventory.isValidSlot(index);
+        return inventory.isValidSlot(index) && (!cosmetic || inventory.hasCosmeticItems());
     }
 
     public boolean canApplyEffects() {
-        return this.inventory.getAttachment().canApplyEffects(this.get(), this);
+        return !this.cosmetic && this.inventory.getAttachment().canApplyEffects(this.get(), this);
     }
 
     public boolean canApplyEffects(ItemStack otherStack) {
-        return this.inventory.getAttachment().canApplyEffects(otherStack, this);
+        return !this.cosmetic && this.inventory.getAttachment().canApplyEffects(otherStack, this);
     }
 
     public boolean isVisible() {

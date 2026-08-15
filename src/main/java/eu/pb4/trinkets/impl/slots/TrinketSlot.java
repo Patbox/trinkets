@@ -49,4 +49,10 @@ public interface TrinketSlot {
     default Slot asSlot() {
         return (Slot) this;
     }
+
+    LivingEntity getOwner();
+
+    boolean isDecorativeMode();
+
+    ItemStack getTrinketGhostItem();
 }

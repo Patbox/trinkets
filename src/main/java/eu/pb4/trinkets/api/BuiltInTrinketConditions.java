@@ -12,6 +12,7 @@ import net.minecraft.world.item.Item;
 public final class BuiltInTrinketConditions {
     public static final Identifier NONE = of("none");
     public static final Identifier ALL = of("all");
+    public static final Identifier ANY_TRINKET = of("any_trinket");
     public static final Identifier DEFAULT = of("default");
     public static final Identifier TAG = of("tag");
     public static final Identifier COMPONENT = of("component");

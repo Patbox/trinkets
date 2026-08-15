@@ -9,6 +9,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.SlotWrapper;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
@@ -50,6 +51,16 @@ public class CreativeTrinketSlot extends SlotWrapper implements TrinketSlot {
 	}
 
 	@Override
+	public LivingEntity getOwner() {
+		return this.original.getOwner();
+	}
+
+	@Override
+	public boolean isDecorativeMode() {
+		return this.original.isDecorativeMode();
+	}
+
+	@Override
 	public @Nullable Identifier getNoItemIcon() {
 		return original.getNoItemIcon();
 	}
@@ -62,5 +73,10 @@ public class CreativeTrinketSlot extends SlotWrapper implements TrinketSlot {
 	@Override
 	public int getMaxStackSize() {
 		return this.original.getMaxStackSize();
+	}
+
+	@Override
+	public ItemStack getTrinketGhostItem() {
+		return this.original.getTrinketGhostItem();
 	}
 }

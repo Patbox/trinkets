@@ -3,7 +3,9 @@ package eu.pb4.trinkets.mixin.client;
 import eu.pb4.trinkets.api.TrinketInventory;
 import eu.pb4.trinkets.impl.TrinketsConfig;
 import eu.pb4.trinkets.impl.slots.TrinketSlotState;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.world.item.CreativeModeTabs;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -15,19 +17,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import eu.pb4.trinkets.impl.client.CreativeTrinketScreen;
 import eu.pb4.trinkets.impl.client.CreativeTrinketSlot;
-import eu.pb4.trinkets.impl.Point;
 import eu.pb4.trinkets.impl.slots.SurvivalTrinketSlot;
 import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.client.TrinketScreen;
 import eu.pb4.trinkets.impl.client.TrinketScreenManager;
 import eu.pb4.trinkets.impl.slots.TrinketSlot;
 import eu.pb4.trinkets.impl.client.TrinketsClient;
-import eu.pb4.trinkets.api.SlotGroup;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.ItemPickerMenu;
-import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.Identifier;
@@ -50,6 +49,10 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 	private static final Identifier SLOT_TEXTURE = Identifier.withDefaultNamespace("container/slot");
 	@Shadow
 	private static CreativeModeTab selectedTab;
+	@Unique
+	@Nullable
+    private AbstractWidget decorativeModeButton;
+
 	@Shadow
 	protected abstract void selectTab(CreativeModeTab group);
 
@@ -66,7 +69,13 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 	private void setSelectedTab(CreativeModeTab g, CallbackInfo info) {
 		if (g.getType() != CreativeModeTab.Type.INVENTORY) {
 			TrinketScreenManager.removeSelections();
+			if (this.decorativeModeButton != null) {
+				this.removeWidget(this.decorativeModeButton);
+			}
+		} else if (this.decorativeModeButton != null) {
+			this.addRenderableWidget(this.decorativeModeButton);
 		}
+
 	}
 
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/Slot;<init>(Lnet/minecraft/world/Container;III)V"), method = "selectTab")
@@ -75,7 +84,7 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 		for (int i = handler.trinkets$getTrinketSlotStart(); i < handler.trinkets$getTrinketSlotEnd(); i++) {
 			Slot slot = this.minecraft.player.inventoryMenu.slots.get(i);
 			if (slot instanceof SurvivalTrinketSlot ts) {
-				var slotInfo = trinkets$getHandler().trinkets$getSlotState().getSlotConfig(i - handler.trinkets$getTrinketSlotStart(),
+				var slotInfo = trinkets$getSlotState().getSlotConfig(i - handler.trinkets$getTrinketSlotStart(),
 						(TrinketInventory) ts.container, ts.getContainerSlot());
 				if (slotInfo == null) {
 					continue;
@@ -88,6 +97,13 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 	@Inject(at = @At("HEAD"), method = "init")
 	private void init(CallbackInfo info) {
 		TrinketScreenManager.init(this);
+	}
+
+	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/EditBox;setVisible(Z)V"), method = "init")
+	private void addButton(CallbackInfo info) {
+		if (TrinketsConfig.serverSyncedGameplay.cosmeticSlots) {
+			this.decorativeModeButton = TrinketScreenManager.createToggleDecorativeModeButton(this, () -> this.leftPos, this.topPos);
+		}
 	}
 
 	@Inject(at = @At("HEAD"), method = "removed")

@@ -11,9 +11,7 @@ import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
 import eu.pb4.trinkets.impl.data.SlotLoader;
-import eu.pb4.trinkets.impl.payload.BreakPayload;
-import eu.pb4.trinkets.impl.payload.SyncInventoryPayload;
-import eu.pb4.trinkets.impl.payload.SyncSlotsPayload;
+import eu.pb4.trinkets.impl.payload.*;
 import eu.pb4.trinkets.impl.platform.CommonAbstraction;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -27,6 +25,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.LivingEntity;
@@ -34,6 +33,7 @@ import net.minecraft.world.item.Item;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
 
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -51,6 +51,34 @@ public class TrinketsMain implements ModInitializer {
     public static final Map<Identifier, TrinketsApi.TrinketPredicate> PREDICATES = new HashMap<>();
     public static final boolean IS_CLIENT = CommonAbstraction.INSTANCE.isClient();
 
+    public static void syncConfigChanges(MinecraftServer server) {
+        var p = new ClientboundCustomPayloadPacket(new SyncConfigPayload(TrinketsConfig.instance.gameplay));
+        for (var level : server.getAllLevels()) {
+            for (var entity : level.getAllEntities()) {
+                if (entity instanceof LivingEntity livingEntity) {
+                    LivingEntityTrinketAttachment.get(livingEntity).rebuild();
+                }
+            }
+        }
+
+        for (var player : server.getPlayerList().getPlayers()) {
+            player.connection.send(p);
+            syncSlots(player, true);
+        }
+    }
+
+    public static void syncSlots(ServerPlayer player, boolean reinitialize) {
+        ((TrinketInventoryMenu) player.inventoryMenu).trinkets$updateTrinketSlots(reinitialize);
+        var trinkets = TrinketsApi.getAttachment(player);
+        Map<String, Integer> tag = new HashMap<>();
+        var hidden = new HashMap<String, BitSet>();
+        ((LivingEntityTrinketAttachment) trinkets).inventory.forEach((id, v) -> {
+            tag.put(id, v.getContainerSize());
+            hidden.put(id, v.copyHiddenSlots());
+        });
+        player.connection.send(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(player.getId(), Map.of(), tag, hidden)));
+    }
+
     @Override
     public void onInitialize(ModContainer modContainer) {
         TrinketsConfig.load();
@@ -63,6 +91,25 @@ public class TrinketsMain implements ModInitializer {
         CommonAbstraction.INSTANCE.registerClientboundPlayPayload(TrinketsNetwork.BREAK, BreakPayload.CODEC);
         CommonAbstraction.INSTANCE.registerClientboundPlayPayload(TrinketsNetwork.SYNC_INVENTORY, SyncInventoryPayload.CODEC);
         CommonAbstraction.INSTANCE.registerClientboundPlayPayload(TrinketsNetwork.SYNC_SLOTS, SyncSlotsPayload.CODEC);
+        CommonAbstraction.INSTANCE.registerClientboundPlayPayload(TrinketsNetwork.SYNC_CONFIG, SyncConfigPayload.CODEC.cast());
+
+        CommonAbstraction.INSTANCE.registerServerboundPlayPayload(TrinketsNetwork.TOGGLE_VISIBILITY, ToggleVisibilityPayload.CODEC, (player, payload) -> {
+            if (!TrinketsConfig.instance.gameplay.equipmentHiding) {
+                return;
+            }
+            var slot = TrinketsApi.getAttachment(player).getSlotAccess(payload.reference());
+            if (slot != null && slot.inventory() instanceof TrinketInventoryImpl inventory) {
+                inventory.setVisible(slot.index(), payload.value());
+            }
+        });
+
+        CommonAbstraction.INSTANCE.registerServerboundPlayPayload(TrinketsNetwork.TOGGLE_COSMETIC_MODE, ToggleCosmeticModePayload.CODEC, (player, payload) -> {
+            if (!TrinketsConfig.instance.gameplay.cosmeticSlots) {
+                return;
+            }
+            ((TrinketInventoryMenu) player.inventoryMenu).trinkets$setCosmeticMode(payload.value());
+        });
+
 
         CommonAbstraction.INSTANCE.registerCommand((dispatcher, registry) ->
                 dispatcher.register(literal("trinkets")
@@ -127,6 +174,11 @@ public class TrinketsMain implements ModInitializer {
             var component = stack.get(TrinketDataComponents.EQUIPMENT);
 
             return stack.is(tag) || stack.is(DefaultTrinketSlotTags.ALL) || component != null && (component.allowedSlots().contains(slot.getId()) || component.allowedSlots().contains("any"));
+        });
+
+        TrinketsApi.registerTrinketPredicate(BuiltInTrinketConditions.ANY_TRINKET, (stack, ref, entity) -> {
+            var component = stack.get(TrinketDataComponents.EQUIPMENT);
+            return stack.is(DefaultTrinketSlotTags.TRINKETS) || component != null && !component.allowedSlots().isEmpty();
         });
 
         TrinketsApi.registerTrinketPredicate(BuiltInTrinketConditions.TAG, (stack, ref, entity) -> {
