@@ -45,6 +45,8 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
 
     @Unique
     private boolean decorativeMode = false;
+    @Unique
+    private boolean hasCosmeticSlots = false;
 
     private InventoryMenuMixin() {
         super(null, 0);
@@ -76,13 +78,14 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
         //noinspection unchecked
         this.trinketsSlotState = TrinketSlotState.create(this.owner, this, trinkets, (List<TrinketInventory>) (Object) sortedInventories);
 
-        while (trinketSlotStart < trinketSlotEnd) {
-            slots.remove(trinketSlotStart);
+        while (this.trinketSlotStart < this.trinketSlotEnd) {
+            this.slots.remove(trinketSlotStart);
             ((AbstractedContainerMenuAccessor) (this)).trinkets$getLastSlots().remove(trinketSlotStart);
             ((AbstractedContainerMenuAccessor) (this)).trinkets$getRemoteSlots().remove(trinketSlotStart);
-            trinketSlotEnd--;
+            this.trinketSlotEnd--;
         }
-        trinketSlotStart = slots.size();
+        this.trinketSlotStart = slots.size();
+        this.hasCosmeticSlots = false;
 
         int baseIndex = 0;
         for (var inv : sortedInventories) {
@@ -91,10 +94,12 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
                 baseIndex++;
                 this.addSlot(new SurvivalTrinketSlot(inv, i, info.x(), info.y(), info.isVisible(), info.renderAfterRegularSlots(), owner));
             }
+
+            this.hasCosmeticSlots |= inv.hasCosmeticItems();
         }
 
 
-        trinketSlotEnd = slots.size();
+        this.trinketSlotEnd = slots.size();
     }
 
     @Override
@@ -120,6 +125,21 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
     @Override
     public TrinketSlotState trinkets$getSlotState() {
         return this.trinketsSlotState;
+    }
+
+    @Override
+    public TrinketAttachment trinkets$attachment() {
+        return TrinketsApi.getAttachment(this.owner);
+    }
+
+    @Override
+    public boolean trinkets$hasSlots() {
+        return this.trinketSlotStart != this.trinketSlotEnd;
+    }
+
+    @Override
+    public boolean trinkets$hasCosmetic() {
+        return this.hasCosmeticSlots;
     }
 
     @Override

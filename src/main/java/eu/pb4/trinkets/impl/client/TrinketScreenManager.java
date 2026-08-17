@@ -35,6 +35,7 @@ import net.minecraft.world.item.ItemStack;
 public class TrinketScreenManager {
 	public static final Identifier MORE_SLOTS = Identifier.fromNamespaceAndPath("trinkets", "textures/gui/more_slots.png");
 	public static final Identifier MORE_SLOTS_INDICATOR_HORIZONTAL = Identifier.fromNamespaceAndPath("trinkets", "container/more_slots_indicator_horizontal");
+	public static final Identifier MORE_SLOTS_INDICATOR_HORIZONTAL_COMPATIBLE_HIGHLIGHT = Identifier.fromNamespaceAndPath("trinkets", "container/more_slots_indicator_horizontal_compatible_highlight");
 	public static final Identifier MORE_SLOTS_INDICATOR_VERTICAL = Identifier.fromNamespaceAndPath("trinkets", "container/more_slots_indicator_vertical");
 	public static final Identifier MORE_SLOTS_INDICATOR_VERTICAL_STANDALONE = Identifier.fromNamespaceAndPath("trinkets", "container/more_slots_indicator_vertical_standalone");
 	public static final Identifier SLOT_TEXTURE = Identifier.withDefaultNamespace("container/slot");
@@ -139,7 +140,7 @@ public class TrinketScreenManager {
 			text = List.of(Component.translatable("button.trinkets.toggle_visiblity"));
 		} else if (trinketSlot.isDecorativeMode()) {
 			text = List.of( trinketSlot.getType().getTranslation(),
-					Component.translatable("text.trinkets.slot.decorative").setStyle(Style.EMPTY.withColor(TextColor.DARK_PURPLE).withItalic(true))
+					Component.translatable("text.trinkets.slot.cosmetic_slot").setStyle(Style.EMPTY.withColor(TextColor.DARK_PURPLE).withItalic(true))
 			);
 		} else {
 			text = List.of(trinketSlot.getType().getTranslation());
@@ -148,19 +149,19 @@ public class TrinketScreenManager {
 		graphics.setComponentTooltipForNextFrame(menu.getFont(), text, mouseX, mouseY);
 	}
 
-	public static void drawSlotExtrasFirstDraw(int slotId, Slot slot, TrinketInventoryMenu trinketMenu, GuiGraphicsExtractor context) {
+	public static void drawSlotExtrasFirstDraw(AbstractContainerScreen screen, int slotId, Slot slot, TrinketInventoryMenu trinketMenu, GuiGraphicsExtractor context) {
 		var currentScreen = getCurrentScreen();
 
 		if (currentScreen != null && currentScreen.trinkets$getSlotState() instanceof ClientTrinketSlotState state) {
-			state.getScreenBackend().drawSlotExtrasFirstDraw(slotId, slot, trinketMenu, context);
+			state.getScreenBackend().drawSlotExtrasFirstDraw(screen, slotId, slot, trinketMenu, context);
 		}
 	}
 
-	public static void drawSlotExtrasLateDraw(Slot slot, TrinketSlot trinketSlot, GuiGraphicsExtractor context) {
+	public static void drawSlotExtrasLateDraw(AbstractContainerScreen screen, int slotId, Slot slot, TrinketSlot trinketSlot, GuiGraphicsExtractor context) {
 		var currentScreen = getCurrentScreen();
 
 		if (currentScreen != null && currentScreen.trinkets$getSlotState() instanceof ClientTrinketSlotState state) {
-			state.getScreenBackend().drawSlotExtrasLateDraw(slot, trinketSlot, context);
+			state.getScreenBackend().drawSlotExtrasLateDraw(screen, slotId, slot, trinketSlot, context);
 		}
 	}
 
@@ -240,7 +241,12 @@ public class TrinketScreenManager {
 			super(x.getAsInt(), y, 8, 8, message, null, DEFAULT_NARRATION);
 			this.xUpdater = x;
 			this.screen = screen;
-			this.setTooltip(Tooltip.create(Component.translatable("button.trinkets.toggle_cosmetic_slot")));
+			this.updateTooltip();
+		}
+
+		private void updateTooltip() {
+			this.setTooltip(Tooltip.create(Component.translatable("button.trinkets.switch_to_"
+					+ (!screen.trinkets$getHandler().trinkets$isCosmeticMode() ? "cosmetic" : "regular") + "_slots")));
 		}
 
 		@Override
@@ -248,6 +254,7 @@ public class TrinketScreenManager {
 			var mode = !screen.trinkets$getHandler().trinkets$isCosmeticMode();
 			screen.trinkets$getHandler().trinkets$setCosmeticMode(mode);
 			Minecraft.getInstance().getConnection().send(new ServerboundCustomPayloadPacket(new ToggleCosmeticModePayload(mode)));
+			this.updateTooltip();
 		}
 
 		public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {

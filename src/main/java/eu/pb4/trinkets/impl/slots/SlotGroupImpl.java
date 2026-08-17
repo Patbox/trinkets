@@ -24,12 +24,12 @@ public record SlotGroupImpl(String name, int slotId, int order,
 
     @Override
     public boolean isAttachedToSlot(Slot slot) {
-        return slot.index == this.slotId;
+        return this.slotId != -1 && slot.index == this.slotId;
     }
 
     @Override
     public boolean hasSlotAttachment() {
-        return !TrinketsConfig.instance.sidebarTrinketsSlots && this.slotId != -1;
+        return this.slotId != -1;
     }
 
     @Override

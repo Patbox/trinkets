@@ -3,6 +3,7 @@ package eu.pb4.trinkets.impl.client;
 import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.TrinketsConfig;
 import eu.pb4.trinkets.impl.TrinketsMain;
+import eu.pb4.trinkets.impl.client.slot.ClientTrinketSlotState;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -18,6 +19,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.IntConsumer;
 
 public class TrinketsConfigScreen extends Screen {
@@ -58,7 +60,7 @@ public class TrinketsConfigScreen extends Screen {
         var t = list.addChild(new SpruceSeparatorWidget(Component.translatable("config.trinkets.category.gameplay"), this.font), list.defaultCellSetting().copy().alignHorizontallyCenter());
         t.setWidth(300);
 
-        if (this.minecraft.isMultiplayerServer()) {
+        if (this.minecraft.isMultiplayerServer() && this.minecraft.getConnection() != null) {
             this.createButtonsGameplaySection(x -> {
                 x.visitWidgets(y -> {
                     y.active = false;
@@ -97,9 +99,10 @@ public class TrinketsConfigScreen extends Screen {
         );
 
         doubleButtons(consumer,
-                CycleButton.onOffBuilder(TrinketsConfig.instance.sidebarTrinketsSlots)
-                        .withTooltip(_ -> Tooltip.create(Component.translatable("config.trinkets.sidebar_slots.desc")))
-                        .create(Component.translatable("config.trinkets.sidebar_slots"), (_, v) -> TrinketsConfig.instance.sidebarTrinketsSlots = v),
+                CycleButton.builder(v -> Component.translatableWithFallback("ui_style.trinkets." + v, v), TrinketsConfig.instance.uiStyle)
+                        .withValues(ClientTrinketSlotState.CONSTRUCTORS.keySet())
+                        .withTooltip(_ -> Tooltip.create(Component.translatable("config.trinkets.ui_style.desc")))
+                        .create(Component.translatable("config.trinkets.ui_style"), (_, v) -> TrinketsConfig.instance.uiStyle = v),
 
                 new IntSlider(Component.translatable("config.trinkets.sidebar_heigth"), 3, 8, TrinketsConfig.instance.sidebarHeight, (v) -> TrinketsConfig.instance.sidebarHeight = v,
                         Tooltip.create(Component.translatable("config.trinkets.sidebar_heigth.desc")))

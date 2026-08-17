@@ -49,9 +49,6 @@ public interface SlotGroup {
         return ImmutableMap.of();
     }
 
-    @Deprecated(forRemoval = true)
-    int slotId();
-
     boolean isAttachedToSlot(Slot slot);
 
     boolean hasSlotAttachment();
@@ -65,4 +62,7 @@ public interface SlotGroup {
     /// Legacy slots by subId
     @Deprecated(forRemoval = true)
     Map<String, SlotType> slots();
+
+    @Deprecated(forRemoval = true)
+    int slotId();
 }

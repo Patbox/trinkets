@@ -1,6 +1,7 @@
 package eu.pb4.trinkets.impl;
 
 import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import dev.yumi.mc.core.api.YumiMods;
 
@@ -19,8 +20,8 @@ public class TrinketsConfig {
 
     @SerializedName("render_trinkers_in_first_person")
     public boolean renderFirstPersonHand = false;
-    @SerializedName("sidebar_trinkets_slots")
-    public boolean sidebarTrinketsSlots = false;
+    @SerializedName("ui_style")
+    public String uiStyle = "default";
     @SerializedName("sidebar_height")
     public int sidebarHeight = 4;
     @SerializedName("show_slot_indicator")
@@ -35,13 +36,25 @@ public class TrinketsConfig {
     @SerializedName("gameplay")
     public Gameplay gameplay = new Gameplay();
 
-
     public static class Gameplay {
         @SerializedName("equipment_hiding")
         public boolean equipmentHiding = false;
 
         @SerializedName("cosmetic_slots")
         public boolean cosmeticSlots = false;
+    }
+
+
+    @Deprecated
+    @Expose(serialize = false)
+    @SerializedName("sidebar_trinkets_slots")
+    private Boolean legacy_sidebarTrinketsSlots = null;
+
+    private void update() {
+        if (legacy_sidebarTrinketsSlots != null) {
+            uiStyle = "grouped_sidebar";
+            legacy_sidebarTrinketsSlots = null;
+        }
     }
 
     public static void load() {
@@ -51,6 +64,7 @@ public class TrinketsConfig {
                 var config = gson.fromJson(Files.readString(CONFIG_PATH), TrinketsConfig.class);
                 if (config != null) {
                     instance = config;
+                    instance.update();
                     save();
                 }
             } else {

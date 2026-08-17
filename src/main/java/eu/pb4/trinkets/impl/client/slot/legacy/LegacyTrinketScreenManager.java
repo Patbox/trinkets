@@ -18,10 +18,12 @@ import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static eu.pb4.trinkets.impl.client.TrinketScreenManager.*;
 
@@ -129,7 +131,7 @@ public class LegacyTrinketScreenManager implements TrinketScreenManagerBackend {
 
             if (group != null) {
                 int slotsWidth = handler.getSlotWidth(group) + 1;
-                if (!group.hasSlotAttachment()) slotsWidth -= 1;
+                if (!(group.hasSlotAttachment() && !handler.forceSidebar())) slotsWidth -= 1;
                 var r = ((LegacyTrinketSlotState) currentScreen.trinkets$getSlotState()).getGroupRect(group);
                 currentBounds = new Rect2i(0, 0, 0, 0);
 
@@ -165,7 +167,7 @@ public class LegacyTrinketScreenManager implements TrinketScreenManagerBackend {
             if (quickMoveGroup != null) {
                 int slotsWidth = handler.getSlotWidth(quickMoveGroup) + 1;
 
-                if (!quickMoveGroup.hasSlotAttachment()) slotsWidth -= 1;
+                if (!(quickMoveGroup.hasSlotAttachment() && !handler.forceSidebar())) slotsWidth -= 1;
                 var r = ((LegacyTrinketSlotState) currentScreen.trinkets$getSlotState()).getGroupRect(quickMoveGroup);
                 quickMoveBounds = new Rect2i(0, 0, 0, 0);
 
@@ -205,7 +207,7 @@ public class LegacyTrinketScreenManager implements TrinketScreenManagerBackend {
         int slotsWidth = handler.getSlotWidth(group) + 1;
         List<Point> slotHeights = handler.getSlotHeights(group);
         List<SlotType> slotTypes = handler.getSlotTypes(group);
-        if (!group.hasSlotAttachment()) slotsWidth -= 1;
+        if (!(group.hasSlotAttachment() && !handler.forceSidebar())) slotsWidth -= 1;
         int x = r.x() - 4 - (slotsWidth - 1) / 2 * 18;
         int y = r.y() - 4;
         if (slotsWidth > 1 || type != null) {
@@ -259,7 +261,7 @@ public class LegacyTrinketScreenManager implements TrinketScreenManagerBackend {
             }
 
             // Because pre-existing slots are not part of the slotHeights list
-            if (group.hasSlotAttachment()) {
+            if (group.hasSlotAttachment() && !handler.forceSidebar()) {
                 drawTexture(context, MORE_SLOTS, r.x() + 1, y + 1, 4, 1, 16, 3);
                 drawTexture(context, MORE_SLOTS, r.x() + 1, y + 22, 4, 22, 16, 3);
             }
@@ -395,11 +397,14 @@ public class LegacyTrinketScreenManager implements TrinketScreenManagerBackend {
     }
 
     @Override
-    public void drawSlotExtrasFirstDraw(int slotId, Slot slot, TrinketInventoryMenu trinketMenu, GuiGraphicsExtractor context) {
+    public void drawSlotExtrasFirstDraw(AbstractContainerScreen screen, int slotId, Slot slot, TrinketInventoryMenu trinketMenu, GuiGraphicsExtractor context) {
         if (slot instanceof TrinketSlot trinketSlot) {
-            var g = ((LegacyTrinketSlotState) trinketMenu.trinkets$getSlotState()).getGroupAtSlot(slotId);
-            if (!trinketSlot.renderAfterRegularSlots() && slot.isActive() && trinketSlot.getAccess().index() == 0 && TrinketsClient.activeGroup != g && g != null) {
-                context.blitSprite(RenderPipelines.GUI_TEXTURED, MORE_SLOTS_INDICATOR_HORIZONTAL, slot.x - 8, slot.y - 8, 32, 32);
+            var g = trinketSlot.getGroup();
+
+            if (!trinketSlot.renderAfterRegularSlots() && slot.isActive() && trinketSlot.getAccess().index() == 0 && TrinketsClient.activeGroup != g && g != null && ((LegacyTrinketSlotState) trinketMenu.trinkets$getSlotState()).getSlotTypes(g).size() > 1) {
+                context.blitSprite(RenderPipelines.GUI_TEXTURED,
+                        isGroupHighlighted(trinketMenu, g) ? MORE_SLOTS_INDICATOR_HORIZONTAL_COMPATIBLE_HIGHLIGHT : MORE_SLOTS_INDICATOR_HORIZONTAL,
+                        slot.x - 8, slot.y - 8, 32, 32);
             }
             if (!trinketSlot.renderAfterRegularSlots() && slot.isActive() && trinketSlot.getAccess().inventory().getContainerSize() > 1 && trinketSlot.getAccess().index() == 0 && TrinketsClient.activeType != trinketSlot.getType()) {
                 context.blitSprite(RenderPipelines.GUI_TEXTURED, MORE_SLOTS_INDICATOR_VERTICAL_STANDALONE, slot.x - 8, slot.y - 8, 32, 32);
@@ -407,13 +412,39 @@ public class LegacyTrinketScreenManager implements TrinketScreenManagerBackend {
         } else {
             var g = ((LegacyTrinketSlotState) trinketMenu.trinkets$getSlotState()).getGroupAtSlot(slotId);
             if (g != null && this.group != g) {
-                context.blitSprite(RenderPipelines.GUI_TEXTURED, MORE_SLOTS_INDICATOR_HORIZONTAL, slot.x - 8, slot.y - 8, 32, 32);
+                context.blitSprite(RenderPipelines.GUI_TEXTURED,
+                        isGroupHighlighted(trinketMenu, g) ? MORE_SLOTS_INDICATOR_HORIZONTAL_COMPATIBLE_HIGHLIGHT : MORE_SLOTS_INDICATOR_HORIZONTAL,
+                        slot.x - 8, slot.y - 8, 32, 32);
             }
         }
     }
 
+    private boolean isGroupHighlighted(TrinketInventoryMenu trinketMenu, SlotGroup group) {
+        var carried = ((AbstractContainerMenu) trinketMenu).getCarried();
+        if (carried.isEmpty()) {
+            return false;
+        }
+
+        var slotTypes = ((LegacyTrinketSlotState) trinketMenu.trinkets$getSlotState()).getSlotTypes(group);
+        var att = trinketMenu.trinkets$attachment();
+
+        if (TrinketsConfig.instance.highlightCompatibleSlots) {
+            for (var type : slotTypes) {
+                var inv = Objects.requireNonNull(att.getInventory(type.getId()));
+
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    if (TrinketSlot.canInsert(carried, inv.getSlotAccess(i), att.getEntity())) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     @Override
-    public void drawSlotExtrasLateDraw(Slot slot, TrinketSlot trinketSlot, GuiGraphicsExtractor context) {
+    public void drawSlotExtrasLateDraw(AbstractContainerScreen screen, int slotId, Slot slot, TrinketSlot trinketSlot, GuiGraphicsExtractor context) {
         if (TrinketsConfig.instance.showSlotsIndicator && trinketSlot.getAccess().inventory().getContainerSize() > 1 && trinketSlot.getAccess().index() == 0 && TrinketsClient.activeType != trinketSlot.getType()) {
             context.blitSprite(RenderPipelines.GUI_TEXTURED, MORE_SLOTS_INDICATOR_VERTICAL, slot.x - 8, slot.y - 8, 32, 32);
         }
