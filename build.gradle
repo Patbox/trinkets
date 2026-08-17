@@ -1,8 +1,7 @@
 plugins {
 	id 'net.fabricmc.fabric-loom' version '1.16-SNAPSHOT'
-	id "com.modrinth.minotaur" version "2.+"
 	id 'maven-publish'
-	id 'com.matthewprenger.cursegradle' version '1.4.0'
+	id "me.modmuss50.mod-publish-plugin" version "2.2.0"
 }
 
 version = project.mod_version
@@ -175,73 +174,43 @@ sourcesJar {
 
 var env = System.getenv()
 
-if (System.getenv("MODRINTH")) {
-	modrinth {
-		token = System.getenv("MODRINTH")
-		projectId = 'XaT8sLP6'// The ID of your modrinth project, slugs will not work.
-		versionNumber = "" + version // The version of the mod to upload.
-		versionType = "beta"
-		uploadFile = jar // This links to a task that builds your mod jar and sets "uploadFile" to the mod jar.
+publishMods {
+	changelog = System.getenv("CHANGELOG")
+	type = BETA
+	file = jar.archiveFile
+	modLoaders.add("fabric")
+	modLoaders.add("neoforge")
 
-		List<String> supportedVersions = new ArrayList<>();
-		supportedVersions.add(project.minecraft_version);
-		for (String a : project.mc_extra_supported.split(",")) {
-			if (!a.strip().isEmpty()) {
-				supportedVersions.add(a.strip())
-			}
-		}
-
-		gameVersions = supportedVersions
-
-		changelog = System.getenv("CHANGELOG")
-		loaders = ["fabric", "neoforge"]
-
-		dependencies {
-		}
-	}
-
-	jar {
-		finalizedBy project.tasks.modrinth
-	}
-}
-
-
-/*curseforge {
 	if (System.getenv("CURSEFORGE")) {
-		apiKey = System.getenv("CURSEFORGE")
+		curseforge {
+			projectId = "1509777"
+			accessToken = System.getenv("CURSEFORGE")
+			client = true
+			server = true
 
-		project {
-			id = "1509777"
-			releaseType = "beta"
-			changelog = System.getenv("CHANGELOG")
-			changelogType = "markdown"
-			addGameVersion((project.minecraft_version.contains("-") ? ((String) project.minecraft_version.split("-")[0] + "-snapshot") : project.minecraft_version))
-			addGameVersion "Fabric"
-			addGameVersion "NeoForge"
-			addGameVersion "Client"
-			addGameVersion "Server"
-
+			minecraftVersions.add((project.minecraft_version.contains("-") ? ((String) project.minecraft_version.split("-")[0] + "-snapshot") : project.minecraft_version))
 			for (String a : project.mc_extra_supported.split(",")) {
 				if (!a.strip().isEmpty()) {
-					addGameVersion(a.strip())
+					minecraftVersions.add(a.strip())
 				}
-			}
-
-			mainArtifact(jar.archiveFile)
-
-			afterEvaluate {
-				uploadTask.dependsOn("jar")
 			}
 		}
 	}
 
-	options {
-		forgeGradleIntegration = false
+	if (System.getenv("MODRINTH")) {
+		modrinth {
+			accessToken = System.getenv("MODRINTH")
+			projectId = 'XaT8sLP6'
+
+			minecraftVersions.add(project.minecraft_version);
+			for (String a : project.mc_extra_supported.split(",")) {
+				if (!a.strip().isEmpty()) {
+					minecraftVersions.add(a.strip())
+				}
+			}
+		}
 	}
-	jar {
-		finalizedBy project.tasks.curseforge
-	}
-}*/
+}
 
 publishing {
 	publications {

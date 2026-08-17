@@ -101,7 +101,7 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/EditBox;setVisible(Z)V"), method = "init")
 	private void addButton(CallbackInfo info) {
-		if (TrinketsConfig.serverSyncedGameplay.cosmeticSlots) {
+		if (TrinketsConfig.serverSyncedGameplay.cosmeticSlots && this.trinkets$getHandler().trinkets$hasCosmetic()) {
 			this.decorativeModeButton = TrinketScreenManager.createToggleDecorativeModeButton(this, () -> this.leftPos, this.topPos);
 		}
 	}
@@ -137,7 +137,10 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 			context.pose().translate(this.leftPos, this.topPos);
 			TrinketScreenManager.drawForeground(context);
 
-			for (Slot slot : this.menu.slots) {
+
+
+			for (int i = 0; i < this.menu.slots.size(); i++) {
+				var slot = this.menu.slots.get(i);
 				if (slot instanceof TrinketSlot trinketSlot && trinketSlot.renderAfterRegularSlots() && slot.isActive()) {
 					context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_TEXTURE, slot.x - 1, slot.y - 1, 18, 18);
 
@@ -149,7 +152,7 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 						context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_FRONT_TEXTURE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
 					}
 
-					TrinketScreenManager.drawSlotExtrasLateDraw(slot, trinketSlot, context);
+					TrinketScreenManager.drawSlotExtrasLateDraw(this, i, slot, trinketSlot, context);
 				}
 			}
 			context.pose().popMatrix();

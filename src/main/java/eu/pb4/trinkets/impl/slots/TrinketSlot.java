@@ -5,6 +5,7 @@ import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.event.TrinketCanEquipCallback;
+import eu.pb4.trinkets.api.event.TrinketCanUnequipCallback;
 import eu.pb4.trinkets.api.event.TrinketSlotCompatibilityCallback;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.Slot;
@@ -33,7 +34,8 @@ public interface TrinketSlot {
     }
 
     static boolean mayPickup(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {
-        return TrinketCallback.getCallback(stack).canUnequip(stack, slotRef, entity);
+        var res = TrinketCallback.getCallback(stack).canUnequip(stack, slotRef, entity);
+        return TrinketCanUnequipCallback.EVENT.invoker().canUnequip(stack, slotRef, entity, res).toBooleanOrElse(res);
     }
 
     boolean isTrinketFocused();

@@ -36,4 +36,6 @@ public interface LegacyTrinketSlotState extends TrinketSlotState {
 
         return new Area2i(0, 0,0, 0);
     }
+
+    boolean forceSidebar();
 }

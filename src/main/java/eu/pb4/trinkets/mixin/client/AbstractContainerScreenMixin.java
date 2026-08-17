@@ -181,7 +181,7 @@ public abstract class AbstractContainerScreenMixin extends Screen {
 		if ((this.menu instanceof ItemPickerMenuAccessor accessor ? accessor.trinkets$getInventoryMenu() : this.menu) instanceof TrinketInventoryMenu trinketMenu
 				&& TrinketsConfig.instance.showSlotsIndicator) {
 			for (var i = 0; i < this.menu.slots.size(); i++) {
-				TrinketScreenManager.drawSlotExtrasFirstDraw(i, this.menu.slots.get(i), trinketMenu, context);
+				TrinketScreenManager.drawSlotExtrasFirstDraw((AbstractContainerScreen) (Object) this, i, this.menu.slots.get(i), trinketMenu, context);
 			}
 		}
 	}

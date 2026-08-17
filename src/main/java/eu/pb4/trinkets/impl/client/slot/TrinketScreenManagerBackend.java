@@ -1,7 +1,5 @@
 package eu.pb4.trinkets.impl.client.slot;
 
-import eu.pb4.trinkets.api.SlotGroup;
-import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.client.TrinketScreen;
 import eu.pb4.trinkets.impl.slots.TrinketSlot;
@@ -25,9 +23,9 @@ public interface TrinketScreenManagerBackend {
 
     void tryUpdateTrinketsSlot(TrinketScreen currentScreen);
 
-    void drawSlotExtrasFirstDraw(int slotId, Slot slot, TrinketInventoryMenu trinketMenu, GuiGraphicsExtractor context);
+    void drawSlotExtrasFirstDraw(AbstractContainerScreen screen, int slotId, Slot slot, TrinketInventoryMenu trinketMenu, GuiGraphicsExtractor context);
 
-    void drawSlotExtrasLateDraw(Slot slot, TrinketSlot trinketSlot, GuiGraphicsExtractor context);
+    void drawSlotExtrasLateDraw(AbstractContainerScreen screen, int slotId, Slot slot, TrinketSlot trinketSlot, GuiGraphicsExtractor context);
 
     List<Rect2i> getExclusionAreas(TrinketScreen trinketScreen);
 }

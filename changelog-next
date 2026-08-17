@@ -9,9 +9,13 @@
   - This was a requested feature, and while I originally though about making it an addon, decided to just add it direct as default disabled thing.
 - Reworked Trinket slot logic to no split the slot ids from visual position of slots:
   - This allows more flexibility / future changes, while preventing slot id desyncs.
-  - Additionally reworked the sidebar slot option to always flatten the resulting slots, rather than still using groups.
+  - Additionally changed the Force Sidebar option to a Style selector with these options:
+    - Default - Classic style of Trinkets, equal to old `OFF` value,
+    - Grouped Sidebar - Sidebar that keeps the slot groups, equal to old `ON` value,
+    - Flat Sidebar - Sidebar, but all slots are visible at all times (NEW!).
 - Added `trinkets:any_trinket` predicate type for slot definitions.
 - Added option to highlight compatible slots (disabled by default).
+- Added `TrinketCanUnequipCallback`, matching the equip based one (or canUnequip on TrinketCallback).
 - The data driven rendering is now part of the api, allowing data-generation of related files as well as easy way to add custom logic to it.
 - Lanterns now have a default visuals when put in Belt slot.
 - Bunch of bugfixes, including a crash™

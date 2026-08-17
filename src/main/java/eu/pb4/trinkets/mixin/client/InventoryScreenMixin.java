@@ -36,7 +36,7 @@ public abstract class InventoryScreenMixin extends AbstractRecipeBookScreen<Inve
 
 	@Inject(at = @At("TAIL"), method = "init")
 	private void addButton(CallbackInfo info) {
-		if (TrinketsConfig.serverSyncedGameplay.cosmeticSlots) {
+		if (TrinketsConfig.serverSyncedGameplay.cosmeticSlots && this.trinkets$getHandler().trinkets$hasCosmetic()) {
 			this.addRenderableWidget(TrinketScreenManager.createToggleDecorativeModeButton(this, () -> this.leftPos, this.topPos));
 		}
 	}

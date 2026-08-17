@@ -1,5 +1,6 @@
 package eu.pb4.trinkets.impl;
 
+import eu.pb4.trinkets.api.TrinketAttachment;
 import eu.pb4.trinkets.impl.slots.TrinketSlotState;
 
 /**
@@ -18,6 +19,11 @@ public interface TrinketInventoryMenu {
 
 	TrinketSlotState trinkets$getSlotState();
 
+	TrinketAttachment trinkets$attachment();
+
 	boolean trinkets$isCosmeticMode();
 	void trinkets$setCosmeticMode(boolean value);
+
+    boolean trinkets$hasSlots();
+    boolean trinkets$hasCosmetic();
 }

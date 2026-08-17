@@ -12,6 +12,7 @@ import eu.pb4.trinkets.impl.client.slot.ClientTrinketSlotState;
 import eu.pb4.trinkets.impl.client.slot.TrinketScreenManagerBackend;
 import eu.pb4.trinkets.impl.slots.SurvivalTrinketSlot;
 import eu.pb4.trinkets.impl.slots.TrinketSlot;
+import eu.pb4.trinkets.impl.slots.TrinketSlotState;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.world.entity.LivingEntity;
@@ -33,13 +34,15 @@ public class LegacyTrinketSlotStateImpl implements LegacyTrinketSlotState, Clien
     private final LivingEntity owner;
 
     private final Map<SlotType, List<SlotInfo>> slotInfo = new HashMap<>();
+    private final boolean forceSidebar;
 
     private int groupCount = 0;
 
     private final AbstractContainerMenu menu;
     private final LivingEntityTrinketAttachment trinkets;
 
-    public LegacyTrinketSlotStateImpl(LivingEntity owner, AbstractContainerMenu menu, LivingEntityTrinketAttachment trinkets, List<TrinketInventory> sortedInventories) {
+    public LegacyTrinketSlotStateImpl(LivingEntity owner, AbstractContainerMenu menu, LivingEntityTrinketAttachment trinkets, List<TrinketInventory> sortedInventories, boolean forceSidebar) {
+        this.forceSidebar = forceSidebar;
         this.owner = owner;
         this.menu = menu;
         this.trinkets = trinkets;
@@ -49,14 +52,14 @@ public class LegacyTrinketSlotStateImpl implements LegacyTrinketSlotState, Clien
         slotToGroup.clear();
 
         int maxHeight = TrinketsConfig.instance.sidebarHeight;
-        int groupNum = TrinketsConfig.instance.sidebarTrinketsSlots ? 4 : 1; // Start at 1 because offhand exists
+        int groupNum = this.forceSidebar ? 4 : 1; // Start at 1 because offhand exists
 
         for (SlotGroup group : groups.values().stream().sorted(Comparator.comparing(SlotGroup::order).thenComparing(SlotGroup::name)).toList()) {
             if (!hasSlots(trinkets, group)) {
                 continue;
             }
 
-            if (group.hasSlotAttachment()) {
+            if (group.hasSlotAttachment() && !this.forceSidebar) {
                 int id = group.slotId();
 
                 if (this.menu.slots.size() > id) {
@@ -90,7 +93,7 @@ public class LegacyTrinketSlotStateImpl implements LegacyTrinketSlotState, Clien
             SlotGroup group = groups.get(groupId);
             int groupOffset = 1;
 
-            if (group.hasSlotAttachment()) {
+            if (group.hasSlotAttachment() && !this.forceSidebar) {
                 groupOffset++;
             }
             int width = 0;
@@ -110,9 +113,6 @@ public class LegacyTrinketSlotStateImpl implements LegacyTrinketSlotState, Clien
                 int x = (int) ((groupOffset / 2) * 18 * Math.pow(-1, groupOffset));
                 slotHeights.computeIfAbsent(group, (k) -> new ArrayList<>()).add(new Point(x, stacks.getContainerSize()));
                 slotTypes.computeIfAbsent(group, (k) -> new ArrayList<>()).add(stacks.slotType());
-                if (groupOffset == 1 && entry.getValue().size() > 1) {
-                    slotToGroup.put(this.menu.slots.size(), group);
-                }
 
                 for (int i = 0; i < stacks.getContainerSize(); i++) {
                     int y = (int) (pos.y() + (slotOffset / 2) * 18 * Math.pow(-1, slotOffset));
@@ -198,6 +198,11 @@ public class LegacyTrinketSlotStateImpl implements LegacyTrinketSlotState, Clien
     }
 
     @Override
+    public boolean forceSidebar() {
+        return this.forceSidebar;
+    }
+
+    @Override
     public @NonNull SlotInfo getSlotConfig(int slotIndex, TrinketInventory inventory, int index) {
         var list = this.slotInfo.get(inventory.slotType());
         if (list == null || list.size() <= index) {
@@ -210,6 +215,14 @@ public class LegacyTrinketSlotStateImpl implements LegacyTrinketSlotState, Clien
     @Override
     public TrinketScreenManagerBackend getScreenBackend() {
         return LegacyTrinketScreenManager.INSTANCE;
+    }
+
+    public static TrinketSlotState classic(LivingEntity livingEntity, AbstractContainerMenu menu, LivingEntityTrinketAttachment livingEntityTrinketAttachment, List<TrinketInventory> trinketInventories) {
+        return new LegacyTrinketSlotStateImpl(livingEntity, menu, livingEntityTrinketAttachment, trinketInventories, false);
+    }
+
+    public static TrinketSlotState sidebar(LivingEntity livingEntity, AbstractContainerMenu menu, LivingEntityTrinketAttachment livingEntityTrinketAttachment, List<TrinketInventory> trinketInventories) {
+        return new LegacyTrinketSlotStateImpl(livingEntity, menu, livingEntityTrinketAttachment, trinketInventories, true);
     }
 
     private class Creative implements LegacyTrinketSlotState, ClientTrinketSlotState {
@@ -272,6 +285,11 @@ public class LegacyTrinketSlotStateImpl implements LegacyTrinketSlotState, Clien
         @Override
         public LegacyTrinketSlotState asCreativeState() {
             return this;
+        }
+
+        @Override
+        public boolean forceSidebar() {
+            return LegacyTrinketSlotStateImpl.this.forceSidebar();
         }
 
         @Override

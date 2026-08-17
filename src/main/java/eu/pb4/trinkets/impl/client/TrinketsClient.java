@@ -8,6 +8,7 @@ import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.impl.*;
 import eu.pb4.trinkets.impl.client.render.ClientTrinketsManager;
 import eu.pb4.trinkets.api.client.renderer.element.TrinketRenderElements;
+import eu.pb4.trinkets.impl.client.slot.ClientTrinketSlotState;
 import eu.pb4.trinkets.impl.client.slot.legacy.LegacyTrinketSlotStateImpl;
 import eu.pb4.trinkets.impl.client.slot.sidebar.SidebarTrinketSlotStateImpl;
 import eu.pb4.trinkets.impl.data.EntitySlotLoader;
@@ -117,6 +118,6 @@ public class TrinketsClient implements ClientModInitializer {
     }
 
     public static void updateSlotVisualHandlers() {
-        TrinketSlotState.CLIENT_CONSTRUCTOR.setValue(TrinketsConfig.instance.sidebarTrinketsSlots ? SidebarTrinketSlotStateImpl::new : LegacyTrinketSlotStateImpl::new);
+        TrinketSlotState.CLIENT_CONSTRUCTOR.setValue(ClientTrinketSlotState.CONSTRUCTORS.getOrDefault(TrinketsConfig.instance.uiStyle, LegacyTrinketSlotStateImpl::classic));
     }
 }

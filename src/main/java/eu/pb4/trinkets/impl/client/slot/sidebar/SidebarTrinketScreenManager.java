@@ -1,17 +1,12 @@
 package eu.pb4.trinkets.impl.client.slot.sidebar;
 
-import eu.pb4.trinkets.api.SlotGroup;
-import eu.pb4.trinkets.api.SlotType;
-import eu.pb4.trinkets.impl.Point;
 import eu.pb4.trinkets.impl.TrinketInventoryMenu;
 import eu.pb4.trinkets.impl.TrinketsConfig;
 import eu.pb4.trinkets.impl.client.TrinketScreen;
-import eu.pb4.trinkets.impl.client.TrinketsClient;
 import eu.pb4.trinkets.impl.client.slot.TrinketScreenManagerBackend;
 import eu.pb4.trinkets.impl.slots.TrinketSlot;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -152,12 +147,12 @@ public class SidebarTrinketScreenManager implements TrinketScreenManagerBackend 
     }
 
     @Override
-    public void drawSlotExtrasFirstDraw(int slotId, Slot slot, TrinketInventoryMenu trinketMenu, GuiGraphicsExtractor context) {
+    public void drawSlotExtrasFirstDraw(AbstractContainerScreen screen, int slotId, Slot slot, TrinketInventoryMenu trinketMenu, GuiGraphicsExtractor context) {
 
     }
 
     @Override
-    public void drawSlotExtrasLateDraw(Slot slot, TrinketSlot trinketSlot, GuiGraphicsExtractor context) {
+    public void drawSlotExtrasLateDraw(AbstractContainerScreen screen, int slotId, Slot slot, TrinketSlot trinketSlot, GuiGraphicsExtractor context) {
 
     }
 

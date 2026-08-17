@@ -19,8 +19,13 @@
 	"trinkets.slot.offhand.ring": "Ring",
 
 	"button.trinkets.toggle_visiblity": "Toggle Visibility",
-	"button.trinkets.toggle_cosmetic_slot": "Toggle Cosmetic Slots",
-	"text.trinkets.slot.decorative": "(Decorative)",
+	"button.trinkets.switch_to_cosmetic_slots": "Switch to Cosmetic Slots",
+	"button.trinkets.switch_to_regular_slots": "Switch to Regular Slots",
+	"text.trinkets.slot.cosmetic_slot": "(Cosmetic)",
+
+	"ui_style.trinkets.default": "Default",
+	"ui_style.trinkets.grouped_sidebar": "Grouped Sidebar",
+	"ui_style.trinkets.flat_sidebar": "Flat Sidebar",
 
 	"screen.trinkets.config": "Trinkets Updated Settings",
 	"config.trinkets.render_first_person_hand": "First Person Trinkets",
@@ -29,8 +34,8 @@
 	"config.trinkets.show_slots_indicator.desc": "Toggles visibility of the indicator for slots that aren't currently shown and require you to hover over other slots.",
 	"config.trinkets.show_slot_tooltip": "Show Slot Name",
 	"config.trinkets.show_slot_tooltip.desc": "Toggles visibility of a tooltip when hovering over trinket slots.",
-	"config.trinkets.sidebar_slots": "Sidebar Trinkets Slots",
-	"config.trinkets.sidebar_slots.desc": "Forces all trinkets slots into being placed in a sidebar, rather than being attached to equipment slots.",
+	"config.trinkets.ui_style": "Style",
+	"config.trinkets.ui_style.desc": "Selects the style of the interface!",
 	"config.trinkets.sidebar_heigth": "Sidebar Max Height",
 	"config.trinkets.sidebar_heigth.desc": "Controls maximum height sidebar-placed slots can take before moving to a next column.",
 	"config.trinkets.show_item_tooltip": "Show Item Tooltip",
