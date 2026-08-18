@@ -40,7 +40,8 @@ public class V1460Mixin {
                                 // Define optional Items field, which is an optional list of ITEM_STACK. Other data is just copied over.
                                 DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(schema)))
                         )),
-                        DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(schema))))
+                        DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(schema))),
+                        DSL.optionalFields("cosmetic", DSL.list(References.ITEM_STACK.in(schema))))
         ));
 
         // Add schema for trinkets to existing datafixers
