@@ -173,6 +173,8 @@ public class TrinketsConfigScreen extends Screen {
         TrinketsClient.updateSlotVisualHandlers();
         if (this.minecraft.hasSingleplayerServer()) {
             TrinketsMain.syncConfigChanges(this.minecraft.getSingleplayerServer());
+        } else if (this.minecraft.player != null) {
+            ((TrinketInventoryMenu) this.minecraft.player.inventoryMenu).trinkets$updateTrinketSlots(false);
         }
     }
 
