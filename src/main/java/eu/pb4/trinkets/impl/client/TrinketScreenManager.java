@@ -16,6 +16,7 @@ import eu.pb4.trinkets.impl.payload.ToggleVisibilityPayload;
 import eu.pb4.trinkets.impl.slots.TrinketSlot;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.*;
@@ -140,7 +141,7 @@ public class TrinketScreenManager {
 			text = List.of(Component.translatable("button.trinkets.toggle_visiblity"));
 		} else if (trinketSlot.isDecorativeMode()) {
 			text = List.of( trinketSlot.getType().getTranslation(),
-					Component.translatable("text.trinkets.slot.cosmetic_slot").setStyle(Style.EMPTY.withColor(TextColor.DARK_PURPLE).withItalic(true))
+					Component.translatable("text.trinkets.slot.cosmetic_slot").setStyle(Style.EMPTY.withColor(ChatFormatting.DARK_PURPLE).withItalic(true))
 			);
 		} else {
 			text = List.of(trinketSlot.getType().getTranslation());

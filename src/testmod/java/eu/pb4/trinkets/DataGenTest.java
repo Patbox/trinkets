@@ -13,11 +13,11 @@ import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartNames;
-import net.minecraft.references.BlockItemIds;
 import net.minecraft.references.ItemIds;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.Items;
 import org.joml.Matrix4f;
 
 import java.util.List;
@@ -77,7 +77,7 @@ public class DataGenTest implements DataGeneratorEntrypoint {
 
             @Override
             protected void generate(ClientTrinketsOutput output) {
-                output.acceptClientTrinket(BlockItemIds.COPPER_LANTERN.waxed().exposed().item(), List.of(
+                output.acceptClientTrinket(Items.COPPER_LANTERN.waxedExposed().builtInRegistryHolder().key(), List.of(
                         new IfSlotTrinketElement(DefaultTrinketSlots.HAND_RING, List.of(
                                 new ItemStackTrinketElement(
                                         AttachmentSettings.builder(PartNames.RIGHT_ARM).offset(0, -1, 0).build(),

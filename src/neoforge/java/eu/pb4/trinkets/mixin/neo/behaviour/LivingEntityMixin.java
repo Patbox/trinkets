@@ -28,15 +28,15 @@ public abstract class LivingEntityMixin extends Entity {
         super(type, level);
     }
 
-    @Inject(method = "canGlide(Z)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getAttributeValue(Lnet/minecraft/core/Holder;)D"), cancellable = true)
+    @Inject(method = "canGlide()Z", at = @At(value = "INVOKE", target = "Ljava/util/List;iterator()Ljava/util/Iterator;"), cancellable = true)
     private void handleGliderForTrinkets(CallbackInfoReturnable<Boolean> cir) {
         if (TrinketsApi.getAttachment((LivingEntity) (Object) this).isEquipped(stack -> stack.has(DataComponents.GLIDER) && !stack.nextDamageWillBreak(), true)) {
             cir.setReturnValue(true);
         }
     }
 
-    @WrapWithCondition(method = "updateFallFlying", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;onGlideDamage(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V"))
-    private boolean preventFalseBreak(ItemStack instance, LivingEntity livingEntity, EquipmentSlot amount, @Share(value = "is_faux", namespace = "trinkets_updated") LocalBooleanRef ref) {
+    @WrapWithCondition(method = "updateFallFlying", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V"))
+    private boolean preventFalseBreak(ItemStack instance, int serverLevel, LivingEntity livingEntity, EquipmentSlot amount, @Share(value = "is_faux", namespace = "trinkets_updated") LocalBooleanRef ref) {
         if (ref.get()) {
             var list = new ArrayList<TrinketSlotAccess>();
             TrinketsApi.getAttachment((LivingEntity) (Object) this).forEach((slot, stack) -> {

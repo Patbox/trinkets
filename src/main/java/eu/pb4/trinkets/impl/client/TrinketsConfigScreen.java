@@ -60,7 +60,7 @@ public class TrinketsConfigScreen extends Screen {
         var t = list.addChild(new SpruceSeparatorWidget(Component.translatable("config.trinkets.category.gameplay"), this.font), list.defaultCellSetting().copy().alignHorizontallyCenter());
         t.setWidth(300);
 
-        if (this.minecraft.isMultiplayerServer() && this.minecraft.getConnection() != null) {
+        if (this.minecraft.getSingleplayerServer() == null && this.minecraft.getConnection() != null) {
             this.createButtonsGameplaySection(x -> {
                 x.visitWidgets(y -> {
                     y.active = false;

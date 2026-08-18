@@ -103,7 +103,7 @@ public class TrinketsClient implements ClientModInitializer {
             TrinketsConfig.serverSyncedGameplay = payload.gameplay();
             if (player.inventoryMenu instanceof TrinketInventoryMenu screenHandler) {
                 screenHandler.trinkets$updateTrinketSlots(true);
-                if (client.gui.screen() instanceof TrinketScreen trinketScreen) {
+                if (client.screen instanceof TrinketScreen trinketScreen) {
                     trinketScreen.trinkets$updateTrinketSlots();
                 }
                 TrinketScreenManager.tryUpdateTrinketsSlot();
