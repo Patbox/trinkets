@@ -18,12 +18,25 @@ Flexible and designed with compatibility in mind API allowing you to easily rend
 as attached to any body part of any entity based on vanilla model system. This includes compatibility with
 mods and resource packs such as Entity Model Features and Fresh Animations.
 
+### Fully optional Cosmetic Slot support and trinket equipment hiding
+Trinkets Updated adds optional support for cosmetic slots and trinket hiding directly into the mod. 
+While by default these features are disabled (as they could feel unfair in multiplayer setting), 
+players in singleplayer, server owners on servers and modpacks makers for all can easily enable it by
+changing the config file, allowing them to set the desired experience just as they want to.
+
+### Configurable styling
+While by default Trinkets Updated should look exactly like good old original Trinkets, it exposed multiple
+styling options, from changing how the slots are positioned, whatever they are hidden or show extra
+indicators such as slot being compatible with currently held item or show that slot contains more other slots within.
+Additionally, you can toggle both slot and item tooltips, which can help you to keep the style you wanted.
+S
 ### Data Driven at it's core
 Custom trinkets can be defined with json files via tags or custom components on the items. Additionally, [you can easily
 define the rendering of such trinkets purely with a resource pack](https://github.com/Patbox/trinkets/wiki/Data-Driven-Trinket-rendering-asset-definition).
 Slots and slot groups are also data driven, making it easy to create and modify them, from their size to
 mobs which support them.
 Mods need to declare to use slots before they are accessible to the player, preventing creation of unused ones.
+[You can get some example official datapacks on Modrinth!](https://modrinth.com/collection/qikA0d0C)
 
 ### Vanilla component and feature support
 Trinkets implement a basic support for vanilla features such as glider component, which allows you to enable items
