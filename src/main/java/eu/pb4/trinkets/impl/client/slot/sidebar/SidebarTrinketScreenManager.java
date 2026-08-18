@@ -49,6 +49,10 @@ public class SidebarTrinketScreenManager implements TrinketScreenManagerBackend 
         int x = currentScreen.trinkets$getX();
         int y = currentScreen.trinkets$getY();
 
+        if (!currentScreen.trinkets$getHandler().trinkets$hasSlots()) {
+            return;
+        }
+
         if (currentScreen instanceof AbstractContainerScreen<?> screen) {
             for (var slot : screen.getMenu().slots) {
                 if (slot instanceof TrinketSlot trinketSlot && !trinketSlot.renderAfterRegularSlots()) {
