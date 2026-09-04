@@ -12,11 +12,44 @@
 	"trinkets.slot.chest.cape": "Плащ",
 	"trinkets.slot.legs.belt": "Пояс",
 	"trinkets.slot.feet.aglet": "Ошнурівка",
-	"trinkets.slot.feet.shoes": "Взуття",
+	"trinkets.slot.feet.shoes": "Узуття",
 	"trinkets.slot.hand.glove": "Рукавиця",
 	"trinkets.slot.offhand.glove": "Рукавиця",
 	"trinkets.slot.hand.ring": "Кільце",
 	"trinkets.slot.offhand.ring": "Кільце",
+
+	"button.trinkets.toggle_visiblity": "Перемкнути видимість",
+	"button.trinkets.switch_to_cosmetic_slots": "Перейти до слотів косметики",
+	"button.trinkets.switch_to_regular_slots": "Перейти до звичних слотів",
+	"text.trinkets.slot.cosmetic_slot": "(Косметика)",
+
+	"ui_style.trinkets.default": "Усталений",
+	"ui_style.trinkets.grouped_sidebar": "Згрупована бокова панель",
+	"ui_style.trinkets.flat_sidebar": "Пласка бокова панель",
+
+	"screen.trinkets.config": "Налаштування Trinkets Updated",
+	"config.trinkets.render_first_person_hand": "Дрібнички від першого лиця",
+	"config.trinkets.render_first_person_hand.desc": "Перемикає видимість дрібничок від першого лиця на руці.",
+	"config.trinkets.show_slots_indicator": "Показати вказівник слотів",
+	"config.trinkets.show_slots_indicator.desc": "Перемикає видимість указівника для слотів, які наразі не показані й потребують наведення курсора на інші слоти.",
+	"config.trinkets.show_slot_tooltip": "Показувати назву слота",
+	"config.trinkets.show_slot_tooltip.desc": "Перемикає видимість підказки при наведенні курсора на слоти для дрібничок.",
+	"config.trinkets.ui_style": "Стиль",
+	"config.trinkets.ui_style.desc": "Вибір стилю інтерфейсу!",
+	"config.trinkets.sidebar_heigth": "Макс. висота бічної панелі",
+	"config.trinkets.sidebar_heigth.desc": "Керує максимальною висотою, яку можуть займати слоти на боковій панелі, перш ніж переміститися до наступного стовпця.",
+	"config.trinkets.show_item_tooltip": "Показувати підказку предмета",
+	"config.trinkets.show_item_tooltip.desc": "Перемикає видимість підказки, що вказує слот, у який можна помістити предмет.",
+	"config.trinkets.highlight_compatible_slot": "Підсвічувати сумісний слот",
+	"config.trinkets.highlight_compatible_slot.desc": "Додає просте підсвічування слотів для дрібничок, якщо предмет, який гравець тримає на курсорі, сумісний із ними.",
+
+	"config.trinkets.category.gameplay": "Ігровий процес (керується сервером)",
+
+	"config.trinkets.equipment_hiding": "Приховування спорядження",
+	"config.trinkets.equipment_hiding.desc": "Перемикає здатність приховувати спорядження без зміни того, як це працює в іншому випадку.",
+	"config.trinkets.cosmetic_slots": "Косметичні слотів",
+	"config.trinkets.cosmetic_slots.desc": "Додає додаткові косметичні слоти для всіх звичних слотів дрібничок. Вони мають лише візуальний характер і не застосовують жодних ефектів.",
+	
 	"modmenu.descriptionTranslation.trinkets": "Додає керовану даними систему аксесуарів для Minecraft.",
 	"fml.menu.mods.info.description.trinkets": "Додає керовану даними систему аксесуарів для Minecraft."
 }
