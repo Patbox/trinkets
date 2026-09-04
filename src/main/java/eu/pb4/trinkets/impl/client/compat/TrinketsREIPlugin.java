@@ -1,8 +1,9 @@
 package eu.pb4.trinkets.impl.client.compat;
-/*
-import eu.pb4.trinkets.impl.TrinketScreen;
+
 import java.util.List;
 import java.util.stream.Collectors;
+
+import eu.pb4.trinkets.impl.client.TrinketScreen;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
 import me.shedaniel.rei.api.client.registry.screen.ExclusionZones;
@@ -22,4 +23,3 @@ public class TrinketsREIPlugin implements REIClientPlugin {
 		});
 	}
 }
-*/

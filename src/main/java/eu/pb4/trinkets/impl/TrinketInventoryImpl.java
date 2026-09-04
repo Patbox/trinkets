@@ -6,6 +6,8 @@ import eu.pb4.trinkets.api.SlotType;
 import eu.pb4.trinkets.api.TrinketAttachment;
 import eu.pb4.trinkets.api.TrinketInventory;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.api.event.TrinketModifySlotCountCallback;
+import eu.pb4.trinkets.api.event.TrinketSlotCountChangedCallback;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -287,13 +289,18 @@ public final class TrinketInventoryImpl implements TrinketInventory {
         this.markUpdate();
     }
 
-    // Persistent
-    public void addModifiers(AttributeModifier modifier) {
+    @Override
+    public void addSlotCountModifier(AttributeModifier modifier) {
+        var attr = this.modifiers.get(modifier.id());
+        if (attr != null && this.persistentModifiers.contains(attr)) {
+            this.removeSlotCountModifier(attr);
+        }
         this.addModifierInternal(modifier);
         this.persistentModifiers.add(modifier);
     }
 
-    public void removeModifier(Identifier identifier) {
+    @Override
+    public void removeSlotCountModifier(Identifier identifier) {
         AttributeModifier modifier = this.modifiers.remove(identifier);
         if (modifier != null) {
             this.persistentModifiers.remove(modifier);
@@ -302,11 +309,17 @@ public final class TrinketInventoryImpl implements TrinketInventory {
         }
     }
 
+    @Override
+    @Nullable
+    public AttributeModifier getSlotCountModifier(Identifier identifier) {
+        return this.modifiers.get(identifier);
+    }
+
     public void clearModifiers() {
         java.util.Iterator<Identifier> iter = this.getModifiers().keySet().iterator();
 
         while (iter.hasNext()) {
-            this.removeModifier(iter.next());
+            this.removeSlotCountModifier(iter.next());
         }
     }
 
@@ -316,7 +329,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 
     public void clearCachedModifiers() {
         for (AttributeModifier cachedModifier : this.cachedModifiers) {
-            this.removeModifier(cachedModifier.id());
+            this.removeSlotCountModifier(cachedModifier.id());
         }
         this.cachedModifiers.clear();
     }
@@ -324,6 +337,12 @@ public final class TrinketInventoryImpl implements TrinketInventory {
     public void setSlotCount(int value) {
         this.forcedSlotCount = value;
         this.markUpdate();
+        this.update();
+    }
+
+    @Override
+    public void updateSlotCount() {
+        this.update = true;
         this.update();
     }
 
@@ -381,6 +400,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 
                 this.updateSlotAccess();
                 this.updateSizeCallback.callSizeChanged(this, oldSize, this.size);
+                TrinketSlotCountChangedCallback.EVENT.invoker().onTrinketSlotCountChanged(this.attachment.getEntity(), this.slotType, this, oldSize, this.size);
             } else if (this.cosmeticStacks.size() != this.stacks.size()) {
                 this.updateCosmeticSlots();
                 this.updateSlotAccess();
@@ -449,7 +469,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
             size *= mod.amount();
         }
 
-        return (int) size;
+        return TrinketModifySlotCountCallback.EVENT.invoker().modifySlotCount(this.attachment.getEntity(), this.slotType, this, (int) size);
     }
 
     @SuppressWarnings("removal")
@@ -466,7 +486,7 @@ public final class TrinketInventoryImpl implements TrinketInventory {
         this.persistentModifiers.clear();
         other.modifiers.forEach((uuid, modifier) -> this.addModifierInternal(modifier));
         for (AttributeModifier persistentModifier : other.persistentModifiers) {
-            this.addModifiers(persistentModifier);
+            this.addSlotCountModifier(persistentModifier);
         }
         this.forcedSlotCount = other.forcedSlotCount;
         this.update = true;
@@ -515,8 +535,9 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 
     public void readData(ValueInput value, Consumer<ItemStack> dropped) {
         this.clearModifiers();
+        this.clearContent();
 
-        value.listOrEmpty("persistent_modifiers", AttributeModifier.CODEC).forEach(this::addModifiers);
+        value.listOrEmpty("persistent_modifiers", AttributeModifier.CODEC).forEach(this::addSlotCountModifier);
         value.listOrEmpty("cached_modifiers", AttributeModifier.CODEC).forEach(m -> {
             this.cachedModifiers.add(m);
             this.addModifierInternal(m);
@@ -531,10 +552,11 @@ public final class TrinketInventoryImpl implements TrinketInventory {
 
     public void readDataV0(ValueInput value, Consumer<ItemStack> dropped) {
         this.clearModifiers();
+        this.clearContent();
 
         var metadata = value.child("Metadata");
         if (metadata.isPresent()) {
-            value.listOrEmpty("PersistentModifiers", AttributeModifier.CODEC).forEach(this::addModifiers);
+            value.listOrEmpty("PersistentModifiers", AttributeModifier.CODEC).forEach(this::addSlotCountModifier);
             value.listOrEmpty("CachedModifiers", AttributeModifier.CODEC).forEach(m -> {
                 this.cachedModifiers.add(m);
                 this.addModifierInternal(m);

@@ -160,6 +160,7 @@ public class SlotLoader extends SimplePreparableReloadListener<Map<String, Group
 
 		void read(JsonObject jsonObject) {
 			boolean replace = GsonHelper.getAsBoolean(jsonObject, "replace", false);
+			var override = GsonHelper.getAsBoolean(jsonObject, "override", false);
 
 			order = GsonHelper.getAsInt(jsonObject, "order", order);
 

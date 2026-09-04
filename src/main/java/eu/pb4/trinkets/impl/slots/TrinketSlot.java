@@ -10,7 +10,9 @@ import eu.pb4.trinkets.api.event.TrinketSlotCompatibilityCallback;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.Internal
 public interface TrinketSlot {
 
     static boolean canInsert(ItemStack stack, TrinketSlotAccess slotRef, LivingEntity entity) {

@@ -17,6 +17,8 @@
 	"trinkets.slot.offhand.glove": "Glove",
 	"trinkets.slot.hand.ring": "Ring",
 	"trinkets.slot.offhand.ring": "Ring",
+	"trinkets.slot.generic.charm": "Charm",
+	"trinkets.slot.generic.trinket": "Trinket",
 
 	"button.trinkets.toggle_visiblity": "Toggle Visibility",
 	"button.trinkets.switch_to_cosmetic_slots": "Switch to Cosmetic Slots",
@@ -48,5 +50,12 @@
 	"config.trinkets.equipment_hiding": "Equipment Hiding",
 	"config.trinkets.equipment_hiding.desc": "Toggles ability to hide equipment visually without changing how it works otherwise",
 	"config.trinkets.cosmetic_slots": "Cosmetic Slots",
-	"config.trinkets.cosmetic_slots.desc": "Adds extra cosmetic slots for all regular Trinket slots. They are visual only and won't apply any effects."
+	"config.trinkets.cosmetic_slots.desc": "Adds extra cosmetic slots for all regular Trinket slots. They are visual only and won't apply any effects.",
+
+	"commands.trinkets.modifier.add.success": "Added slot count modifier %s to %s slots for entity %s",
+	"commands.trinkets.modifier.remove.success": "Removed modifier %s from %s slots for entity %s",
+	"commands.trinkets.modifier.value.get.success": "The value of slot count modifier %s of %s slots for entity %s is %s",
+	"commands.trinkets.inventory_does_not_exist": "Inventory '%s' does not exist!",
+	"commands.trinkets.not_a_living_entity": "Not a living entity!",
+	"commands.trinkets.slot_does_not_exit": "Slot '%s' at %s offset does not exist!"
 }

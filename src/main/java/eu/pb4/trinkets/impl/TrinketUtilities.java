@@ -7,6 +7,7 @@ import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.api.component.TrinketDataComponents;
 import eu.pb4.trinkets.api.component.TrinketsAttributeModifiersComponent;
 import eu.pb4.trinkets.api.event.TrinketEquipCallback;
+import eu.pb4.trinkets.api.event.TrinketEquipmentAttributeModifiersCallback;
 import eu.pb4.trinkets.api.event.TrinketEquipmentChangedCallback;
 import eu.pb4.trinkets.api.event.TrinketUnequipCallback;
 import eu.pb4.trinkets.impl.slots.TrinketSlot;
@@ -55,6 +56,7 @@ public class TrinketUtilities {
         modifiers.forEach(slot, consumer);
 
         TrinketCallback.getCallback(stack).forEachTrinketModifier(stack, slot, entity, SlotAttributes.getIdentifier(slot), consumer);
+        TrinketEquipmentAttributeModifiersCallback.EVENT.invoker().forEachTrinketModifier(stack, slot, entity, SlotAttributes.getIdentifier(slot), consumer);
 
         EnchantmentHelper.runIterationOnItem(stack, (enchantment, level) -> enchantment.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES).forEach((effect) -> {
             if (isEnchantmentTrinketCompatible(enchantment, slot)) {
@@ -69,6 +71,7 @@ public class TrinketUtilities {
         modifiers.forEach(slot, consumer);
 
         TrinketCallback.getCallback(stack).forEachTrinketModifier(stack, slot, entity, SlotAttributes.getIdentifier(slot), (a, b) -> consumer.accept(a, b, ItemAttributeModifiers.Display.attributeModifiers()));
+        TrinketEquipmentAttributeModifiersCallback.EVENT.invoker().forEachTrinketModifier(stack, slot, entity, SlotAttributes.getIdentifier(slot), (a, b) -> consumer.accept(a, b, ItemAttributeModifiers.Display.attributeModifiers()));
 
         EnchantmentHelper.runIterationOnItem(stack, (enchantment, level) -> enchantment.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES).forEach((effect) -> {
             if (isEnchantmentTrinketCompatible(enchantment, slot)) {

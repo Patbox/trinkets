@@ -43,11 +43,14 @@
       "eu.pb4.trinkets.impl.client.TrinketsClient"
     ],
     "modmenu": [ "eu.pb4.trinkets.impl.platform.fabric.ModMenuCompatibility" ],
-    "rei_client_": [
+    "rei_client": [
       "eu.pb4.trinkets.impl.client.compat.TrinketsREIPlugin"
     ],
-    "emi_": [
-      "eu.pb4.trinkets.impl.client.compat.TrinketsEmiPlugin"
+    "jei_mod_plugin": [
+      "eu.pb4.trinkets.impl.client.compat.TrinketsJEIPlugin"
+    ],
+    "rrv_client": [
+      "eu.pb4.trinkets.impl.client.compat.TrinketsRRVPlugin"
     ]
   },
   "accessWidener": "trinkets.classtweaker",

@@ -1,21 +1,21 @@
-- Added support for toggling visibility of Trinkets:
-  - It's disabled by default and needs to be enabled by the server to work. Toggling it on client alone (when not in singleplayer) will do nothing.
-  - Trinkets will be disabled both locally and for any other player seeing you.
-  - This was a requested feature, and while I originally though about making it an addon, decided to just add it direct as default disabled thing.
-- Added support for decorative / cosmetic slots:
-  - It's disabled by default and needs to be enabled by the server to work. Toggling it on client alone (when not in singleplayer) will do nothing.
-  - Trinkets in this slot won't apply any gameplay effect, instead being just visual.
-  - Trinkets in cosmetic slots will override rendering of the one in regular slot.
-  - This was a requested feature, and while I originally though about making it an addon, decided to just add it direct as default disabled thing.
-- Reworked Trinket slot logic to no split the slot ids from visual position of slots:
-  - This allows more flexibility / future changes, while preventing slot id desyncs.
-  - Additionally changed the Force Sidebar option to a Style selector with these options:
-    - Default - Classic style of Trinkets, equal to old `OFF` value,
-    - Grouped Sidebar - Sidebar that keeps the slot groups, equal to old `ON` value,
-    - Flat Sidebar - Sidebar, but all slots are visible at all times (NEW!).
-- Added `trinkets:any_trinket` predicate type for slot definitions.
-- Added option to highlight compatible slots (disabled by default).
-- Added `TrinketCanUnequipCallback`, matching the equip based one (or canUnequip on TrinketCallback).
-- The data driven rendering is now part of the api, allowing data-generation of related files as well as easy way to add custom logic to it.
-- Lanterns now have a default visuals when put in Belt slot.
-- Bunch of bugfixes, including a crash™
+- Added new events:
+ - TrinketModifySlotCountCallback - Allows you to easily modify the Trinket inventory's slot count dynamically. Server only!
+ - TrinketSlotCountChangedCallback - Triggered after slot count was changed!
+ - TrinketEquipmentAttributeModifiersCallback - Allows to provide additional attributes for a given trinket item.
+- New TrinketInventory methods:
+  - #updateSlotCount() - Triggers update of the amount of available slots for given inventory.
+  - #addSlotCountModifier(AttributeModifier) - Adds slot count attribute modifier.
+  - #removeSlotCountModifier(Identifier) - Removes slot count attribute modifier.
+- New TrinketSlotUtils class with these utility methods.
+ - #createSlot(TrinketSlotAccess access, int x, int y) - Creates standalone slot for given slot access.
+ - #mayPlace(TrinketSlotAccess, ItemStack) - If item can be inserted into given slot.
+ - #mayPickup(TrinketSlotAccess, ItemStack) - If item can be picked up from given slot.
+ - #isSlotCompatible(TrinketSlotAccess, ItemStack) - Checks if given slot is logically compatible with stack.
+ - #isEquipable(TrinketSlotAccess, ItemStack) - Checks if given stack can be equipped.
+- Added `/trinkets <entity> <slot> modifiers` command, allowing you to easily modify amount of slots at runtime.
+- Added compatibility with Just Enough Items, Roughly Enough Items and Reliable Recipe Viewer's exclusion areas.
+- Fixed removing NBT data with /data command not clearing out Trinkets slots correctly.
+- Added support for exclusion areas for Just Enough Items and Roughly Enough Items.
+- Deprecate TrinketRendererRegistry#getRenderer for removal.
+- Added TrinketRendererRegistry#registerRenderer variant that take a Function<EntityRendererProvider.Context, TrinketRenderer> as it's argument.
+- Command text is now translatable.

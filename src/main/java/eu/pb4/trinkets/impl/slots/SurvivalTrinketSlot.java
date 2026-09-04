@@ -36,10 +36,20 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 	private final TrinketInventoryImpl trinket;
 	private final BooleanSupplier isDecorative;
 
+	@Deprecated(forRemoval = true)
 	public SurvivalTrinketSlot(TrinketInventoryImpl inventory, int slot, int x, int y,
 							   Predicate<TrinketSlot> visibilityPredicate,
 							   boolean renderAfterRegularSlots,
 							   LivingEntity owner) {
+		this(inventory, slot, x, y, visibilityPredicate, renderAfterRegularSlots, owner,
+				owner instanceof Player player ? () -> ((TrinketInventoryMenu) player.inventoryMenu).trinkets$isCosmeticMode() && inventory.hasCosmeticItems()
+						: () -> false);
+	}
+
+	public SurvivalTrinketSlot(TrinketInventoryImpl inventory, int slot, int x, int y,
+							   Predicate<TrinketSlot> visibilityPredicate,
+							   boolean renderAfterRegularSlots,
+							   LivingEntity owner, BooleanSupplier isDecorative) {
 		super(inventory, slot, x, y);
 		this.trinket = inventory;
 		this.group = SlotGroup.getEntityGroups(owner).get(inventory.slotType().group());
@@ -49,7 +59,7 @@ public class SurvivalTrinketSlot extends Slot implements TrinketSlot {
 		this.renderAfterRegularSlots = renderAfterRegularSlots;
 		this.ref = inventory.getSlotAccess(this.slot);
 		this.owner = owner;
-		this.isDecorative = owner instanceof Player player ? () -> ((TrinketInventoryMenu) player.inventoryMenu).trinkets$isCosmeticMode() && inventory.hasCosmeticItems() : () -> false;
+		this.isDecorative = isDecorative;
 	}
 
 	@Override

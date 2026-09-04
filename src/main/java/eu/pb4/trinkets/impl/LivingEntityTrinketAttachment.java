@@ -2,6 +2,7 @@ package eu.pb4.trinkets.impl;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import eu.pb4.trinkets.api.*;
 import eu.pb4.trinkets.api.callback.TrinketCallback;
 import eu.pb4.trinkets.impl.platform.CommonAbstraction;
@@ -235,14 +236,14 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     public void addModifiers(String slotId, List<AttributeModifier> modifiers) {
         var inventory = this.getInventory(slotId);
         if (inventory != null) {
-            modifiers.forEach(inventory::addModifiers);
+            modifiers.forEach(inventory::addSlotCountModifier);
         }
     }
 
     public void removeModifiers(String slotId, List<AttributeModifier> modifiers) {
         var inventory = this.getInventory(slotId);
         if (inventory != null) {
-            modifiers.forEach(id -> inventory.removeModifier(id.id()));
+            modifiers.forEach(id -> inventory.removeSlotCountModifier(id.id()));
         }
     }
 
@@ -334,6 +335,8 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                 }
             }
         } else if (version == 1) {
+            var unhandled = new HashSet<>(this.inventory.keySet());
+
             for (var key : CommonAbstraction.INSTANCE.keys(view)) {
                 if (key.equals("__version")) {
                     continue;
@@ -348,6 +351,14 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                     ContainerSavingHelper.loadAllItems(value, dropped::add);
                     ContainerSavingHelper.loadAllItems("cosmetic", value, dropped::add);
                 }
+
+                unhandled.remove(key);
+            }
+
+            for (var key : unhandled) {
+                var inv = this.inventory.get(key);
+                inv.clearContent();
+                inv.clearModifiers();
             }
         }
 
