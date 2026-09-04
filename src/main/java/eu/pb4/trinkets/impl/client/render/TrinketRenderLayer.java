@@ -1,7 +1,9 @@
 package eu.pb4.trinkets.impl.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import eu.pb4.trinkets.api.client.TrinketRenderer;
 import eu.pb4.trinkets.api.client.TrinketRendererRegistry;
+import eu.pb4.trinkets.api.client.renderer.element.TrinketRenderElement;
 import eu.pb4.trinkets.impl.LivingEntityTrinketAttachment;
 import eu.pb4.trinkets.impl.TrinketsConfig;
 import net.minecraft.client.Minecraft;
@@ -21,17 +23,26 @@ import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends EntityModel<T>> extends RenderLayer<T, M> {
+    public static final Map<Item, Function<EntityRendererProvider.Context, TrinketRenderer>> RENDERERS = new IdentityHashMap<>();
+
     private final ItemModelResolver itemModelResolver;
     private final BlockModelResolver blockModelResolver;
+    private final Map<Item, TrinketRenderer> codeRenderers = new HashMap<>();
 
     public TrinketRenderLayer(RenderLayerParent<T, M> context, EntityRendererProvider.Context ctx) {
         super(context);
         this.itemModelResolver = ctx.getItemModelResolver();
         this.blockModelResolver = ctx.getBlockModelResolver();
+        RENDERERS.forEach((item, renderer) -> this.codeRenderers.put(item, renderer.apply(ctx)));
     }
 
     public void extract(LivingEntity livingEntity, LivingEntityRenderState entityState, float tickDelta, TrinketEntityRenderState state) {
@@ -44,9 +55,9 @@ public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends Ent
         var trinketRendererState = new TrinketRenderStateFullImpl(Minecraft.getInstance(), this.itemModelResolver, this.blockModelResolver, state);
 
         component.forEachVisible((slotReference, stack) -> {
-            var renderer = TrinketRendererRegistry.getRenderer(stack.getItem());
-            if (renderer.isPresent()) {
-                items.add(new TrinketEntityRenderState.CodeRenderCall(slotReference, stack, renderer.get()));
+            var renderer = this.codeRenderers.get(stack.getItem());
+            if (renderer != null) {
+                items.add(new TrinketEntityRenderState.CodeRenderCall(slotReference, stack, renderer));
             } else {
                 for (var baked : ClientTrinketsManager.INSTANCE.getResolved(stack)) {
                     baked.apply(livingEntity, stack, slotReference, trinketRendererState.minecraft().level, trinketRendererState, entityState);
@@ -106,9 +117,9 @@ public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends Ent
             var mc = Minecraft.getInstance();
 
             component.forEachVisible((slotReference, stack) -> {
-                var renderer = TrinketRendererRegistry.getRenderer(stack.getItem());
-                if (renderer.isPresent()) {
-                    renderer.get().submitFirstPersonRightArm(stack, slotReference, model, model.rightArm,
+                var renderer = this.codeRenderers.get(stack.getItem());
+                if (renderer != null) {
+                    renderer.submitFirstPersonRightArm(stack, slotReference, model, model.rightArm,
                             poseStack, submitNodeCollector, light, player, isMainHand);
                 } else {
                     for (var baked : ClientTrinketsManager.INSTANCE.getResolved(stack)) {
@@ -126,9 +137,9 @@ public class TrinketRenderLayer<T extends LivingEntityRenderState, M extends Ent
             var trinketRendererState = new TrinketRenderStateHandImpl(Minecraft.getInstance(), this.itemModelResolver, this.blockModelResolver,
                     o -> submitAttached(model, PartNames.LEFT_ARM, poseStack, submitNodeCollector, light, 0, o));
             component.forEachVisible((slotReference, stack) -> {
-                var renderer = TrinketRendererRegistry.getRenderer(stack.getItem());
-                if (renderer.isPresent()) {
-                    renderer.get().submitFirstPersonLeftArm(stack, slotReference, model, model.leftArm,
+                var renderer = this.codeRenderers.get(stack.getItem());
+                if (renderer != null) {
+                    renderer.submitFirstPersonLeftArm(stack, slotReference, model, model.leftArm,
                             poseStack, submitNodeCollector, light, player, isMainHand);
                 } else {
                     for (var baked : ClientTrinketsManager.INSTANCE.getResolved(stack)) {

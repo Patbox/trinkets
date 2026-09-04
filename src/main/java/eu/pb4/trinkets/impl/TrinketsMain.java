@@ -2,7 +2,9 @@ package eu.pb4.trinkets.impl;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import dev.yumi.mc.core.api.ModContainer;
 import dev.yumi.mc.core.api.entrypoint.ModInitializer;
@@ -29,6 +31,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
@@ -159,9 +162,17 @@ public class TrinketsMain implements ModInitializer {
                                                         )
                                                 )
                                         )
+                                        .then(literal("modifier")
+                                                .then(literal("add").then(argument("id", IdentifierArgument.id()).then(argument("value", DoubleArgumentType.doubleArg())
+                                                        .then(literal("add_value").executes(ctx -> addModifierCommand(ctx, AttributeModifier.Operation.ADD_VALUE)))
+                                                        .then(literal("add_multiplied_total").executes(ctx -> addModifierCommand(ctx, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)))
+                                                        .then(literal("add_multiplied_base").executes(ctx -> addModifierCommand(ctx, AttributeModifier.Operation.ADD_MULTIPLIED_BASE)))
+                                                )))
+                                                .then(literal("remove").then(argument("id", IdentifierArgument.id()).executes(TrinketsMain::removeModifierCommand)))
+                                                .then(literal("get").then(argument("id", IdentifierArgument.id()).executes(TrinketsMain::getModifierCommand)))
+                                        )
                                 )
                         )
-
                 ));
 
 
@@ -206,6 +217,82 @@ public class TrinketsMain implements ModInitializer {
         CommonAbstraction.INSTANCE.registerMobConversion(LivingEntityTrinketAttachment::copyData);
     }
 
+    private static int addModifierCommand(CommandContext<CommandSourceStack> context, AttributeModifier.Operation operation) throws CommandSyntaxException {
+        String slot = IdentifierArgument.getId(context, "slot").getPath();
+        Identifier identifier = IdentifierArgument.getId(context, "id");
+        double amount = DoubleArgumentType.getDouble(context, "value");
+
+        if (EntityArgument.getEntity(context, "entity") instanceof LivingEntity livingEntity) {
+            TrinketAttachment comp = TrinketsApi.getAttachment(livingEntity);
+            var inv = comp.getInventory(slot);
+            if (inv != null) {
+                inv.addSlotCountModifier(new AttributeModifier(identifier, amount, operation));
+                context.getSource().sendSuccess(
+                        () -> Component.translatable(
+                                "commands.trinkets.modifier.add.success", Component.translationArg(identifier), inv.slotType().getTranslation(), livingEntity.getName()
+                        ),
+                        false
+                );
+                return Command.SINGLE_SUCCESS;
+            } else {
+                context.getSource().sendFailure(Component.translatable("commands.trinkets.inventory_does_not_exist", slot));
+            }
+        } else {
+            context.getSource().sendFailure(Component.translatable("commands.trinkets.not_a_living_entity"));
+        }
+        return 0;
+    }
+
+    private static int removeModifierCommand(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        String slot = IdentifierArgument.getId(context, "slot").getPath();
+        Identifier identifier = IdentifierArgument.getId(context, "id");
+
+        if (EntityArgument.getEntity(context, "entity") instanceof LivingEntity livingEntity) {
+            TrinketAttachment comp = TrinketsApi.getAttachment(livingEntity);
+            var inv = comp.getInventory(slot);
+            if (inv != null) {
+                inv.removeSlotCountModifier(identifier);
+                context.getSource().sendSuccess(
+                        () -> Component.translatable(
+                                "commands.trinkets.modifier.remove.success", Component.translationArg(identifier), inv.slotType().getTranslation(), livingEntity.getName()
+                        ),
+                        false
+                );
+                return Command.SINGLE_SUCCESS;
+            } else {
+                context.getSource().sendFailure(Component.translatable("commands.trinkets.inventory_does_not_exist", slot));
+            }
+        } else {
+            context.getSource().sendFailure(Component.translatable("commands.trinkets.not_a_living_entity"));
+        }
+        return 0;
+    }
+
+    private static int getModifierCommand(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        String slot = IdentifierArgument.getId(context, "slot").getPath();
+        Identifier identifier = IdentifierArgument.getId(context, "id");
+
+        if (EntityArgument.getEntity(context, "entity") instanceof LivingEntity livingEntity) {
+            TrinketAttachment comp = TrinketsApi.getAttachment(livingEntity);
+            var inv = comp.getInventory(slot);
+            if (inv != null) {
+                context.getSource().sendSuccess(
+                        () -> Component.translatable(
+                                "commands.trinkets.modifier.value.get.success", Component.translationArg(identifier), inv.slotType().getTranslation(), livingEntity.getName(),
+                                inv.getSlotCountModifier(identifier) != null ? inv.getSlotCountModifier(identifier).amount() : 0
+                        ),
+                        false
+                );
+                return Command.SINGLE_SUCCESS;
+            } else {
+                context.getSource().sendFailure(Component.translatable("commands.trinkets.inventory_does_not_exist", slot));
+            }
+        } else {
+            context.getSource().sendFailure(Component.translatable("commands.trinkets.not_a_living_entity"));
+        }
+        return 0;
+    }
+
     private static int setTrinketSlotCommand(CommandContext<CommandSourceStack> context, int amount) {
         try {
             String slot = IdentifierArgument.getId(context, "slot").getPath();
@@ -217,10 +304,10 @@ public class TrinketsMain implements ModInitializer {
                 if (access != null && access.set(stack.createItemStack(amount))) {
                     return Command.SINGLE_SUCCESS;
                 } else {
-                    context.getSource().sendFailure(Component.literal("Slot '" + slot + "' at " + offset + " offset does not exist!"));
+                    context.getSource().sendFailure(Component.translatable("commands.trinkets.slot_does_not_exit", slot, offset));
                 }
             } else {
-                context.getSource().sendFailure(Component.literal("Not a living entity!"));
+                context.getSource().sendFailure(Component.translatable("commands.trinkets.not_a_living_entity"));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -243,10 +330,10 @@ public class TrinketsMain implements ModInitializer {
                         player.connection.send(new ClientboundCustomPayloadPacket(new SyncInventoryPayload(player.getId(), Map.of(), Map.of(), Map.of(slot, access.copyHiddenSlots()))));
                     }
                 } else {
-                    context.getSource().sendFailure(Component.literal("Slot '" + slot + "' at " + offset + " offset does not exist!"));
+                    context.getSource().sendFailure(Component.translatable("commands.trinkets.slot_does_not_exit", slot, offset));
                 }
             } else {
-                context.getSource().sendFailure(Component.literal("Not a living entity!"));
+                context.getSource().sendFailure(Component.translatable("commands.trinkets.not_a_living_entity"));
             }
         } catch (Exception e) {
             e.printStackTrace();

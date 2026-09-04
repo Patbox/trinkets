@@ -39,13 +39,11 @@ public class LegacyTrinketSlotStateImpl implements LegacyTrinketSlotState, Clien
     private int groupCount = 0;
 
     private final AbstractContainerMenu menu;
-    private final LivingEntityTrinketAttachment trinkets;
 
     public LegacyTrinketSlotStateImpl(LivingEntity owner, AbstractContainerMenu menu, LivingEntityTrinketAttachment trinkets, List<TrinketInventory> sortedInventories, boolean forceSidebar) {
         this.forceSidebar = forceSidebar;
         this.owner = owner;
         this.menu = menu;
-        this.trinkets = trinkets;
 
         Map<String, SlotGroup> groups = trinkets.getGroups();
         groupPos.clear();

@@ -12,12 +12,22 @@ import net.minecraft.util.ExtraCodecs;
 import java.util.List;
 
 @Environment(EnvType.CLIENT)
-public record IfSlotTrinketElement(String slot, List<TrinketRenderElement> then, List<TrinketRenderElement> otherwise) implements TrinketRenderElement {
+public record IfSlotTrinketElement(List<String> slots, List<TrinketRenderElement> then, List<TrinketRenderElement> otherwise) implements TrinketRenderElement {
     public static final MapCodec<IfSlotTrinketElement> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            Codec.STRING.fieldOf("slot").forGetter(IfSlotTrinketElement::slot),
+            ExtraCodecs.compactListCodec(Codec.STRING).fieldOf("slot").forGetter(IfSlotTrinketElement::slots),
             ExtraCodecs.compactListCodec(TrinketRenderElements.CODEC).optionalFieldOf("then", List.of()).forGetter(IfSlotTrinketElement::then),
             ExtraCodecs.compactListCodec(TrinketRenderElements.CODEC).optionalFieldOf("else", List.of()).forGetter(IfSlotTrinketElement::otherwise)
     ).apply(instance, IfSlotTrinketElement::new));
+
+    public IfSlotTrinketElement(String slot, List<TrinketRenderElement> then, List<TrinketRenderElement> otherwise) {
+        this(List.of(slot), then, otherwise);
+    }
+
+    @Deprecated(forRemoval = true)
+    public String slot() {
+        return this.slots.isEmpty() ? "" : this.slots.getFirst();
+    }
+
 
     @Override
     public MapCodec<? extends TrinketRenderElement> type() {
@@ -30,7 +40,7 @@ public record IfSlotTrinketElement(String slot, List<TrinketRenderElement> then,
         var otherwise = this.otherwise.stream().map(r -> r.bake(context)).toList();
 
         return (owner, item, access, level, ctx, state) -> {
-            if (this.slot.equals(access.slotType().getId())) {
+            if (this.slots.contains(access.slotType().getId())) {
                 for (var r : then) {
                     r.apply(owner, item, access, level, ctx, state);
                 }

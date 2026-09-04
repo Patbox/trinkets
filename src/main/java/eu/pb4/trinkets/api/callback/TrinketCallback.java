@@ -145,7 +145,7 @@ public interface TrinketCallback {
      * should be considered
      *
      * @param stack ItemStack being polled for modifiers
-     * @param slot the {@link TrinketSlotAccess} for the {@link TrinketInventoryImpl} the Trinket is relevant to
+     * @param slot the {@link TrinketSlotAccess} for the {@link eu.pb4.trinkets.api.TrinketInventory} the Trinket is relevant to
      * @param entity the LivingEntity holding the Trinket
      * @param slotIdentifier The Identifier to use for creating attributes
      * @param consumer the consumer of attributes

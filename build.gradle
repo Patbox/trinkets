@@ -33,6 +33,26 @@ repositories {
 			includeGroupAndSubgroups("net.minecraftforge")
 		}
 	}
+
+	maven {url "https://maven.shedaniel.me/" }
+
+	maven {
+		// location of the maven that hosts JEI files since January 2023
+		name = "Jared's maven"
+		url = "https://maven.blamejared.com/"
+	}
+
+	exclusiveContent {
+		forRepository {
+			maven {
+				name = "Cassian's Maven"
+				url = uri("https://maven.cassian.cc")
+			}
+		}
+		filter {
+			includeGroupAndSubgroups("cc.cassian")
+		}
+	}
 }
 
 sourceSets {
@@ -89,6 +109,13 @@ dependencies {
 
 	compileOnly localRuntime("net.fabricmc:fabric-loader:${project.loader_version}")
 
+	compileOnly ("me.shedaniel:RoughlyEnoughItems-api:$rei_version") 
+	compileOnly("mezz.jei:jei-${project.jei_minecraft_version}-fabric-api:${project.jei_version}")
+	compileOnly("cc.cassian.rrv:reliable-recipe-viewer-fabric:${project.rrv_version}") {
+		exclude group: "net.fabricmc.fabric-api"
+		exclude group: "net.fabricmc"
+	}
+
 	// Mod dependencies
 	fabricCompileOnly testmodCompileOnly(localRuntime("net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"))
 	fabricCompileOnly localRuntime("com.terraformersmc:modmenu:${project.mod_menu_version}")
@@ -96,6 +123,7 @@ dependencies {
 	neoforgeCompileOnly("net.neoforged:neoforge:${project.neoforge_version}:universal")
 	neoforgeCompileOnly("net.neoforged.fancymodloader:loader:${project.neoforge_loader_version}")
 
+	neoforgeCompileOnly "me.shedaniel:RoughlyEnoughItems-api-neoforge:$rei_version"
 
 	// Optional mod dependencies
 	/*compileOnly("me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}") {

@@ -15,6 +15,7 @@ issueTrackerURL = "https://github.com/Patbox/Trinkets/issues"
 	displayURL = "https://pb4.eu"
 	issueTrackerURL = "https://github.com/Patbox/Trinkets/issues"
 	updateJSONURL = "https://api.modrinth.com/updates/XaT8sLP6/forge_updates.json"
+	rrv_client = "eu.pb4.trinkets.impl.client.compat.TrinketsRRVPlugin"
 
 [[accessTransformers]]
 	file = "META-INF/accesstransformer.cfg"

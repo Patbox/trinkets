@@ -92,7 +92,9 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
             for (int i = 0; i < inv.getContainerSize(); i++) {
                 var info = this.trinketsSlotState.getSlotConfig(baseIndex, inv, i);
                 baseIndex++;
-                this.addSlot(new SurvivalTrinketSlot(inv, i, info.x(), info.y(), info.isVisible(), info.renderAfterRegularSlots(), owner));
+                this.addSlot(new SurvivalTrinketSlot(inv, i, info.x(), info.y(), info.isVisible(), info.renderAfterRegularSlots(), owner,
+                        () -> this.trinkets$isCosmeticMode() && inv.hasCosmeticItems()
+                ));
             }
 
             this.hasCosmeticSlots |= inv.hasCosmeticItems();

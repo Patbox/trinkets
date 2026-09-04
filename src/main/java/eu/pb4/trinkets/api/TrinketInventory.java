@@ -1,6 +1,8 @@
 package eu.pb4.trinkets.api;
 
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
@@ -31,6 +33,20 @@ public interface TrinketInventory extends Container {
         return true;
     }
 
+    void updateSlotCount();
+
+    void addSlotCountModifier(AttributeModifier modifier);
+
+    void removeSlotCountModifier(Identifier identifier);
+
+    default void removeSlotCountModifier(AttributeModifier modifier) {
+        this.removeSlotCountModifier(modifier.id());
+    }
+
+    @Nullable
+    AttributeModifier getSlotCountModifier(Identifier identifier);
+
     @Deprecated(forRemoval = true)
     void copyFrom(TrinketInventory value);
+
 }
