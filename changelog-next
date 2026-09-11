@@ -1,3 +1,5 @@
-- Updated to 26.3-pre-2.
-- No changes on the api front.
-- NeoForge version might not work.
+- Updated to 26.3 (rc-1).
+- Added TrinketsAttachment#getSlotAccess(String slotId, int index, boolean cosmetic) - Allows to easily access cosmetic slots.
+- Fixed TrinketsAttachment#getSlotAccess(TrinketSlotReference) not distinguishing cosmetic slots correctly.
+- Fixed mixin error warning on dedicated servers.
+- NeoForge version might not work as it was untested, hopefully it will™
