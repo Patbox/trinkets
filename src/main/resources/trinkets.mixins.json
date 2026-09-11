@@ -19,7 +19,6 @@
     "accessor.AbstractedContainerMenuAccessor",
     "behaviour.LivingEntityMixin",
     "behaviour.PiglinAiMixin",
-    "client.accessor.CreativeModeInventoryScreenAccessor",
     "datafixer.V1460Mixin"
   ],
   "client": [
@@ -47,7 +46,8 @@
     "client.render.ModelBakeryMixin",
     "client.render.ModelManagerMixin",
     "client.render.ModelMixin",
-    "client.render.WingsLayerMixin"
+    "client.render.WingsLayerMixin",
+    "client.accessor.CreativeModeInventoryScreenAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -42,14 +42,22 @@ public interface TrinketAttachment {
 	 * @return A instance of TrinketSlotAccess. It might get invalidated in the future!
 	 */
 	@Nullable
-	TrinketSlotAccess getSlotAccess(String slotId, int slot);
+	default TrinketSlotAccess getSlotAccess(String slotId, int slot) {
+		return getSlotAccess(slotId, slot, false);
+	}
+
+	/**
+	 * @return A instance of TrinketSlotAccess. It might get invalidated in the future!
+	 */
+	@Nullable
+	TrinketSlotAccess getSlotAccess(String slotId, int slot, boolean cosmetic);
 
 	/**
 	 * @return A instance of TrinketSlotAccess. It might get invalidated in the future!
 	 */
 	@Nullable
 	default TrinketSlotAccess getSlotAccess(TrinketSlotReference slotReference) {
-		return getSlotAccess(slotReference.slot(), slotReference.index());
+		return getSlotAccess(slotReference.slot(), slotReference.index(), slotReference.cosmetic());
 	}
 
 	/**

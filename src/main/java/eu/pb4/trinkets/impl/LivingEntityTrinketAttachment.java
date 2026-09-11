@@ -101,9 +101,9 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
     }
 
     @Override
-    public @Nullable TrinketSlotAccess getSlotAccess(String slotId, int slot) {
+    public @Nullable TrinketSlotAccess getSlotAccess(String slotId, int slot, boolean cosmetic) {
         var inv = getInventory(slotId);
-        return inv != null ? inv.getSlotAccess(slot) : null;
+        return inv != null ? (cosmetic ? inv.getCosmeticSlotAccess(slot) : inv.getSlotAccess(slot)) : null;
     }
 
     public Map<String, Map<String, TrinketInventoryImpl>> getLegacyInventoryImpl() {
