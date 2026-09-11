@@ -15,6 +15,7 @@ import eu.pb4.trinkets.impl.slots.TrinketSlotTarget;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
@@ -142,7 +143,7 @@ public class TrinketUtilities {
                                 ItemStack swappedToEquipment = inHand.consumeAndReturn(1, user);
                                 inv.setItem(i, swappedToEquipment);
                                 if (!user.getInventory().add(swappedToInventory)) {
-                                    user.drop(swappedToInventory, false);
+                                    user.drop(swappedToInventory, false, Prediction.SERVER_ONLY);
                                 }
                                 return InteractionResult.SUCCESS.heldItemTransformedTo(inHand);
                             }

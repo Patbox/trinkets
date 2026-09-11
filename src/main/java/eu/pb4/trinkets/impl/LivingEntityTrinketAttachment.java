@@ -10,6 +10,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Prediction;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.LivingEntity;
@@ -144,7 +145,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                                 }
                                 droppedItems.put(ref, oldStack);
                                 if (this.entity instanceof Player player && !player.level().isClientSide()) {
-                                    player.getInventory().placeItemBackInInventory(stack.copy());
+                                    player.getInventory().placeItemBackInInventory(stack.copy(), Prediction.SERVER_ONLY);
                                 } else if (this.entity.level() instanceof ServerLevel serverWorld) {
                                     this.entity.spawnAtLocation(serverWorld, stack);
                                 }
@@ -168,7 +169,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                                     }
                                     droppedItems.put(ref, oldStack);
                                     if (this.entity instanceof Player player && !player.level().isClientSide()) {
-                                        player.getInventory().placeItemBackInInventory(stack.copy());
+                                        player.getInventory().placeItemBackInInventory(stack.copy(), Prediction.SERVER_ONLY);
                                     } else if (this.entity.level() instanceof ServerLevel serverWorld) {
                                         this.entity.spawnAtLocation(serverWorld, stack);
                                     }
@@ -179,7 +180,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
                                 var oldStack = oldInv.cosmeticStacks.get(i);
                                 droppedItems.put(oldInv.getOrCreateCosmeticSlotAccess(i), oldStack);
                                 if (this.entity instanceof Player player && !player.level().isClientSide()) {
-                                    player.getInventory().placeItemBackInInventory(oldStack.copy());
+                                    player.getInventory().placeItemBackInInventory(oldStack.copy(), Prediction.SERVER_ONLY);
                                 } else if (this.entity.level() instanceof ServerLevel serverWorld) {
                                     this.entity.spawnAtLocation(serverWorld, oldStack);
                                 }
@@ -576,7 +577,7 @@ public class LivingEntityTrinketAttachment implements TrinketAttachment {
         if (this.delayedDropped != null) {
             for (var stack : this.delayedDropped) {
                 if (this.entity instanceof Player player && !player.level().isClientSide()) {
-                    player.getInventory().placeItemBackInInventory(stack);
+                    player.getInventory().placeItemBackInInventory(stack, Prediction.SERVER_ONLY);
                 } else if (this.entity.level() instanceof ServerLevel serverWorld) {
                     this.entity.spawnAtLocation(serverWorld, stack);
                 }

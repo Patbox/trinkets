@@ -207,7 +207,7 @@ public class TrinketScreenManager {
 		return ex < x + VISIBILITY_BUTTON_SIZE && ey < y + VISIBILITY_BUTTON_SIZE && ex >= x && ey >= y;
 	}
 
-	public static boolean handleModifiedSlotClick(AbstractContainerScreen instance, int leftPos, int topPos, Slot slot, int slotId, int buttonNum, ContainerInput containerInput, MouseButtonEvent event) {
+	public static boolean handleModifiedSlotClick(AbstractContainerScreen instance, int leftPos, int topPos, Slot slot, int slotId, ContainerInput containerInput, MouseButtonEvent event) {
 		if (slot instanceof TrinketSlot trinketSlot && canHideEquipment(slot.getItem(), trinketSlot.getTrinketGhostItem())  && trinketSlot.getAccess().inventory() instanceof TrinketInventoryImpl inventory) {
 			if (isAtVisiblityToggle(leftPos, topPos,  slot, event.x(), event.y())) {
 				var value = !trinketSlot.getAccess().isVisible();

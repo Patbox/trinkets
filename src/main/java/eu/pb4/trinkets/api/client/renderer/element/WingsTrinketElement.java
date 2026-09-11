@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -21,7 +22,7 @@ public record WingsTrinketElement(Optional<Either<ResourceKey<EquipmentAsset>, E
     public static final MapCodec<WingsTrinketElement> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.either(ResourceKey.codec(EquipmentAssets.ROOT_ID),
                     EquipmentClientInfoAccessor.getLAYER_LIST_CODEC()
-                            .xmap(x -> new EquipmentClientInfo(Map.of(EquipmentClientInfo.LayerType.WINGS, x)),
+                            .xmap(x -> new EquipmentClientInfo(Map.of(EquipmentClientInfo.LayerType.WINGS, x), List.of()),
                                     x -> x.getLayers(EquipmentClientInfo.LayerType.WINGS)
                             )
             ).optionalFieldOf("asset").forGetter(WingsTrinketElement::asset),

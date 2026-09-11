@@ -10,6 +10,7 @@ import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.color.item.ItemTintSources;
 import net.minecraft.client.renderer.block.dispatch.ModelState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.resources.model.geometry.ItemQuads;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
 
@@ -42,7 +43,7 @@ public record ModelTrinketElement(AttachmentSettings settings,
             return Baked.NO_OP;
         }
 
-        var quads = baked.getAll();
+        var quads = ItemQuads.split(baked.getAll());
 
         return (owner, item, access, level, context, state) -> {
             var tint = new int[this.tints.size()];

@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
@@ -129,7 +130,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityTr
     private void dropFromEntity(ItemStack stack) {
         // Mimic player drop behavior for only players
         if (((Entity) this) instanceof Player player) {
-            ItemEntity entity = player.drop(stack, true, false);
+            ItemEntity entity = player.drop(stack, true, Prediction.SERVER_ONLY);
         } else if (this.level() instanceof ServerLevel serverWorld) {
             ItemEntity entity = spawnAtLocation(serverWorld, stack);
         }

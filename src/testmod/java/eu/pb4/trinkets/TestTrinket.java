@@ -66,7 +66,7 @@ public class TestTrinket extends Item implements TrinketRenderer, TrinketCallbac
 			HumanoidModel<HumanoidRenderState> model = this.getModel();
 			model.setupAnim(bipedEntityRenderState);
 			TrinketRenderer.followBodyRotations(contextModel, model);
-			submit.submitModel(model, bipedEntityRenderState, matrices, model.renderType(TEXTURE), light, OverlayTexture.pack(OverlayTexture.u(0), OverlayTexture.v(false)), -1, null, state.outlineColor, null);
+			submit.submitModel(model, bipedEntityRenderState, matrices, model.renderType(TEXTURE), light, OverlayTexture.pack(OverlayTexture.u(0), OverlayTexture.v(false)), -1, null, state.outlineColor);
 		}
 	}
 

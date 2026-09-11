@@ -204,12 +204,12 @@ var env = System.getenv()
 
 publishMods {
 	changelog = System.getenv("CHANGELOG")
-	type = BETA
+	type = project.mod_version.contains("-") ? BETA : STABLE
 	file = jar.archiveFile
 	modLoaders.add("fabric")
 	modLoaders.add("neoforge")
 
-	if (System.getenv("CURSEFORGE")) {
+	if (System.getenv("CURSEFORGE") && "true" == project.curseforge_release) {
 		curseforge {
 			projectId = "1509777"
 			accessToken = System.getenv("CURSEFORGE")

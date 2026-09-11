@@ -29,7 +29,7 @@ issueTrackerURL = "https://github.com/Patbox/Trinkets/issues"
 [[dependencies.trinkets_updated]]
 	modId = "minecraft"
 	type = "required"
-	versionRange = "[26.2,26.3)"
+	versionRange = "[26.3,26.4)"
 	ordering = "NONE"
 	side = "BOTH"
 

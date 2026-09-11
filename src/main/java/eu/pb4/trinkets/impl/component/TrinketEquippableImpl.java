@@ -7,8 +7,8 @@ import eu.pb4.trinkets.api.component.TrinketEquippable;
 import eu.pb4.trinkets.impl.TrinketUtilities;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -40,7 +40,7 @@ public record TrinketEquippableImpl(
             ExtraCodecs.compactListCodec(Codec.STRING).optionalFieldOf("slot", List.of()).forGetter(TrinketEquippable::allowedSlots),
             SoundEvent.CODEC.optionalFieldOf("equip_sound", SoundEvents.ARMOR_EQUIP_GENERIC).forGetter(TrinketEquippable::equipSound),
             Identifier.CODEC.optionalFieldOf("asset_id").forGetter(TrinketEquippable::assetId),
-            RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE).optionalFieldOf("allowed_entities").forGetter(TrinketEquippable::allowedEntities),
+            RegistryCodecs.holderSet(Registries.ENTITY_TYPE).optionalFieldOf("allowed_entities").forGetter(TrinketEquippable::allowedEntities),
             StringRepresentable.fromEnum(TrinketDropRule::values).optionalFieldOf("drop_rule", TrinketDropRule.DEFAULT).forGetter(TrinketEquippable::dropRule),
             Codec.BOOL.optionalFieldOf("swappable", true).forGetter(TrinketEquippable::swappable),
             Codec.BOOL.optionalFieldOf("equip_on_interact", false).forGetter(TrinketEquippable::equipOnInteract),

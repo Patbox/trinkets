@@ -67,7 +67,7 @@ public class TestTrinket2 extends Item implements TrinketCallback, TrinketRender
 
 	@Environment(EnvType.CLIENT)
 	private void renderSimple(ItemStack stack, PoseStack matrices, SubmitNodeCollector submit, int light) {
-		matrices.mulPose(new Quaternionf().rotateX(Mth.HALF_PI));
+		matrices.rotate(new Quaternionf().rotateX(Mth.HALF_PI));
 		matrices.scale(0.5f, 0.5f, 0.5f);
 		var r = new ItemStackRenderState();
 		Minecraft.getInstance().getItemModelResolver().appendItemLayers(r, stack, ItemDisplayContext.FIXED, null, null, 0);

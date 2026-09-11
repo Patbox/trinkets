@@ -99,9 +99,9 @@ public abstract class AbstractContainerScreenMixin extends Screen {
         TrinketScreenManager.drawSlotExtrasCommonTail((AbstractContainerScreen) (Object) this, graphics, this.leftPos, this.topPos, slot, mouseX, mouseY);
     }
 
-	@WrapWithCondition(method = "mouseClicked", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;slotClicked(Lnet/minecraft/world/inventory/Slot;IILnet/minecraft/world/inventory/ContainerInput;)V"))
-	private boolean visibilityClick(AbstractContainerScreen instance, Slot slot, int slotId, int buttonNum, ContainerInput containerInput, @Local(argsOnly = true) MouseButtonEvent event) {
-		return !TrinketScreenManager.handleModifiedSlotClick(instance, this.leftPos, this.topPos, slot, slotId, buttonNum, containerInput, event);
+	@WrapWithCondition(method = "mouseClicked", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;slotClicked(Lnet/minecraft/world/inventory/Slot;ILnet/minecraft/client/input/MouseButtonEvent;Lnet/minecraft/world/inventory/ContainerInput;)V"))
+	private boolean visibilityClick(AbstractContainerScreen instance, Slot slot, int slotId, MouseButtonEvent event, ContainerInput containerInput) {
+		return !TrinketScreenManager.handleModifiedSlotClick(instance, this.leftPos, this.topPos, slot, slotId, containerInput, event);
 	}
 
 	@WrapWithCondition(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;extractSlot(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/world/inventory/Slot;II)V"),

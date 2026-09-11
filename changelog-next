@@ -1,21 +1,3 @@
-- Added new events:
- - TrinketModifySlotCountCallback - Allows you to easily modify the Trinket inventory's slot count dynamically. Server only!
- - TrinketSlotCountChangedCallback - Triggered after slot count was changed!
- - TrinketEquipmentAttributeModifiersCallback - Allows to provide additional attributes for a given trinket item.
-- New TrinketInventory methods:
-  - #updateSlotCount() - Triggers update of the amount of available slots for given inventory.
-  - #addSlotCountModifier(AttributeModifier) - Adds slot count attribute modifier.
-  - #removeSlotCountModifier(Identifier) - Removes slot count attribute modifier.
-- New TrinketSlotUtils class with these utility methods.
- - #createSlot(TrinketSlotAccess access, int x, int y) - Creates standalone slot for given slot access.
- - #mayPlace(TrinketSlotAccess, ItemStack) - If item can be inserted into given slot.
- - #mayPickup(TrinketSlotAccess, ItemStack) - If item can be picked up from given slot.
- - #isSlotCompatible(TrinketSlotAccess, ItemStack) - Checks if given slot is logically compatible with stack.
- - #isEquipable(TrinketSlotAccess, ItemStack) - Checks if given stack can be equipped.
-- Added `/trinkets <entity> <slot> modifiers` command, allowing you to easily modify amount of slots at runtime.
-- Added compatibility with Just Enough Items, Roughly Enough Items and Reliable Recipe Viewer's exclusion areas.
-- Fixed removing NBT data with /data command not clearing out Trinkets slots correctly.
-- Added support for exclusion areas for Just Enough Items and Roughly Enough Items.
-- Deprecate TrinketRendererRegistry#getRenderer for removal.
-- Added TrinketRendererRegistry#registerRenderer variant that take a Function<EntityRendererProvider.Context, TrinketRenderer> as it's argument.
-- Command text is now translatable.
+- Updated to 26.3-pre-2.
+- No changes on the api front.
+- NeoForge version might not work.
