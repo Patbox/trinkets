@@ -4,6 +4,8 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.templates.TypeTemplate;
+import net.minecraft.util.datafix.fixes.References;
+import net.minecraft.util.datafix.schemas.V1460;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -12,9 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
 import java.util.function.Supplier;
-
-import net.minecraft.util.datafix.fixes.References;
-import net.minecraft.util.datafix.schemas.V1460;
 
 /**
  * This is main schema where Minecraft defines most post-flattening data formats.
@@ -36,26 +35,28 @@ public class V1460Mixin {
     private static TypeTemplate attachTrinketFixer(TypeTemplate original) {
         var trinketData = DSL.optional(DSL.compoundList(
                 // Define it as (optional) compound list / map (Map<String, Further Definition>). Keys are slot types.
-                DSL.and(DSL.optional(DSL.compoundList(
+                DSL.or(DSL.compoundList(
                                 // Define optional Items field, which is an optional list of ITEM_STACK. Other data is just copied over.
-                                DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(schema)))
-                        )),
-                        DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(schema))),
-                        DSL.optionalFields("cosmetic", DSL.list(References.ITEM_STACK.in(schema))))
+                                DSL.allWithRemainder(DSL.field("Items", DSL.list(References.ITEM_STACK.in(schema))))
+                        ),
+                        DSL.optionalFields(
+                                "Items", DSL.list(References.ITEM_STACK.in(schema)),
+                                "cosmetic", DSL.list(References.ITEM_STACK.in(schema))
+                        )
+                )
         ));
 
         // Add schema for trinkets to existing datafixers
-        return DSL.allWithRemainder(
+        return DSL.and(
                 // Legacy trinkets data cardinal_components.
                 DSL.optional(DSL.field("cardinal_components",
-                        DSL.optionalFields("trinkets:trinkets",
+                        DSL.optional(DSL.field("trinkets:trinkets",
                                 trinketData
-                        )
+                        ))
                 )),
                 // new trinkets data
-                DSL.optional(DSL.optionalFields("trinkets",
-                        trinketData
-                )), original
+                DSL.optional(DSL.field("trinkets", trinketData)),
+                original
         );
     }
 
