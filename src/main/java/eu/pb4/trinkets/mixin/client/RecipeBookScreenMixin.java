@@ -49,6 +49,15 @@ public abstract class RecipeBookScreenMixin extends AbstractContainerScreen<Reci
             context.pose().pushMatrix();
             context.pose().translate(this.leftPos, this.topPos);
             TrinketScreenManager.drawForeground(context);
+            var popupGroup = TrinketsClient.activeGroup != null ? TrinketsClient.activeGroup : TrinketsClient.quickMoveGroup;
+            if (popupGroup != null) {
+                for (Slot slot : this.menu.slots) {
+                    if (!(slot instanceof TrinketSlot) && slot.isActive() && popupGroup.isAttachedToSlot(slot)) {
+                        context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_TEXTURE, slot.x - 1, slot.y - 1, 18, 18);
+                        this.extractSlot(context, slot, mouseX, mouseY);
+                    }
+                }
+            }
 
             for (Slot slot : this.menu.slots) {
                 if (slot instanceof TrinketSlot trinketSlot && trinketSlot.renderAfterRegularSlots() && slot.isActive()) {
